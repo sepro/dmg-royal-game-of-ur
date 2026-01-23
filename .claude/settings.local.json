@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo:*)",
+      "Bash(/home/gbdev/gbdk/bin/png2asset:*)",
+      "Bash(ls:*)",
+      "Bash(make clean:*)",
+      "Bash(make:*)",
+      "Bash(/home/gbdev/gbdk/bin/lcc:*)"
+    ]
+  }
+}

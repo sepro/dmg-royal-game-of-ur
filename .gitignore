@@ -1,0 +1,51 @@
+# Build artifacts
+*.o
+*.lst
+*.map
+*.sym
+*.asm
+*.rel
+*.noi
+*.ihx
+
+# ROM files
+*.gb
+*.gbc
+
+# Build directories
+obj/
+build/
+
+# Generated assets (from png2asset)
+assets/generated/
+
+# Emulator files
+*.sav
+*.srm
+*.state
+*.state*
+*.rtc
+*.sgm
+
+# BGB emulator
+*.bgb
+bgb.ini
+
+# Editor/IDE
+.vscode/
+*.swp
+*.swo
+*~
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.bak
+*.log

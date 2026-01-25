@@ -45,4 +45,22 @@ typedef enum {
 // VBlank helper
 #define WAIT_VBLANK wait_vbl_done()
 
+// Blink sprite configuration (Phase 2)
+#define BLINK_SPRITE_INDEX 1      // OAM entry (arrow uses 0)
+#define BLINK_TILE_START 1        // Sprite VRAM tile index (arrow uses 0)
+#define BLINK_FRAME_COUNT 4
+#define BLINK_ANIM_SPEED 6        // Frames per animation frame (~0.1s at 60fps)
+#define BLINK_DELAY_MIN 30        // Min frames hidden (~0.5s)
+#define BLINK_DELAY_MAX 90        // Max frames hidden (~1.5s)
+
+// Blink position bounds (sprite coordinates include +8 X, +16 Y offset)
+#define BLINK_MIN_X 24            // Keep within title logo area
+#define BLINK_MAX_X 144
+#define BLINK_MIN_Y 32            // Upper portion of screen where title is
+#define BLINK_MAX_Y 96
+
+// Blink states
+#define BLINK_STATE_HIDDEN 0
+#define BLINK_STATE_ANIMATING 1
+
 #endif // GAME_TYPES_H

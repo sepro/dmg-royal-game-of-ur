@@ -6,7 +6,7 @@ This plan breaks down the development into manageable phases, each building on t
 
 ---
 
-## Phase 1: Project Setup & Title Screen (Static)
+## [Completed] Phase 1: Project Setup & Title Screen (Static)
 
 **Goal:** Establish project structure, build system, and display a static title screen.
 

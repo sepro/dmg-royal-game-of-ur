@@ -14,6 +14,7 @@
 extern const unsigned char title_tiles[];
 extern const unsigned char title_map[];
 extern const unsigned char arrow_tiles[];
+extern const uint8_t blink_tiles[];
 
 // External reference to next_state from main.c
 extern ScreenState_t next_state;
@@ -24,6 +25,85 @@ static uint8_t arrow_sprite_index = 0;
 
 // Input state for edge detection
 static uint8_t prev_input = 0;
+
+// Blink animation state
+static uint8_t blink_state;        // BLINK_STATE_HIDDEN or BLINK_STATE_ANIMATING
+static uint8_t blink_frame;        // Current frame (0-3)
+static uint8_t blink_timer;        // Frame counter for animation/delay
+static uint8_t blink_x, blink_y;   // Current sprite position
+
+/**
+ * Get a pseudo-random value from DIV register
+ */
+static uint8_t get_random(void) {
+    return DIV_REG;
+}
+
+/**
+ * Get a random value in range [min, max]
+ */
+static uint8_t get_random_range(uint8_t min, uint8_t max) {
+    return min + (get_random() % (max - min + 1));
+}
+
+/**
+ * Start a new blink animation at a random position
+ */
+static void blink_start_animation(void) {
+    blink_state = BLINK_STATE_ANIMATING;
+    blink_frame = 0;
+    blink_timer = BLINK_ANIM_SPEED;
+
+    // Pick random position within bounds
+    blink_x = get_random_range(BLINK_MIN_X, BLINK_MAX_X);
+    blink_y = get_random_range(BLINK_MIN_Y, BLINK_MAX_Y);
+
+    // Set initial tile and position
+    set_sprite_tile(BLINK_SPRITE_INDEX, BLINK_TILE_START + blink_frame);
+    move_sprite(BLINK_SPRITE_INDEX, blink_x, blink_y);
+}
+
+/**
+ * Hide sprite and start delay before next animation
+ */
+static void blink_start_delay(void) {
+    blink_state = BLINK_STATE_HIDDEN;
+    blink_timer = get_random_range(BLINK_DELAY_MIN, BLINK_DELAY_MAX);
+
+    // Hide sprite by moving off-screen
+    move_sprite(BLINK_SPRITE_INDEX, 0, 0);
+}
+
+/**
+ * Update blink animation (called every frame)
+ */
+static void update_blink(void) {
+    if (blink_state == BLINK_STATE_HIDDEN) {
+        // Countdown delay timer
+        if (blink_timer > 0) {
+            blink_timer--;
+        } else {
+            // Delay finished, start new animation
+            blink_start_animation();
+        }
+    } else {
+        // Animating state
+        if (blink_timer > 0) {
+            blink_timer--;
+        } else {
+            // Advance to next frame
+            blink_frame++;
+            if (blink_frame >= BLINK_FRAME_COUNT) {
+                // Animation complete, start delay
+                blink_start_delay();
+            } else {
+                // Show next frame
+                blink_timer = BLINK_ANIM_SPEED;
+                set_sprite_tile(BLINK_SPRITE_INDEX, BLINK_TILE_START + blink_frame);
+            }
+        }
+    }
+}
 
 /**
  * Initialize title screen
@@ -51,6 +131,9 @@ void init_title(void) {
     // Load arrow sprite tiles (into sprite pattern table, separate from BG)
     set_sprite_data(0, 1, arrow_tiles);
 
+    // Load blink sprite tiles (4 frames starting at tile 1)
+    set_sprite_data(BLINK_TILE_START, BLINK_FRAME_COUNT, blink_tiles);
+
     // Set up arrow sprite (sprite 0)
     arrow_sprite_index = 0;
     set_sprite_tile(arrow_sprite_index, 0);
@@ -58,6 +141,9 @@ void init_title(void) {
     // Position arrow at first menu option
     selected_option = MENU_START_GAME;
     move_sprite(arrow_sprite_index, ARROW_X, ARROW_START_Y + (selected_option * ARROW_SPACING));
+
+    // Initialize blink animation in hidden state with random delay
+    blink_start_delay();
 
     // Clear previous input state
     prev_input = 0;
@@ -74,6 +160,9 @@ void init_title(void) {
 void update_title(void) {
     uint8_t input = joypad();
     uint8_t pressed = input & ~prev_input;  // Edge detection: newly pressed buttons
+
+    // Update sparkle animation
+    update_blink();
 
     // Handle up/down navigation
     if (pressed & J_UP) {
@@ -121,6 +210,9 @@ void update_title(void) {
 void cleanup_title(void) {
     // Hide arrow sprite
     move_sprite(arrow_sprite_index, 0, 0);
+
+    // Hide blink sprite
+    move_sprite(BLINK_SPRITE_INDEX, 0, 0);
 
     // Clear sprite data if needed
     // (for now, we'll keep sprites loaded as they may be reused)

@@ -6,7 +6,8 @@
       "Bash(ls:*)",
       "Bash(make clean:*)",
       "Bash(make:*)",
-      "Bash(/home/gbdev/gbdk/bin/lcc:*)"
+      "Bash(/home/gbdev/gbdk/bin/lcc:*)",
+      "Bash(xargs:*)"
     ]
   }
 }

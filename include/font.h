@@ -10,24 +10,37 @@
 
 // Font configuration
 #define FONT_TILE_START 140  // Start loading font tiles after title tiles (139 used)
-#define FONT_CHAR_COUNT 15   // Number of characters in font
+#define FONT_CHAR_COUNT 28   // Number of characters in font (26 letters + space + blank)
 
 // Character indices (offset from FONT_TILE_START)
 #define CHAR_SPACE 0
 #define CHAR_A 1
 #define CHAR_B 2
 #define CHAR_C 3
-#define CHAR_E 4
-#define CHAR_G 5
-#define CHAR_I 6
-#define CHAR_K 7
-#define CHAR_L 8
-#define CHAR_M 9
-#define CHAR_N 10
-#define CHAR_R 11
-#define CHAR_S 12
-#define CHAR_T 13
-#define CHAR_BLANK 14  // Solid black tile for text background
+#define CHAR_D 4
+#define CHAR_E 5
+#define CHAR_F 6
+#define CHAR_G 7
+#define CHAR_H 8
+#define CHAR_I 9
+#define CHAR_J 10
+#define CHAR_K 11
+#define CHAR_L 12
+#define CHAR_M 13
+#define CHAR_N 14
+#define CHAR_O 15
+#define CHAR_P 16
+#define CHAR_Q 17
+#define CHAR_R 18
+#define CHAR_S 19
+#define CHAR_T 20
+#define CHAR_U 21
+#define CHAR_V 22
+#define CHAR_W 23
+#define CHAR_X 24
+#define CHAR_Y 25
+#define CHAR_Z 26
+#define CHAR_BLANK 27  // Solid black tile for text background
 
 // Font tile data (defined in font.c)
 extern const uint8_t font_tiles[];

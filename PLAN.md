@@ -41,7 +41,7 @@ ROM loads and shows title screen. Player can move arrow between menu options wit
 
 ---
 
-## Phase 2: Title Screen Animation
+## [Completed] Phase 2: Title Screen Animation
 
 **Goal:** Add sprite-based specular highlight animation to title letters.
 

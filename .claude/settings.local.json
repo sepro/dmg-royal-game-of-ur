@@ -7,7 +7,14 @@
       "Bash(make clean:*)",
       "Bash(make:*)",
       "Bash(/home/gbdev/gbdk/bin/lcc:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(identify:*)",
+      "Bash(python3:*)",
+      "Bash(pip3 install:*)",
+      "Bash(grep:*)",
+      "Bash(wc:*)",
+      "Bash(png2asset:*)",
+      "Bash($GBDK_HOME/bin/png2asset)"
     ]
   }
 }

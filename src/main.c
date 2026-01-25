@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include "game_types.h"
 #include "title.h"
+#include "opponent_select.h"
 
 // Global game state
 ScreenState_t current_state = STATE_TITLE;
@@ -33,6 +34,9 @@ void main(void) {
                 case STATE_TITLE:
                     cleanup_title();
                     break;
+                case STATE_OPPONENT_SELECT:
+                    cleanup_opponent_select();
+                    break;
                 default:
                     break;
             }
@@ -43,6 +47,9 @@ void main(void) {
                 case STATE_TITLE:
                     init_title();
                     break;
+                case STATE_OPPONENT_SELECT:
+                    init_opponent_select();
+                    break;
                 default:
                     break;
             }
@@ -52,6 +59,9 @@ void main(void) {
         switch (current_state) {
             case STATE_TITLE:
                 update_title();
+                break;
+            case STATE_OPPONENT_SELECT:
+                update_opponent_select();
                 break;
             default:
                 break;

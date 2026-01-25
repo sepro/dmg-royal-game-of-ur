@@ -189,9 +189,8 @@ void update_title(void) {
             delay(50);
             DISPLAY_ON;
 
-            // TODO: Transition to opponent select when Phase 3 is implemented
-            // For now, just stay on title screen
-            // next_state = STATE_OPPONENT_SELECT;
+            // Transition to opponent select screen
+            next_state = STATE_OPPONENT_SELECT;
         } else if (selected_option == MENU_LINK_CABLE) {
             // Link cable not yet implemented - flash screen
             DISPLAY_OFF;

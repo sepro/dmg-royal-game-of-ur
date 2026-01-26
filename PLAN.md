@@ -6,174 +6,106 @@ This plan breaks down the development into manageable phases, each building on t
 
 ---
 
-## [Completed] Phase 1: Project Setup & Title Screen (Static)
+## Completed Phases
 
-**Goal:** Establish project structure, build system, and display a static title screen.
+### Phase 1: Project Setup & Title Screen (Static) ✓
+- Project scaffolding with GBDK-2020 toolchain and Makefile
+- Title screen background with tileset and tilemap
+- Menu navigation with arrow sprite between "Start Game" and "Link Cable"
 
-### Tasks
+### Phase 2: Title Screen Animation ✓
+- Sprite-based specular highlight animation across title letters
+- Seamless looping shine effect
 
-1. **Project scaffolding**
-   - Set up GBDK-2020 toolchain and Makefile
-   - Create folder structure: `src/`, `assets/`, `include/`, `build/`
-   - Implement basic main loop with VBlank wait
+### Phase 3: Opponent Selection Screen ✓
+- 2x2 grid layout with 4 opponent portraits
+- Description box updates on selection change
+- Navigation and confirmation with screen transitions
 
-2. **Title screen background**
-   - Convert title image to Game Boy tile format (use `png2asset` or similar)
-   - Load tileset and tilemap into VRAM
-   - Display full-screen title image
-
-3. **Menu text and arrow**
-   - Add "Start Game" and "Link Cable" text (can be part of background or use window layer)
-   - Create arrow sprite for menu selection
-   - Implement up/down input to move arrow between options
-   - A button advances to next screen (placeholder for now - just flash screen or similar)
-
-### Assets Needed
-
-| Asset | Format | Notes |
-|-------|--------|-------|
-| Title screen image | 160x144 PNG, 4 colors | Will be converted to tiles + tilemap |
-| Menu arrow sprite | 8x8 or 8x16 PNG | Simple arrow pointing right |
-
-### Deliverable
-
-ROM loads and shows title screen. Player can move arrow between menu options with D-pad. Pressing A on "Start Game" triggers a placeholder transition.
+### Phase 4: Difficulty Selection Screen ✓
+- Vertical menu with Easy/Medium/Hard options
+- B returns to opponent selection, A proceeds to coin flip
+- Difficulty stored in game state for AI reference
 
 ---
 
-## [Completed] Phase 2: Title Screen Animation
+## Phase 5: Side Selection & Coin Flip
 
-**Goal:** Add sprite-based specular highlight animation to title letters.
+**Goal:** Player chooses Light (sun) or Dark (moon) side, then coin flip determines who moves first.
 
-### Tasks
+### Screen Layout
 
-1. **Identify highlight positions**
-   - Determine which tiles/positions on the title need the "shine" effect
-   - Plan sprite movement path across the letters
-
-2. **Implement shine sprite**
-   - Create small bright sprite (or sprite cluster) for the highlight
-   - Animate position moving across title letters in a loop
-   - Use sprite palette to ensure it appears as a bright reflection
-
-3. **Animation timing**
-   - Use frame counter to control animation speed
-   - Ensure animation loops seamlessly while on title screen
-
-### Assets Needed
-
-| Asset | Format | Notes |
-|-------|--------|-------|
-| Specular highlight sprite(s) | 8x8 or 8x16 PNG | Bright accent, possibly 2-3 frames |
-
-### Deliverable
-
-Title screen has an animated shine effect moving across the title text.
-
----
-
-## [Completed] Phase 3: Opponent Selection Screen
-
-**Goal:** Implement character selection with 2x2 grid and description box.
+```
+┌────────────────────────────────────┐
+│         "CHOOSE YOUR SIDE"         │  <- Title text
+│                                    │
+│    ┌──────────┐    ┌──────────┐    │
+│    │   SUN    │    │   MOON   │    │  <- 40x40 coin graphics
+│    │  (Light) │    │  (Dark)  │    │     reused from animation
+│    └──────────┘    └──────────┘    │
+│         ▲                          │  <- Selection border on current
+│────────────────────────────────────│
+│                                    │
+│       [Coin flip animation]        │  <- 40x40 coin flip plays here
+│         "LIGHT STARTS" or          │     after A is pressed
+│         "DARK STARTS"              │
+│                                    │
+└────────────────────────────────────┘
+        White background throughout
+```
 
 ### Tasks
 
 1. **Screen layout**
-   - Design background with 4 portrait slots (2x2 grid)
-   - Reserve bottom area for description text box
-   - Create border/highlight tiles for selection indicator
-
-2. **Character data structure**
-   - Define struct for opponent: portrait tiles, name, description, AI parameters
-   - Create array of 4 opponents (can use placeholder art initially)
-
-3. **Navigation and selection**
-   - Track current selection (0-3) as grid position
-   - Move selection border based on D-pad input
-   - Update description text when selection changes
-   - A confirms selection, stores chosen opponent
-
-4. **Screen transitions**
-   - Fade or cut from title to opponent select
-   - Fade or cut to difficulty select on confirmation
-
-### Assets Needed
-
-| Asset | Format | Notes |
-|-------|--------|-------|
-| 4 opponent portraits | ~32x32 or 40x40 each | Fits in 2x2 grid with spacing |
-| Selection border tiles | 8x8 tiles | Corner and edge pieces for highlight box |
-| Description box background | Tiles | Simple bordered text area |
-| Font tiles (if custom) | 8x8 per character | Or use GBDK's built-in font |
-
-### Deliverable
-
-Player can navigate 2x2 grid, see descriptions update, and confirm selection.
-
----
-
-## Phase 4: Difficulty Selection Screen
-
-**Goal:** Simple 3-option menu for difficulty.
-
-### Tasks
-
-1. **Screen layout**
-   - Display "Easy", "Medium", "Hard" as vertical list
-   - Show arrow or highlight on current selection
+   - White background (all tiles use lightest shade)
+   - "CHOOSE YOUR SIDE" title text at top
+   - Two coin options side by side on top half: Sun (Light) and Moon (Dark)
+   - Use the flat sun/moon frames from the coin animation (reuse assets)
+   - Selection border drawn around currently highlighted coin
+   - Bottom half reserved for coin flip animation and result text
 
 2. **Navigation**
-   - Up/down to change selection
-   - A to confirm and proceed to game
-   - B to return to opponent selection
+   - Left/Right D-pad switches selection between Sun and Moon
+   - Selection border moves to indicate current choice
+   - B returns to difficulty selection screen
+   - A confirms selection and triggers coin flip
 
-3. **Store settings**
-   - Save difficulty level in game state for AI to reference later
+3. **Coin flip animation**
+   - After A pressed, animate spinning coin in bottom half of screen
+   - Use 8-frame rotation sequence (sun → edge → moon → edge → repeat)
+   - Animation runs for ~2-3 seconds with gradual slowdown
+   - Use DIV register or input timing for random outcome
 
-### Assets Needed
+4. **Result display**
+   - Coin lands on sun or moon (random)
+   - Display "LIGHT STARTS" or "DARK STARTS" text below coin
+   - If landed side matches player's choice, they move first
+   - Brief pause to show result
 
-| Asset | Format | Notes |
-|-------|--------|-------|
-| Difficulty screen background | 160x144 or simpler | Can reuse elements from other screens |
-
-### Deliverable
-
-Difficulty can be selected. B returns to previous screen. A proceeds to coin flip.
-
----
-
-## Phase 5: Coin Flip Animation
-
-**Goal:** Animated coin flip to determine starting player/color.
-
-### Tasks
-
-1. **Coin sprite animation**
-   - Create spinning coin sprite sequence
-   - Animate flip with timing that builds tension
-
-2. **Random outcome**
-   - Use DIV register or input timing for randomness
-   - Determine light/dark assignment based on flip result
-
-3. **Result display**
-   - Show coin landing on heads/tails
-   - Brief text: "You are LIGHT" or "You are DARK"
-   - Indicate who moves first
-
-4. **Transition to game**
-   - Short delay then load game board screen
+5. **Transition (placeholder for now)**
+   - After result shown, placeholder transition (e.g., flash screen)
+   - Will connect to game board in Phase 6
 
 ### Assets Needed
 
 | Asset | Format | Notes |
 |-------|--------|-------|
-| Coin sprite frames | 8x16 or 16x16 | 4-8 frames for flip animation |
-| Light/Dark indicator icons | Small sprites or tiles | Optional: visual for result |
+| Sun/Moon coin frames | 40x40 PNG, 4 colors | 8 frames: sun flat, sun angled, edge, moon angled, moon flat, moon angled, edge, sun angled |
+| Selection border tiles | 8x8 tiles | Corner and edge pieces to highlight selected coin |
+
+**Note:** The same coin artwork is reused for both the selection display (frames 1 and 5) and the flip animation (all 8 frames). Single asset, multiple uses.
+
+### Technical Notes
+
+- **White background:** Set all background tiles to color 0 (white `#FFFFFF` on DMG)
+- **Asset reuse:** Sun flat = frame 1, Moon flat = frame 5 from animation sequence
+- **Selection border:** Can reuse border tiles from opponent selection screen
+- **VBlank updates:** Swap coin tiles during VBlank for animation (~1.1ms available)
+- **Randomness:** Sample DIV register at moment of A press, or use frame counter
 
 ### Deliverable
 
-Coin flips with animation, result shown, game begins with correct player order.
+Player can select Light or Dark side with visual feedback. Coin flip animation determines starting player. B returns to difficulty. A triggers flip with placeholder transition to next phase.
 
 ---
 
@@ -440,9 +372,9 @@ Polished, bug-free single-player experience ready for release.
 ### Sprites (OBJ)
 - Menu arrow
 - Specular highlight (2-3 frames)
-- Coin flip (4-8 frames)
 - Light piece
-- Dark piece  
+- Dark piece
+- Light/Dark piece icons (for coin flip result)
 - Dice × 2 states (0 and 1)
 - Hand pointer
 - Destination highlight (or use BG tiles)
@@ -451,7 +383,8 @@ Polished, bug-free single-player experience ready for release.
 ### Backgrounds (BG)
 - Title screen (full 160x144)
 - Opponent select screen
-- Difficulty select screen  
+- Difficulty select screen
+- Side selection / Coin flip screen (white background, 40x40 sun/moon coin frames)
 - Game board screen
 - End game screen (or reuse elements)
 

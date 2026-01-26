@@ -453,38 +453,15 @@ void load_font(void) {
 
 /**
  * Convert ASCII character to font tile index
+ * @param c Character to convert (A-Z supported, others become space)
+ * @param base Base tile index (FONT_TILE_START or FONT_INVERTED_TILE_START)
+ * @return Tile index for the character
  */
-static uint8_t char_to_tile(char c) {
-    switch (c) {
-        case ' ': return FONT_TILE_START + CHAR_SPACE;
-        case 'A': return FONT_TILE_START + CHAR_A;
-        case 'B': return FONT_TILE_START + CHAR_B;
-        case 'C': return FONT_TILE_START + CHAR_C;
-        case 'D': return FONT_TILE_START + CHAR_D;
-        case 'E': return FONT_TILE_START + CHAR_E;
-        case 'F': return FONT_TILE_START + CHAR_F;
-        case 'G': return FONT_TILE_START + CHAR_G;
-        case 'H': return FONT_TILE_START + CHAR_H;
-        case 'I': return FONT_TILE_START + CHAR_I;
-        case 'J': return FONT_TILE_START + CHAR_J;
-        case 'K': return FONT_TILE_START + CHAR_K;
-        case 'L': return FONT_TILE_START + CHAR_L;
-        case 'M': return FONT_TILE_START + CHAR_M;
-        case 'N': return FONT_TILE_START + CHAR_N;
-        case 'O': return FONT_TILE_START + CHAR_O;
-        case 'P': return FONT_TILE_START + CHAR_P;
-        case 'Q': return FONT_TILE_START + CHAR_Q;
-        case 'R': return FONT_TILE_START + CHAR_R;
-        case 'S': return FONT_TILE_START + CHAR_S;
-        case 'T': return FONT_TILE_START + CHAR_T;
-        case 'U': return FONT_TILE_START + CHAR_U;
-        case 'V': return FONT_TILE_START + CHAR_V;
-        case 'W': return FONT_TILE_START + CHAR_W;
-        case 'X': return FONT_TILE_START + CHAR_X;
-        case 'Y': return FONT_TILE_START + CHAR_Y;
-        case 'Z': return FONT_TILE_START + CHAR_Z;
-        default:  return FONT_TILE_START + CHAR_SPACE;  // Unknown chars become space
+static uint8_t char_to_tile(char c, uint8_t base) {
+    if (c >= 'A' && c <= 'Z') {
+        return base + CHAR_A + (c - 'A');  // base + 1 + (c - 'A')
     }
+    return base + CHAR_SPACE;  // Space (index 0) for unknown chars
 }
 
 /**
@@ -495,7 +472,7 @@ void draw_text(uint8_t x, uint8_t y, const char *str) {
     uint8_t i = 0;
 
     while (str[i] != '\0' && i < 20) {
-        tile_buf[i] = char_to_tile(str[i]);
+        tile_buf[i] = char_to_tile(str[i], FONT_TILE_START);
         i++;
     }
 
@@ -549,42 +526,6 @@ void load_font_inverted(void) {
 }
 
 /**
- * Convert ASCII character to inverted font tile index
- */
-static uint8_t char_to_tile_inverted(char c) {
-    switch (c) {
-        case ' ': return FONT_INVERTED_TILE_START + CHAR_SPACE;
-        case 'A': return FONT_INVERTED_TILE_START + CHAR_A;
-        case 'B': return FONT_INVERTED_TILE_START + CHAR_B;
-        case 'C': return FONT_INVERTED_TILE_START + CHAR_C;
-        case 'D': return FONT_INVERTED_TILE_START + CHAR_D;
-        case 'E': return FONT_INVERTED_TILE_START + CHAR_E;
-        case 'F': return FONT_INVERTED_TILE_START + CHAR_F;
-        case 'G': return FONT_INVERTED_TILE_START + CHAR_G;
-        case 'H': return FONT_INVERTED_TILE_START + CHAR_H;
-        case 'I': return FONT_INVERTED_TILE_START + CHAR_I;
-        case 'J': return FONT_INVERTED_TILE_START + CHAR_J;
-        case 'K': return FONT_INVERTED_TILE_START + CHAR_K;
-        case 'L': return FONT_INVERTED_TILE_START + CHAR_L;
-        case 'M': return FONT_INVERTED_TILE_START + CHAR_M;
-        case 'N': return FONT_INVERTED_TILE_START + CHAR_N;
-        case 'O': return FONT_INVERTED_TILE_START + CHAR_O;
-        case 'P': return FONT_INVERTED_TILE_START + CHAR_P;
-        case 'Q': return FONT_INVERTED_TILE_START + CHAR_Q;
-        case 'R': return FONT_INVERTED_TILE_START + CHAR_R;
-        case 'S': return FONT_INVERTED_TILE_START + CHAR_S;
-        case 'T': return FONT_INVERTED_TILE_START + CHAR_T;
-        case 'U': return FONT_INVERTED_TILE_START + CHAR_U;
-        case 'V': return FONT_INVERTED_TILE_START + CHAR_V;
-        case 'W': return FONT_INVERTED_TILE_START + CHAR_W;
-        case 'X': return FONT_INVERTED_TILE_START + CHAR_X;
-        case 'Y': return FONT_INVERTED_TILE_START + CHAR_Y;
-        case 'Z': return FONT_INVERTED_TILE_START + CHAR_Z;
-        default:  return FONT_INVERTED_TILE_START + CHAR_SPACE;  // Unknown chars become space
-    }
-}
-
-/**
  * Draw a string using inverted font (black text on white background)
  */
 void draw_text_inverted(uint8_t x, uint8_t y, const char *str) {
@@ -592,7 +533,7 @@ void draw_text_inverted(uint8_t x, uint8_t y, const char *str) {
     uint8_t i = 0;
 
     while (str[i] != '\0' && i < 20) {
-        tile_buf[i] = char_to_tile_inverted(str[i]);
+        tile_buf[i] = char_to_tile(str[i], FONT_INVERTED_TILE_START);
         i++;
     }
 

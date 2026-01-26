@@ -72,7 +72,7 @@ Title screen has an animated shine effect moving across the title text.
 
 ---
 
-## Phase 3: Opponent Selection Screen
+## [Completed] Phase 3: Opponent Selection Screen
 
 **Goal:** Implement character selection with 2x2 grid and description box.
 

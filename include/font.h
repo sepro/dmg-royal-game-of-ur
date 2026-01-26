@@ -41,15 +41,27 @@
 #define CHAR_Y 25
 #define CHAR_Z 26
 #define CHAR_BLANK 27  // Solid black tile for text background
+#define CHAR_WHITE 28  // Solid white tile for inverted text background
+
+// Inverted font configuration (black text on white background)
+#define FONT_INVERTED_TILE_START 168  // After regular font (140 + 28)
+#define FONT_INVERTED_CHAR_COUNT 29   // 26 letters + space + blank + white
 
 // Font tile data (defined in font.c)
 extern const uint8_t font_tiles[];
+extern const uint8_t font_tiles_inverted[];
 
 /**
  * Load font tiles into VRAM
  * Call this after loading background tiles
  */
 void load_font(void);
+
+/**
+ * Load inverted font tiles into VRAM (black text on white background)
+ * For use on white background screens
+ */
+void load_font_inverted(void);
 
 /**
  * Draw a string at the specified tile position
@@ -67,5 +79,22 @@ void draw_text(uint8_t x, uint8_t y, const char *str);
  * @param width Number of tiles to clear
  */
 void clear_text_row(uint8_t x, uint8_t y, uint8_t width);
+
+/**
+ * Draw a string using inverted font (black text on white background)
+ * Uses FONT_INVERTED_TILE_START as base
+ * @param x Tile X position (0-19)
+ * @param y Tile Y position (0-17)
+ * @param str String to draw (uppercase, limited charset)
+ */
+void draw_text_inverted(uint8_t x, uint8_t y, const char *str);
+
+/**
+ * Clear a row of tiles with white background (for inverted text screens)
+ * @param x Starting tile X position
+ * @param y Tile Y position
+ * @param width Number of tiles to clear
+ */
+void clear_text_row_inverted(uint8_t x, uint8_t y, uint8_t width);
 
 #endif // FONT_H

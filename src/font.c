@@ -444,6 +444,285 @@ const uint8_t font_tiles[] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 };
 
+/*
+ * Inverted font tile data - 8x8 pixels, 2bpp format
+ * Black text (color 3) on white background (color 0)
+ * All bytes are XOR'd with 0xFF compared to font_tiles
+ */
+const uint8_t font_tiles_inverted[] = {
+    // CHAR_SPACE (index 0) - all white
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+
+    // CHAR_A (index 1)
+    0x00, 0x00,  // row 0: all white (top margin)
+    0x3C, 0x3C,  // row 1: .####.
+    0x66, 0x66,  // row 2: ##..##
+    0x66, 0x66,  // row 3: ##..##
+    0x7E, 0x7E,  // row 4: ######
+    0x66, 0x66,  // row 5: ##..##
+    0x66, 0x66,  // row 6: ##..##
+    0x00, 0x00,  // row 7: all white (bottom margin)
+
+    // CHAR_B (index 2)
+    0x00, 0x00,
+    0x7C, 0x7C,  // #####.
+    0x66, 0x66,  // ##..##
+    0x7C, 0x7C,  // #####.
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x7C, 0x7C,  // #####.
+    0x00, 0x00,
+
+    // CHAR_C (index 3)
+    0x00, 0x00,
+    0x3C, 0x3C,  // .####.
+    0x66, 0x66,  // ##..##
+    0x60, 0x60,  // ##....
+    0x60, 0x60,  // ##....
+    0x66, 0x66,  // ##..##
+    0x3C, 0x3C,  // .####.
+    0x00, 0x00,
+
+    // CHAR_D (index 4)
+    0x00, 0x00,
+    0x78, 0x78,  // ####..
+    0x6C, 0x6C,  // ##.##.
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x6C, 0x6C,  // ##.##.
+    0x78, 0x78,  // ####..
+    0x00, 0x00,
+
+    // CHAR_E (index 5)
+    0x00, 0x00,
+    0x7E, 0x7E,  // ######
+    0x60, 0x60,  // ##....
+    0x78, 0x78,  // #####.
+    0x60, 0x60,  // ##....
+    0x60, 0x60,  // ##....
+    0x7E, 0x7E,  // ######
+    0x00, 0x00,
+
+    // CHAR_F (index 6)
+    0x00, 0x00,
+    0x7E, 0x7E,  // ######
+    0x60, 0x60,  // ##....
+    0x78, 0x78,  // #####.
+    0x60, 0x60,  // ##....
+    0x60, 0x60,  // ##....
+    0x60, 0x60,  // ##....
+    0x00, 0x00,
+
+    // CHAR_G (index 7)
+    0x00, 0x00,
+    0x3C, 0x3C,  // .####.
+    0x60, 0x60,  // ##....
+    0x6E, 0x6E,  // ##.###
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x3C, 0x3C,  // .####.
+    0x00, 0x00,
+
+    // CHAR_H (index 8)
+    0x00, 0x00,
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x7E, 0x7E,  // ######
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x00, 0x00,
+
+    // CHAR_I (index 9)
+    0x00, 0x00,
+    0x7E, 0x7E,  // ######
+    0x18, 0x18,  // ..##..
+    0x18, 0x18,  // ..##..
+    0x18, 0x18,  // ..##..
+    0x18, 0x18,  // ..##..
+    0x7E, 0x7E,  // ######
+    0x00, 0x00,
+
+    // CHAR_J (index 10)
+    0x00, 0x00,
+    0x06, 0x06,  // ....##
+    0x06, 0x06,  // ....##
+    0x06, 0x06,  // ....##
+    0x06, 0x06,  // ....##
+    0x66, 0x66,  // ##..##
+    0x3C, 0x3C,  // .####.
+    0x00, 0x00,
+
+    // CHAR_K (index 11)
+    0x00, 0x00,
+    0x66, 0x66,  // ##..##
+    0x6C, 0x6C,  // ##.##.
+    0x78, 0x78,  // ####..
+    0x78, 0x78,  // ####..
+    0x6C, 0x6C,  // ##.##.
+    0x66, 0x66,  // ##..##
+    0x00, 0x00,
+
+    // CHAR_L (index 12)
+    0x00, 0x00,
+    0x60, 0x60,  // ##....
+    0x60, 0x60,  // ##....
+    0x60, 0x60,  // ##....
+    0x60, 0x60,  // ##....
+    0x60, 0x60,  // ##....
+    0x7E, 0x7E,  // ######
+    0x00, 0x00,
+
+    // CHAR_M (index 13)
+    0x00, 0x00,
+    0x66, 0x66,  // ##..##
+    0x7E, 0x7E,  // ######
+    0x7E, 0x7E,  // ######
+    0x76, 0x76,  // ##.###
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x00, 0x00,
+
+    // CHAR_N (index 14)
+    0x00, 0x00,
+    0x66, 0x66,  // ##..##
+    0x76, 0x76,  // ###.##
+    0x7E, 0x7E,  // ######
+    0x6E, 0x6E,  // ##.###
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x00, 0x00,
+
+    // CHAR_O (index 15)
+    0x00, 0x00,
+    0x3C, 0x3C,  // .####.
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x3C, 0x3C,  // .####.
+    0x00, 0x00,
+
+    // CHAR_P (index 16)
+    0x00, 0x00,
+    0x7C, 0x7C,  // #####.
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x7C, 0x7C,  // #####.
+    0x60, 0x60,  // ##....
+    0x60, 0x60,  // ##....
+    0x00, 0x00,
+
+    // CHAR_Q (index 17)
+    0x00, 0x00,
+    0x3C, 0x3C,  // .####.
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x6C, 0x6C,  // ##.##.
+    0x3A, 0x3A,  // .###.#
+    0x00, 0x00,
+
+    // CHAR_R (index 18)
+    0x00, 0x00,
+    0x7C, 0x7C,  // #####.
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x7C, 0x7C,  // #####.
+    0x6C, 0x6C,  // ##.##.
+    0x66, 0x66,  // ##..##
+    0x00, 0x00,
+
+    // CHAR_S (index 19)
+    0x00, 0x00,
+    0x3C, 0x3C,  // .####.
+    0x60, 0x60,  // ##....
+    0x3C, 0x3C,  // .####.
+    0x06, 0x06,  // ....##
+    0x06, 0x06,  // ....##
+    0x7C, 0x7C,  // #####.
+    0x00, 0x00,
+
+    // CHAR_T (index 20)
+    0x00, 0x00,
+    0x7E, 0x7E,  // ######
+    0x18, 0x18,  // ..##..
+    0x18, 0x18,  // ..##..
+    0x18, 0x18,  // ..##..
+    0x18, 0x18,  // ..##..
+    0x18, 0x18,  // ..##..
+    0x00, 0x00,
+
+    // CHAR_U (index 21)
+    0x00, 0x00,
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x3C, 0x3C,  // .####.
+    0x00, 0x00,
+
+    // CHAR_V (index 22)
+    0x00, 0x00,
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x3C, 0x3C,  // .####.
+    0x18, 0x18,  // ..##..
+    0x00, 0x00,
+
+    // CHAR_W (index 23)
+    0x00, 0x00,
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x76, 0x76,  // ##.###
+    0x7E, 0x7E,  // ######
+    0x7E, 0x7E,  // ######
+    0x66, 0x66,  // ##..##
+    0x00, 0x00,
+
+    // CHAR_X (index 24)
+    0x00, 0x00,
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x3C, 0x3C,  // .####.
+    0x3C, 0x3C,  // .####.
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x00, 0x00,
+
+    // CHAR_Y (index 25)
+    0x00, 0x00,
+    0x66, 0x66,  // ##..##
+    0x66, 0x66,  // ##..##
+    0x3C, 0x3C,  // .####.
+    0x18, 0x18,  // ..##..
+    0x18, 0x18,  // ..##..
+    0x18, 0x18,  // ..##..
+    0x00, 0x00,
+
+    // CHAR_Z (index 26)
+    0x00, 0x00,
+    0x7E, 0x7E,  // ######
+    0x06, 0x06,  // ....##
+    0x0C, 0x0C,  // ...##.
+    0x18, 0x18,  // ..##..
+    0x30, 0x30,  // .##...
+    0x7E, 0x7E,  // ######
+    0x00, 0x00,
+
+    // CHAR_BLANK (index 27) - solid black for contrast
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+
+    // CHAR_WHITE (index 28) - solid white for inverted background clearing
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+
 /**
  * Load font tiles into VRAM starting at FONT_TILE_START
  */
@@ -513,6 +792,80 @@ void clear_text_row(uint8_t x, uint8_t y, uint8_t width) {
 
     for (uint8_t i = 0; i < width && i < 20; i++) {
         tile_buf[i] = blank_tile;
+    }
+
+    set_bkg_tiles(x, y, width, 1, tile_buf);
+}
+
+/**
+ * Load inverted font tiles into VRAM starting at FONT_INVERTED_TILE_START
+ */
+void load_font_inverted(void) {
+    set_bkg_data(FONT_INVERTED_TILE_START, FONT_INVERTED_CHAR_COUNT, font_tiles_inverted);
+}
+
+/**
+ * Convert ASCII character to inverted font tile index
+ */
+static uint8_t char_to_tile_inverted(char c) {
+    switch (c) {
+        case ' ': return FONT_INVERTED_TILE_START + CHAR_SPACE;
+        case 'A': return FONT_INVERTED_TILE_START + CHAR_A;
+        case 'B': return FONT_INVERTED_TILE_START + CHAR_B;
+        case 'C': return FONT_INVERTED_TILE_START + CHAR_C;
+        case 'D': return FONT_INVERTED_TILE_START + CHAR_D;
+        case 'E': return FONT_INVERTED_TILE_START + CHAR_E;
+        case 'F': return FONT_INVERTED_TILE_START + CHAR_F;
+        case 'G': return FONT_INVERTED_TILE_START + CHAR_G;
+        case 'H': return FONT_INVERTED_TILE_START + CHAR_H;
+        case 'I': return FONT_INVERTED_TILE_START + CHAR_I;
+        case 'J': return FONT_INVERTED_TILE_START + CHAR_J;
+        case 'K': return FONT_INVERTED_TILE_START + CHAR_K;
+        case 'L': return FONT_INVERTED_TILE_START + CHAR_L;
+        case 'M': return FONT_INVERTED_TILE_START + CHAR_M;
+        case 'N': return FONT_INVERTED_TILE_START + CHAR_N;
+        case 'O': return FONT_INVERTED_TILE_START + CHAR_O;
+        case 'P': return FONT_INVERTED_TILE_START + CHAR_P;
+        case 'Q': return FONT_INVERTED_TILE_START + CHAR_Q;
+        case 'R': return FONT_INVERTED_TILE_START + CHAR_R;
+        case 'S': return FONT_INVERTED_TILE_START + CHAR_S;
+        case 'T': return FONT_INVERTED_TILE_START + CHAR_T;
+        case 'U': return FONT_INVERTED_TILE_START + CHAR_U;
+        case 'V': return FONT_INVERTED_TILE_START + CHAR_V;
+        case 'W': return FONT_INVERTED_TILE_START + CHAR_W;
+        case 'X': return FONT_INVERTED_TILE_START + CHAR_X;
+        case 'Y': return FONT_INVERTED_TILE_START + CHAR_Y;
+        case 'Z': return FONT_INVERTED_TILE_START + CHAR_Z;
+        default:  return FONT_INVERTED_TILE_START + CHAR_SPACE;  // Unknown chars become space
+    }
+}
+
+/**
+ * Draw a string using inverted font (black text on white background)
+ */
+void draw_text_inverted(uint8_t x, uint8_t y, const char *str) {
+    uint8_t tile_buf[20];  // Max 20 tiles per row
+    uint8_t i = 0;
+
+    while (str[i] != '\0' && i < 20) {
+        tile_buf[i] = char_to_tile_inverted(str[i]);
+        i++;
+    }
+
+    if (i > 0) {
+        set_bkg_tiles(x, y, i, 1, tile_buf);
+    }
+}
+
+/**
+ * Clear a row of tiles with white background (for inverted text screens)
+ */
+void clear_text_row_inverted(uint8_t x, uint8_t y, uint8_t width) {
+    uint8_t tile_buf[20];
+    uint8_t white_tile = (uint8_t)(FONT_INVERTED_TILE_START + CHAR_WHITE);
+
+    for (uint8_t i = 0; i < width && i < 20; i++) {
+        tile_buf[i] = white_tile;
     }
 
     set_bkg_tiles(x, y, width, 1, tile_buf);

@@ -9,6 +9,7 @@
 #include "game_types.h"
 #include "difficulty_select.h"
 #include "opponent_select.h"
+#include "opponent_data.h"
 #include "font.h"
 
 // External references to generated profile assets
@@ -39,17 +40,6 @@ static const uint8_t arrow_sprite_index = 0;
 static const uint8_t white_tile[16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-
-// Tile counts per profile (same as opponent_select.c)
-static const uint8_t profile_tile_counts[OPPONENT_COUNT] = {25, 21, 20, 20};
-
-// Opponent names (reference same data as opponent_select)
-static const char *opponent_names[OPPONENT_COUNT] = {
-    "THE SCHOLAR",
-    "THE MERCHANT",
-    "THE MUSICIAN",
-    "THE PRIESTESS"
 };
 
 // Difficulty option labels

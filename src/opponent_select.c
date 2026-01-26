@@ -9,6 +9,7 @@
 #include <string.h>
 #include "game_types.h"
 #include "opponent_select.h"
+#include "opponent_data.h"
 #include "font.h"
 
 // External references to generated profile assets
@@ -44,24 +45,6 @@ static const uint8_t portrait_x[OPPONENT_COUNT] = {
 // Portrait Y positions (tile coordinates)
 static const uint8_t portrait_y[OPPONENT_COUNT] = {
     PORTRAIT_0_Y, PORTRAIT_1_Y, PORTRAIT_2_Y, PORTRAIT_3_Y
-};
-
-// Tile counts per profile (calculated from generated asset sizes)
-static const uint8_t profile_tile_counts[OPPONENT_COUNT] = {25, 21, 20, 20};
-
-// Opponent descriptions (max 18 chars to fit in DESC_TEXT_WIDTH)
-static const char *opponent_names[OPPONENT_COUNT] = {
-    "THE SCHOLAR",
-    "THE MERCHANT",
-    "THE MUSICIAN",
-    "THE PRIESTESS"
-};
-
-static const char *opponent_descs[OPPONENT_COUNT] = {
-    "WISE AND PATIENT",
-    "CUNNING TRADER",
-    "MELODIC SOUL",
-    "DIVINE GUIDANCE"
 };
 
 /**

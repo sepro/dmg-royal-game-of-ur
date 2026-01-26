@@ -37,6 +37,12 @@ static uint8_t prev_selection = 0;
 // Input state for edge detection
 static uint8_t prev_input = 0;
 
+// Transition animation state
+static uint8_t transition_timer = 0;
+static uint8_t transition_phase = TRANSITION_IDLE;
+static ScreenState_t transition_target = STATE_OPPONENT_SELECT;
+static uint8_t transition_phase_count = 0;
+
 // Portrait X positions (tile coordinates)
 static const uint8_t portrait_x[OPPONENT_COUNT] = {
     PORTRAIT_0_X, PORTRAIT_1_X, PORTRAIT_2_X, PORTRAIT_3_X
@@ -186,6 +192,51 @@ static const uint8_t black_tile[16] = {
 };
 
 /**
+ * Start a screen transition animation
+ */
+static void transition_start(ScreenState_t target, uint8_t phase_count) {
+    transition_phase = 0;
+    transition_timer = TRANSITION_FLASH_DURATION;
+    transition_target = target;
+    transition_phase_count = phase_count;
+    DISPLAY_OFF;
+}
+
+/**
+ * Update transition animation (called every frame)
+ * Returns 1 if transition is active, 0 if complete
+ */
+static uint8_t update_transition(void) {
+    if (transition_phase == TRANSITION_IDLE) {
+        return 0;
+    }
+
+    if (transition_timer > 0) {
+        transition_timer--;
+        return 1;
+    }
+
+    transition_phase++;
+
+    if (transition_phase >= transition_phase_count) {
+        transition_phase = TRANSITION_IDLE;
+        DISPLAY_ON;
+        next_state = transition_target;
+        return 0;
+    }
+
+    transition_timer = TRANSITION_FLASH_DURATION;
+
+    if (transition_phase & 1) {
+        DISPLAY_ON;
+    } else {
+        DISPLAY_OFF;
+    }
+
+    return 1;
+}
+
+/**
  * Initialize opponent selection screen
  */
 void init_opponent_select(void) {
@@ -240,6 +291,10 @@ void init_opponent_select(void) {
     // Draw initial description
     update_description(selected_opponent);
 
+    // Initialize transition state
+    transition_phase = TRANSITION_IDLE;
+    transition_timer = 0;
+
     // Clear previous input state
     prev_input = 0;
 
@@ -252,6 +307,11 @@ void init_opponent_select(void) {
  * Update opponent selection screen (called every frame)
  */
 void update_opponent_select(void) {
+    // Update transition animation if active
+    if (update_transition()) {
+        return;  // Skip input handling during transition
+    }
+
     uint8_t input = joypad();
     uint8_t pressed = input & ~prev_input;  // Edge detection
 
@@ -296,17 +356,7 @@ void update_opponent_select(void) {
 
     // Handle A button (confirm selection)
     if (pressed & J_A) {
-        // Flash screen as transition effect
-        DISPLAY_OFF;
-        delay(50);
-        DISPLAY_ON;
-        delay(50);
-        DISPLAY_OFF;
-        delay(50);
-        DISPLAY_ON;
-
-        // Transition to difficulty select
-        next_state = STATE_DIFFICULTY_SELECT;
+        transition_start(STATE_DIFFICULTY_SELECT, TRANSITION_PHASE_COUNT_3);
     }
 
     // Handle B button (go back to title)
@@ -322,5 +372,7 @@ void update_opponent_select(void) {
  * Cleanup opponent selection screen
  */
 void cleanup_opponent_select(void) {
-    // Nothing to clean up (no sprites used)
+    // Ensure display is on and clear transition state
+    DISPLAY_ON;
+    transition_phase = TRANSITION_IDLE;
 }

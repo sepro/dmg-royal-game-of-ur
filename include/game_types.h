@@ -63,4 +63,10 @@ typedef enum {
 #define BLINK_STATE_HIDDEN 0
 #define BLINK_STATE_ANIMATING 1
 
+// Screen transition animation constants
+#define TRANSITION_FLASH_DURATION 3        // Frames per flash (~50ms at 60fps)
+#define TRANSITION_PHASE_COUNT_3 4         // OFF-ON-OFF-ON = 4 phases
+#define TRANSITION_PHASE_COUNT_1 2         // OFF-ON = 2 phases (link cable feedback)
+#define TRANSITION_IDLE 0xFF               // No transition active
+
 #endif // GAME_TYPES_H

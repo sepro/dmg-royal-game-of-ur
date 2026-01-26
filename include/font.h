@@ -49,7 +49,6 @@
 
 // Font tile data (defined in font.c)
 extern const uint8_t font_tiles[];
-extern const uint8_t font_tiles_inverted[];
 
 /**
  * Load font tiles into VRAM
@@ -60,6 +59,9 @@ void load_font(void);
 /**
  * Load inverted font tiles into VRAM (black text on white background)
  * For use on white background screens
+ *
+ * Generates inverted tiles at runtime by XOR'ing normal font with 0xFF
+ * This saves ~464 bytes of ROM compared to storing pre-inverted data
  */
 void load_font_inverted(void);
 

@@ -11,6 +11,7 @@
 #include "opponent_select.h"
 #include "opponent_data.h"
 #include "font.h"
+#include "input.h"
 
 // External references to generated profile assets
 extern const uint8_t profile_01_tiles[];
@@ -33,7 +34,6 @@ uint8_t selected_difficulty = DIFFICULTY_MEDIUM;
 
 // Local state
 static uint8_t current_selection = DIFFICULTY_MEDIUM;
-static uint8_t prev_input = 0;
 static const uint8_t arrow_sprite_index = 0;
 
 // Transition animation state
@@ -202,7 +202,8 @@ void init_difficulty_select(void) {
     transition_phase = TRANSITION_IDLE;
     transition_timer = 0;
 
-    prev_input = 0;
+    // Clear input state
+    input_reset();
 
     SHOW_BKG;
     SHOW_SPRITES;
@@ -218,17 +219,17 @@ void update_difficulty_select(void) {
         return;  // Skip input handling during transition
     }
 
-    uint8_t input = joypad();
-    uint8_t pressed = input & ~prev_input;
+    // Update input state
+    input_update();
 
     // Navigate up/down
-    if (pressed & J_UP) {
+    if (input_pressed(J_UP)) {
         if (current_selection > 0) {
             current_selection--;
             move_sprite(arrow_sprite_index, DIFF_ARROW_X,
                        DIFF_ARROW_START_Y + (current_selection * DIFF_ARROW_SPACING));
         }
-    } else if (pressed & J_DOWN) {
+    } else if (input_pressed(J_DOWN)) {
         if (current_selection < DIFFICULTY_COUNT - 1) {
             current_selection++;
             move_sprite(arrow_sprite_index, DIFF_ARROW_X,
@@ -237,17 +238,15 @@ void update_difficulty_select(void) {
     }
 
     // Confirm with A
-    if (pressed & J_A) {
+    if (input_pressed(J_A)) {
         selected_difficulty = current_selection;
         transition_start(STATE_COINFLIP, TRANSITION_PHASE_COUNT_3);
     }
 
     // Back with B
-    if (pressed & J_B) {
+    if (input_pressed(J_B)) {
         next_state = STATE_OPPONENT_SELECT;
     }
-
-    prev_input = input;
 }
 
 /**

@@ -8,6 +8,7 @@
 #include "game_types.h"
 #include "title.h"
 #include "font.h"
+#include "input.h"
 
 // Forward declarations for generated assets
 // (Actual data is compiled separately from assets/generated/*.h)
@@ -22,9 +23,6 @@ extern ScreenState_t next_state;
 // Title screen state
 static uint8_t selected_option = MENU_START_GAME;
 static uint8_t arrow_sprite_index = 0;
-
-// Input state for edge detection
-static uint8_t prev_input = 0;
 
 // Blink animation state
 static uint8_t blink_state;        // BLINK_STATE_HIDDEN or BLINK_STATE_ANIMATING
@@ -200,8 +198,8 @@ void init_title(void) {
     transition_phase = TRANSITION_IDLE;
     transition_timer = 0;
 
-    // Clear previous input state
-    prev_input = 0;
+    // Clear input state
+    input_reset();
 
     // Enable display
     SHOW_BKG;
@@ -218,19 +216,19 @@ void update_title(void) {
         return;  // Skip input handling during transition
     }
 
-    uint8_t input = joypad();
-    uint8_t pressed = input & ~prev_input;  // Edge detection: newly pressed buttons
+    // Update input state
+    input_update();
 
     // Update sparkle animation
     update_blink();
 
     // Handle up/down navigation
-    if (pressed & J_UP) {
+    if (input_pressed(J_UP)) {
         if (selected_option > 0) {
             selected_option--;
             move_sprite(arrow_sprite_index, ARROW_X, ARROW_START_Y + (selected_option * ARROW_SPACING));
         }
-    } else if (pressed & J_DOWN) {
+    } else if (input_pressed(J_DOWN)) {
         if (selected_option < MENU_OPTION_COUNT - 1) {
             selected_option++;
             move_sprite(arrow_sprite_index, ARROW_X, ARROW_START_Y + (selected_option * ARROW_SPACING));
@@ -238,16 +236,13 @@ void update_title(void) {
     }
 
     // Handle A button (confirm selection)
-    if (pressed & J_A) {
+    if (input_pressed(J_A)) {
         if (selected_option == MENU_START_GAME) {
             transition_start(STATE_OPPONENT_SELECT, TRANSITION_PHASE_COUNT_3);
         } else if (selected_option == MENU_LINK_CABLE) {
             transition_start(STATE_TITLE, TRANSITION_PHASE_COUNT_1);
         }
     }
-
-    // Store current input for next frame
-    prev_input = input;
 }
 
 /**

@@ -11,6 +11,7 @@
 #include "opponent_select.h"
 #include "opponent_data.h"
 #include "font.h"
+#include "input.h"
 
 // External references to generated profile assets
 extern const uint8_t profile_01_tiles[];
@@ -33,9 +34,6 @@ uint8_t selected_opponent = 0;
 
 // Previous selection (for redrawing border)
 static uint8_t prev_selection = 0;
-
-// Input state for edge detection
-static uint8_t prev_input = 0;
 
 // Transition animation state
 static uint8_t transition_timer = 0;
@@ -295,8 +293,8 @@ void init_opponent_select(void) {
     transition_phase = TRANSITION_IDLE;
     transition_timer = 0;
 
-    // Clear previous input state
-    prev_input = 0;
+    // Clear input state
+    input_reset();
 
     // Enable display
     SHOW_BKG;
@@ -312,27 +310,27 @@ void update_opponent_select(void) {
         return;  // Skip input handling during transition
     }
 
-    uint8_t input = joypad();
-    uint8_t pressed = input & ~prev_input;  // Edge detection
+    // Update input state
+    input_update();
 
     uint8_t new_selection = selected_opponent;
     uint8_t col = grid_col(selected_opponent);
     uint8_t row = grid_row(selected_opponent);
 
     // Handle D-pad navigation
-    if (pressed & J_LEFT) {
+    if (input_pressed(J_LEFT)) {
         if (col > 0) {
             new_selection--;
         }
-    } else if (pressed & J_RIGHT) {
+    } else if (input_pressed(J_RIGHT)) {
         if (col < 1) {
             new_selection++;
         }
-    } else if (pressed & J_UP) {
+    } else if (input_pressed(J_UP)) {
         if (row > 0) {
             new_selection -= 2;
         }
-    } else if (pressed & J_DOWN) {
+    } else if (input_pressed(J_DOWN)) {
         if (row < 1) {
             new_selection += 2;
         }
@@ -355,17 +353,14 @@ void update_opponent_select(void) {
     }
 
     // Handle A button (confirm selection)
-    if (pressed & J_A) {
+    if (input_pressed(J_A)) {
         transition_start(STATE_DIFFICULTY_SELECT, TRANSITION_PHASE_COUNT_3);
     }
 
     // Handle B button (go back to title)
-    if (pressed & J_B) {
+    if (input_pressed(J_B)) {
         next_state = STATE_TITLE;
     }
-
-    // Store current input for next frame
-    prev_input = input;
 }
 
 /**

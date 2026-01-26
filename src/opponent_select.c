@@ -196,12 +196,21 @@ static inline uint8_t grid_row(uint8_t idx) {
     return idx >> 1;  // 0 or 1
 }
 
+// Black tile data (8x8 pixels, all color 3 = black on DMG)
+static const uint8_t black_tile[16] = {
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+};
+
 /**
  * Initialize opponent selection screen
  */
 void init_opponent_select(void) {
     // Disable display during VRAM writes
     DISPLAY_OFF;
+
+    // Load black tile at index 0 (may have been overwritten by other screens)
+    set_bkg_data(BLANK_TILE, 1, black_tile);
 
     // Clear the entire screen with black tiles
     clear_rect(0, 0, 20, 18);

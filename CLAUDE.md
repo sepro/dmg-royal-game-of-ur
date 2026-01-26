@@ -114,6 +114,29 @@ png2asset assets/sprites/pieces.png -o assets/generated/pieces.c -sw 8 -sh 8
 
 Document exact `png2asset` commands used in comments at the top of generated files or in a separate `assets/README.md`.
 
+## VRAM Management
+
+All VRAM tile allocations are documented in `include/vram_layout.h`. Before adding new graphics:
+1. Check available tile ranges in vram_layout.h
+2. Update the allocation map with your new tiles
+3. Reference the centralized constants (e.g., `VRAM_FONT_START`) in your code
+4. Verify compile-time validations pass (make will error on conflicts)
+
+Current allocation:
+- **Background tiles:** 197 used, 59 available (197-255)
+  - Tiles 0-138: Title screen (screen-isolated, overlaps with other screens)
+  - Tiles 1-94: Opponent select (screen-isolated)
+  - Tiles 1-24: Difficulty select (screen-isolated)
+  - Tiles 140-196: Font system (SHARED, persists across screens)
+  - Tiles 197-220: Reserved for Phase 5 coin flip
+  - Tiles 221-255: Reserved for Phase 6 game board
+- **Sprite tiles:** 5 used, 251 available (5-255)
+  - Tile 0: Arrow cursor
+  - Tiles 1-4: Blink animation
+  - Tiles 5-255: Available for game pieces, dice, etc.
+
+**Screen Isolation:** Title, opponent select, and difficulty screens each fully reload VRAM on entry, so tiles 0-138 can be reused. Only font tiles (140-196) persist across transitions.
+
 ## State Machine
 
 The game uses a central state machine. All screens are states:

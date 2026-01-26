@@ -7,6 +7,7 @@
 #define OPPONENT_SELECT_H
 
 #include <stdint.h>
+#include "vram_layout.h"  // See vram_layout.h for global allocation map
 
 // Number of opponents
 #define OPPONENT_COUNT 4
@@ -35,9 +36,9 @@
 #define DESC_TEXT_WIDTH 18
 
 // VRAM tile indices
-#define PORTRAIT_TILE_START 1     // Profile tiles start at 1 (0 is blank/black)
-#define BORDER_TILE_START 87      // Border tiles after portraits (25+21+20+20=86 portrait tiles)
-#define BLANK_TILE 0              // Black/empty tile
+#define PORTRAIT_TILE_START VRAM_OPPONENT_PORTRAITS_START
+#define BORDER_TILE_START VRAM_BORDER_START
+#define BLANK_TILE 0              // Black/empty tile (screen-specific semantic constant)
 
 // Selected opponent (readable by other modules)
 extern uint8_t selected_opponent;

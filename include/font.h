@@ -7,10 +7,11 @@
 #define FONT_H
 
 #include <stdint.h>
+#include "vram_layout.h"  // See vram_layout.h for global allocation map
 
 // Font configuration
-#define FONT_TILE_START 140  // Start loading font tiles after title tiles (139 used)
-#define FONT_CHAR_COUNT 28   // Number of characters in font (26 letters + space + blank)
+#define FONT_TILE_START VRAM_FONT_START
+#define FONT_CHAR_COUNT VRAM_FONT_COUNT
 
 // Character indices (offset from FONT_TILE_START)
 #define CHAR_SPACE 0
@@ -44,8 +45,8 @@
 #define CHAR_WHITE 28  // Solid white tile for inverted text background
 
 // Inverted font configuration (black text on white background)
-#define FONT_INVERTED_TILE_START 168  // After regular font (140 + 28)
-#define FONT_INVERTED_CHAR_COUNT 29   // 26 letters + space + blank + white
+#define FONT_INVERTED_TILE_START VRAM_FONT_INVERTED_START
+#define FONT_INVERTED_CHAR_COUNT VRAM_FONT_INVERTED_COUNT
 
 // Font tile data (defined in font.c)
 extern const uint8_t font_tiles[];

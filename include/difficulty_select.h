@@ -7,6 +7,7 @@
 #define DIFFICULTY_SELECT_H
 
 #include <stdint.h>
+#include "vram_layout.h"  // See vram_layout.h for global allocation map
 
 // Difficulty levels
 #define DIFFICULTY_EASY   0
@@ -30,8 +31,8 @@
 #define DIFF_ARROW_SPACING   8     // 1 tile row = 8 pixels
 
 // VRAM tile indices for this screen
-#define WHITE_TILE           0     // Tile 0 will be solid white (color 0)
-#define DIFF_PORTRAIT_TILE_START 1
+#define WHITE_TILE           0     // Tile 0 will be solid white (screen-specific semantic constant)
+#define DIFF_PORTRAIT_TILE_START VRAM_DIFF_PORTRAIT_START
 
 // Selected difficulty (readable by other modules)
 extern uint8_t selected_difficulty;

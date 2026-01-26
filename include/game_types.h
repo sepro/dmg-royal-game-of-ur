@@ -8,6 +8,7 @@
 #define GAME_TYPES_H
 
 #include <stdint.h>
+#include "vram_layout.h"  // See vram_layout.h for global allocation map
 
 // Screen states for the game state machine
 typedef enum {
@@ -47,7 +48,7 @@ typedef enum {
 
 // Blink sprite configuration (Phase 2)
 #define BLINK_SPRITE_INDEX 1      // OAM entry (arrow uses 0)
-#define BLINK_TILE_START 1        // Sprite VRAM tile index (arrow uses 0)
+#define BLINK_TILE_START VRAM_SPRITE_BLINK_START
 #define BLINK_FRAME_COUNT 4
 #define BLINK_ANIM_SPEED 6        // Frames per animation frame (~0.1s at 60fps)
 #define BLINK_DELAY_MIN 30        // Min frames hidden (~0.5s)

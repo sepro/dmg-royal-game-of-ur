@@ -17,6 +17,8 @@ A Game Boy DMG ROM implementing the Royal Game of Ur, built with GBDK-2020. This
 
 ### Build using the build-validator agent
 
+Make sure to add new dependencies and headers (.h) to @Makefile before building.
+
 Always use the build-validator agent to test building the rom! The agent will run the commands below and report if the build was successfull. If not it will point out the issue that needs to be tackled.
 
 ```bash

@@ -14,7 +14,8 @@
       "Bash(grep:*)",
       "Bash(wc:*)",
       "Bash(png2asset:*)",
-      "Bash($GBDK_HOME/bin/png2asset)"
+      "Bash($GBDK_HOME/bin/png2asset)",
+      "Bash(test:*)"
     ]
   }
 }

@@ -64,6 +64,28 @@
 #define VRAM_DIFF_PORTRAIT_COUNT 25  // Selected opponent's portrait (5x5 tiles)
 
 /* ----------------------------------------------------------------------------
+ * Coin Flip Screen (Tiles 0-58) - Screen-isolated
+ * Overlaps with title/opponent/difficulty screens (each reloads on entry)
+ * ---------------------------------------------------------------------------- */
+// Tile 0: White tile (screen-specific)
+#define VRAM_COINFLIP_WHITE_TILE 0
+
+// Light coin: 5x5 = 25 tiles
+#define VRAM_COINFLIP_LIGHT_START 1
+#define VRAM_COINFLIP_LIGHT_END 25
+#define VRAM_COINFLIP_LIGHT_COUNT 25
+
+// Dark coin: 5x5 = 25 tiles
+#define VRAM_COINFLIP_DARK_START 26
+#define VRAM_COINFLIP_DARK_END 50
+#define VRAM_COINFLIP_DARK_COUNT 25
+
+// Border tiles: 8 tiles (reused pattern from opponent select)
+#define VRAM_COINFLIP_BORDER_START 51
+#define VRAM_COINFLIP_BORDER_END 58
+#define VRAM_COINFLIP_BORDER_COUNT 8
+
+/* ----------------------------------------------------------------------------
  * Font System (Tiles 140-196) - SHARED across all screens
  * These tiles persist across screen transitions and are never reloaded
  * ---------------------------------------------------------------------------- */
@@ -79,31 +101,23 @@
 #define VRAM_FONT_INVERTED_COUNT 29
 
 /* ----------------------------------------------------------------------------
- * Phase 5: Coin Flip Screen (Tiles 197-220) - RESERVED
- * Estimated requirement: ~24 tiles for coin animation + UI elements
- * ---------------------------------------------------------------------------- */
-#define VRAM_COINFLIP_START 197
-#define VRAM_COINFLIP_END 220
-#define VRAM_COINFLIP_COUNT 24
-
-/* ----------------------------------------------------------------------------
- * Phase 6: Game Board (Tiles 221-255) - RESERVED
- * Estimated requirement: ~35 tiles for board graphics + UI
- * NOTE: This is a tight allocation. May need optimization via:
+ * Phase 6: Game Board (Tiles 197-255) - RESERVED
+ * Now has 59 tiles available (197-255) since coin flip uses screen-isolated tiles
+ * NOTE: May need optimization via:
  *   - Reusing symmetrical tiles
  *   - Using sprites for some UI elements
  *   - Palette tricks for color variation
  * ---------------------------------------------------------------------------- */
-#define VRAM_GAMEBOARD_START 221
+#define VRAM_GAMEBOARD_START 197
 #define VRAM_GAMEBOARD_END 255
-#define VRAM_GAMEBOARD_COUNT 35
+#define VRAM_GAMEBOARD_COUNT 59
 
 /* ----------------------------------------------------------------------------
  * Background Tile Budget Summary
  * ---------------------------------------------------------------------------- */
 #define VRAM_BG_TOTAL 256
-#define VRAM_BG_USED 197   // Peak usage: difficulty screen with inverted font
-#define VRAM_BG_AVAILABLE 59  // Tiles 197-255 free for future phases
+#define VRAM_BG_USED 197   // Peak usage: font system + reserved game board start
+#define VRAM_BG_AVAILABLE 59  // Tiles 197-255 available for game board
 
 /* ============================================================================
  * SPRITE TILES (256 total, 0-255, separate address space)
@@ -151,14 +165,9 @@
 #error "VRAM conflict: Font overlaps with opponent select border tiles"
 #endif
 
-// Verify inverted font fits before reserved ranges
-#if VRAM_FONT_INVERTED_END >= VRAM_COINFLIP_START
-#error "VRAM conflict: Inverted font overlaps with coin flip reserved range"
-#endif
-
-// Verify coin flip and game board ranges don't overlap
-#if VRAM_COINFLIP_END >= VRAM_GAMEBOARD_START
-#error "VRAM conflict: Coin flip overlaps with game board reserved range"
+// Verify inverted font fits before game board reserved range
+#if VRAM_FONT_INVERTED_END >= VRAM_GAMEBOARD_START
+#error "VRAM conflict: Inverted font overlaps with game board reserved range"
 #endif
 
 // Verify game board doesn't exceed VRAM
@@ -177,8 +186,8 @@
  *
  * Screen Isolation vs. Shared Tiles:
  * ----------------------------------
- * - Title, opponent select, and difficulty screens each completely reload
- *   VRAM on entry, so tiles 0-138 can be reused across these screens
+ * - Title, opponent select, difficulty, and coin flip screens each completely
+ *   reload VRAM on entry, so tiles 0-138 can be reused across these screens
  * - Font tiles (140-196) are loaded ONCE and never reloaded, persisting
  *   across all screen transitions
  *
@@ -192,8 +201,8 @@
  *
  * Future Phase Planning:
  * ---------------------
- * - Phase 5 (coin flip) has 24 tiles reserved at 197-220
- * - Phase 6 (game board) has 35 tiles at 221-255 (may need optimization)
+ * - Phase 5 (coin flip) uses screen-isolated tiles 0-58
+ * - Phase 6 (game board) has 59 tiles at 197-255
  * - If game board needs more tiles, consider:
  *   * Reusing font tiles for UI text (already available)
  *   * Using sprites for pieces instead of background tiles

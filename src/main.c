@@ -9,6 +9,7 @@
 #include "title.h"
 #include "opponent_select.h"
 #include "difficulty_select.h"
+#include "coinflip.h"
 
 // Global game state
 ScreenState_t current_state = STATE_TITLE;
@@ -41,6 +42,9 @@ void main(void) {
                 case STATE_DIFFICULTY_SELECT:
                     cleanup_difficulty_select();
                     break;
+                case STATE_COINFLIP:
+                    cleanup_coinflip();
+                    break;
                 default:
                     break;
             }
@@ -57,6 +61,9 @@ void main(void) {
                 case STATE_DIFFICULTY_SELECT:
                     init_difficulty_select();
                     break;
+                case STATE_COINFLIP:
+                    init_coinflip();
+                    break;
                 default:
                     break;
             }
@@ -72,6 +79,9 @@ void main(void) {
                 break;
             case STATE_DIFFICULTY_SELECT:
                 update_difficulty_select();
+                break;
+            case STATE_COINFLIP:
+                update_coinflip();
                 break;
             default:
                 break;

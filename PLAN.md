@@ -60,7 +60,7 @@ This plan breaks down the development into manageable phases, each building on t
    - White background (all tiles use lightest shade)
    - "CHOOSE YOUR SIDE" title text at top
    - Two coin options side by side on top half: Sun (Light) and Moon (Dark)
-   - Use the flat sun/moon frames from the coin animation (reuse assets)
+   - Static coin images displayed for selection (5x5 tiles each = 40x40 pixels)
    - Selection border drawn around currently highlighted coin
    - Bottom half reserved for coin flip animation and result text
 
@@ -70,14 +70,16 @@ This plan breaks down the development into manageable phases, each building on t
    - B returns to difficulty selection screen
    - A confirms selection and triggers coin flip
 
-3. **Coin flip animation**
-   - After A pressed, animate spinning coin in bottom half of screen
-   - Use 8-frame rotation sequence (sun → edge → moon → edge → repeat)
-   - Animation runs for ~2-3 seconds with gradual slowdown
-   - Use DIV register or input timing for random outcome
+3. **Coin flip animation (tile-flipping effect)**
+   - After A pressed, display coin in center of bottom half
+   - **Phase 1 (0.5-1s):** All 25 tiles of coin rapidly flip between dark/light versions chaotically
+   - **Phase 2 (1-1.5s):** Tiles randomly lock to the winning coin (accelerating lock-in rate)
+   - **Phase 3 (0.5s):** All tiles locked, coin fully resolved to winner
+   - Use DIV register or frame counter at moment of A press for random outcome
+   - Track locked tiles with bit array (25 bits needed)
 
 4. **Result display**
-   - Coin lands on sun or moon (random)
+   - Coin fully shows sun or moon (random)
    - Display "LIGHT STARTS" or "DARK STARTS" text below coin
    - If landed side matches player's choice, they move first
    - Brief pause to show result
@@ -90,22 +92,25 @@ This plan breaks down the development into manageable phases, each building on t
 
 | Asset | Format | Notes |
 |-------|--------|-------|
-| Sun/Moon coin frames | 40x40 PNG, 4 colors | 8 frames: sun flat, sun angled, edge, moon angled, moon flat, moon angled, edge, sun angled |
-| Selection border tiles | 8x8 tiles | Corner and edge pieces to highlight selected coin |
+| Light coin (sun) | 40x40 PNG, 4 colors | Single static image, 5x5 tiles = 25 tiles |
+| Dark coin (moon) | 40x40 PNG, 4 colors | Single static image, 5x5 tiles = 25 tiles |
+| Selection border tiles | 8x8 tiles | Corner and edge pieces to highlight selected coin (reuse from opponent select) |
 
-**Note:** The same coin artwork is reused for both the selection display (frames 1 and 5) and the flip animation (all 8 frames). Single asset, multiple uses.
+**Total tile cost:** ~50 tiles maximum (25 light + 25 dark). Fits in reserved range 197-220.
 
 ### Technical Notes
 
 - **White background:** Set all background tiles to color 0 (white `#FFFFFF` on DMG)
-- **Asset reuse:** Sun flat = frame 1, Moon flat = frame 5 from animation sequence
-- **Selection border:** Can reuse border tiles from opponent selection screen
-- **VBlank updates:** Swap coin tiles during VBlank for animation (~1.1ms available)
+- **Tile correspondence:** Light and dark coins must have matching layouts (tile 0 of light corresponds to tile 0 of dark at same position)
+- **Selection border:** Reuse border tiles from opponent selection screen
+- **VBlank updates:** Swap individual coin tiles during VBlank for animation
 - **Randomness:** Sample DIV register at moment of A press, or use frame counter
+- **Lock-in mechanics:** Start with ~2-3 tiles locking per frame, accelerate to 5-8 per frame
+- **Bit tracking:** Use 32-bit value (waste 7 bits) or 4 bytes to track which of 25 tiles are locked
 
 ### Deliverable
 
-Player can select Light or Dark side with visual feedback. Coin flip animation determines starting player. B returns to difficulty. A triggers flip with placeholder transition to next phase.
+Player can select Light or Dark side with visual feedback. Tile-flipping coin animation creates anticipation as individual tiles resolve to winning side. Starting player determined by result. B returns to difficulty. A triggers flip with placeholder transition to next phase.
 
 ---
 
@@ -374,7 +379,6 @@ Polished, bug-free single-player experience ready for release.
 - Specular highlight (2-3 frames)
 - Light piece
 - Dark piece
-- Light/Dark piece icons (for coin flip result)
 - Dice × 2 states (0 and 1)
 - Hand pointer
 - Destination highlight (or use BG tiles)
@@ -384,7 +388,7 @@ Polished, bug-free single-player experience ready for release.
 - Title screen (full 160x144)
 - Opponent select screen
 - Difficulty select screen
-- Side selection / Coin flip screen (white background, 40x40 sun/moon coin frames)
+- Side selection / Coin flip screen (white background, two 40x40 coin images: light/dark)
 - Game board screen
 - End game screen (or reuse elements)
 

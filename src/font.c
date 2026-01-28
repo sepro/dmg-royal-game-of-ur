@@ -555,3 +555,29 @@ void clear_text_row_inverted(uint8_t x, uint8_t y, uint8_t width) {
 
     set_bkg_tiles(x, y, width, 1, tile_buf);
 }
+
+// External reference to border tiles (from border.c)
+extern const uint8_t border_tiles[];
+
+// Number of border tiles (from border.h)
+#define BORDER_TILE_COUNT_IMG 25
+
+/**
+ * Load border tiles inverted (XOR with 0xFF) into VRAM
+ * Used for dark background screens where border needs light-on-dark appearance
+ */
+void load_border_inverted(uint8_t vram_start) {
+    uint8_t inverted_buffer[16];
+
+    for (uint8_t tile_idx = 0; tile_idx < BORDER_TILE_COUNT_IMG; tile_idx++) {
+        const uint8_t* source = border_tiles + (tile_idx * 16);
+
+        // Invert each byte of the tile (XOR with 0xFF)
+        for (uint8_t byte_idx = 0; byte_idx < 16; byte_idx++) {
+            inverted_buffer[byte_idx] = source[byte_idx] ^ 0xFF;
+        }
+
+        // Load single inverted tile into VRAM
+        set_bkg_data(vram_start + tile_idx, 1, inverted_buffer);
+    }
+}

@@ -100,4 +100,12 @@ void draw_text_inverted(uint8_t x, uint8_t y, const char *str);
  */
 void clear_text_row_inverted(uint8_t x, uint8_t y, uint8_t width);
 
+/**
+ * Load border tiles inverted (XOR with 0xFF) into VRAM
+ * Used for dark background screens (opponent select) where border
+ * needs to be light-on-dark instead of dark-on-light
+ * @param vram_start Starting VRAM tile index to load inverted tiles into
+ */
+void load_border_inverted(uint8_t vram_start);
+
 #endif // FONT_H

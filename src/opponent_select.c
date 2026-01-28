@@ -23,8 +23,9 @@ extern const unsigned char profile_03_map[];
 extern const uint8_t profile_04_tiles[];
 extern const unsigned char profile_04_map[];
 
-// External reference to border tiles
+// External reference to border tiles and map (from border.c)
 extern const uint8_t border_tiles[];
+extern const unsigned char border_map[];
 
 // External reference to next_state from main.c
 extern ScreenState_t next_state;
@@ -96,64 +97,39 @@ static void draw_portrait(uint8_t idx, uint8_t tile_base) {
 
 /**
  * Clear the selection border around a portrait
+ * Clears the 7x7 frame (skipping inner 5x5 portrait area)
  */
 static void clear_border(uint8_t idx) {
     uint8_t x = portrait_x[idx] - 1;  // Border is 1 tile outside portrait
     uint8_t y = portrait_y[idx] - 1;
 
-    // Clear top row
-    uint8_t row[BORDER_WIDTH];
-    for (uint8_t i = 0; i < BORDER_WIDTH; i++) {
-        row[i] = BLANK_TILE;
-    }
-    set_bkg_tiles(x, y, BORDER_WIDTH, 1, row);
-
-    // Clear bottom row
-    set_bkg_tiles(x, y + BORDER_HEIGHT - 1, BORDER_WIDTH, 1, row);
-
-    // Clear left and right edges (middle rows only)
-    for (uint8_t i = 1; i < BORDER_HEIGHT - 1; i++) {
-        set_bkg_tile_xy(x, y + i, BLANK_TILE);
-        set_bkg_tile_xy(x + BORDER_WIDTH - 1, y + i, BLANK_TILE);
+    // Clear entire 7x7 border frame (skip inner 5x5)
+    for (uint8_t row = 0; row < BORDER_HEIGHT; row++) {
+        for (uint8_t col = 0; col < BORDER_WIDTH; col++) {
+            // Skip inner 5x5 portrait area (rows 1-5, cols 1-5)
+            if (row >= 1 && row <= 5 && col >= 1 && col <= 5) continue;
+            set_bkg_tile_xy(x + col, y + row, BLANK_TILE);
+        }
     }
 }
 
 /**
  * Draw the selection border around a portrait
+ * Uses 7x7 tilemap from border.png (skipping inner 5x5 portrait area)
  */
 static void draw_border(uint8_t idx) {
     uint8_t x = portrait_x[idx] - 1;  // Border is 1 tile outside portrait
     uint8_t y = portrait_y[idx] - 1;
 
-    // Border tile indices (from select_border.h)
-    const uint8_t B_TL = BORDER_TILE_START + 0;
-    const uint8_t B_T  = BORDER_TILE_START + 1;
-    const uint8_t B_TR = BORDER_TILE_START + 2;
-    const uint8_t B_L  = BORDER_TILE_START + 3;
-    const uint8_t B_R  = BORDER_TILE_START + 4;
-    const uint8_t B_BL = BORDER_TILE_START + 5;
-    const uint8_t B_B  = BORDER_TILE_START + 6;
-    const uint8_t B_BR = BORDER_TILE_START + 7;
-
-    // Top row: TL, T, T, T, T, T, TR
-    set_bkg_tile_xy(x, y, B_TL);
-    for (uint8_t i = 1; i < BORDER_WIDTH - 1; i++) {
-        set_bkg_tile_xy(x + i, y, B_T);
+    // Draw 7x7 border frame using tilemap (skip inner 5x5)
+    for (uint8_t row = 0; row < BORDER_HEIGHT; row++) {
+        for (uint8_t col = 0; col < BORDER_WIDTH; col++) {
+            // Skip inner 5x5 portrait area (rows 1-5, cols 1-5)
+            if (row >= 1 && row <= 5 && col >= 1 && col <= 5) continue;
+            uint8_t tile = BORDER_TILE_START + border_map[row * BORDER_WIDTH + col];
+            set_bkg_tile_xy(x + col, y + row, tile);
+        }
     }
-    set_bkg_tile_xy(x + BORDER_WIDTH - 1, y, B_TR);
-
-    // Middle rows: L, (portrait), R
-    for (uint8_t i = 1; i < BORDER_HEIGHT - 1; i++) {
-        set_bkg_tile_xy(x, y + i, B_L);
-        set_bkg_tile_xy(x + BORDER_WIDTH - 1, y + i, B_R);
-    }
-
-    // Bottom row: BL, B, B, B, B, B, BR
-    set_bkg_tile_xy(x, y + BORDER_HEIGHT - 1, B_BL);
-    for (uint8_t i = 1; i < BORDER_WIDTH - 1; i++) {
-        set_bkg_tile_xy(x + i, y + BORDER_HEIGHT - 1, B_B);
-    }
-    set_bkg_tile_xy(x + BORDER_WIDTH - 1, y + BORDER_HEIGHT - 1, B_BR);
 }
 
 /**
@@ -267,8 +243,8 @@ void init_opponent_select(void) {
     profile_offsets[3] = tile_offset;
     set_bkg_data(tile_offset, profile_tile_counts[3], profile_04_tiles);
 
-    // Load border tiles
-    set_bkg_data(BORDER_TILE_START, 8, border_tiles);
+    // Load border tiles (inverted for dark background)
+    load_border_inverted(BORDER_TILE_START);
 
     // Load font tiles
     load_font();

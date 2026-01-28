@@ -15,8 +15,9 @@
 extern const uint8_t light_coin_tiles[];
 extern const uint8_t dark_coin_tiles[];
 
-// External reference to border tiles (reused from opponent select)
+// External reference to border tiles and map (from border.c)
 extern const uint8_t border_tiles[];
+extern const unsigned char border_map[];
 
 // External reference to next_state from main.c
 extern ScreenState_t next_state;
@@ -167,59 +168,38 @@ static void draw_coin(uint8_t x, uint8_t y, uint8_t tile_base) {
 
 /**
  * Draw the selection border around a coin
+ * Uses 7x7 tilemap from border.png (skipping inner 5x5 coin area)
  */
 static void draw_border(uint8_t idx) {
     uint8_t x = coin_x[idx] - 1;  // Border is 1 tile outside coin
     uint8_t y = coin_y[idx] - 1;
 
-    // Border tile indices
-    const uint8_t B_TL = COINFLIP_BORDER_TILE_START + 0;
-    const uint8_t B_T  = COINFLIP_BORDER_TILE_START + 1;
-    const uint8_t B_TR = COINFLIP_BORDER_TILE_START + 2;
-    const uint8_t B_L  = COINFLIP_BORDER_TILE_START + 3;
-    const uint8_t B_R  = COINFLIP_BORDER_TILE_START + 4;
-    const uint8_t B_BL = COINFLIP_BORDER_TILE_START + 5;
-    const uint8_t B_B  = COINFLIP_BORDER_TILE_START + 6;
-    const uint8_t B_BR = COINFLIP_BORDER_TILE_START + 7;
-
-    // Top row
-    set_bkg_tile_xy(x, y, B_TL);
-    for (uint8_t i = 1; i < COINFLIP_BORDER_WIDTH - 1; i++) {
-        set_bkg_tile_xy(x + i, y, B_T);
+    // Draw 7x7 border frame using tilemap (skip inner 5x5)
+    for (uint8_t row = 0; row < COINFLIP_BORDER_HEIGHT; row++) {
+        for (uint8_t col = 0; col < COINFLIP_BORDER_WIDTH; col++) {
+            // Skip inner 5x5 coin area (rows 1-5, cols 1-5)
+            if (row >= 1 && row <= 5 && col >= 1 && col <= 5) continue;
+            uint8_t tile = COINFLIP_BORDER_TILE_START + border_map[row * COINFLIP_BORDER_WIDTH + col];
+            set_bkg_tile_xy(x + col, y + row, tile);
+        }
     }
-    set_bkg_tile_xy(x + COINFLIP_BORDER_WIDTH - 1, y, B_TR);
-
-    // Middle rows
-    for (uint8_t i = 1; i < COINFLIP_BORDER_HEIGHT - 1; i++) {
-        set_bkg_tile_xy(x, y + i, B_L);
-        set_bkg_tile_xy(x + COINFLIP_BORDER_WIDTH - 1, y + i, B_R);
-    }
-
-    // Bottom row
-    set_bkg_tile_xy(x, y + COINFLIP_BORDER_HEIGHT - 1, B_BL);
-    for (uint8_t i = 1; i < COINFLIP_BORDER_WIDTH - 1; i++) {
-        set_bkg_tile_xy(x + i, y + COINFLIP_BORDER_HEIGHT - 1, B_B);
-    }
-    set_bkg_tile_xy(x + COINFLIP_BORDER_WIDTH - 1, y + COINFLIP_BORDER_HEIGHT - 1, B_BR);
 }
 
 /**
  * Clear the selection border around a coin
+ * Clears the 7x7 frame (skipping inner 5x5 coin area)
  */
 static void clear_border(uint8_t idx) {
     uint8_t x = coin_x[idx] - 1;
     uint8_t y = coin_y[idx] - 1;
 
-    // Clear top and bottom rows
-    for (uint8_t i = 0; i < COINFLIP_BORDER_WIDTH; i++) {
-        set_bkg_tile_xy(x + i, y, COINFLIP_WHITE_TILE);
-        set_bkg_tile_xy(x + i, y + COINFLIP_BORDER_HEIGHT - 1, COINFLIP_WHITE_TILE);
-    }
-
-    // Clear left and right edges (middle rows)
-    for (uint8_t i = 1; i < COINFLIP_BORDER_HEIGHT - 1; i++) {
-        set_bkg_tile_xy(x, y + i, COINFLIP_WHITE_TILE);
-        set_bkg_tile_xy(x + COINFLIP_BORDER_WIDTH - 1, y + i, COINFLIP_WHITE_TILE);
+    // Clear entire 7x7 border frame (skip inner 5x5)
+    for (uint8_t row = 0; row < COINFLIP_BORDER_HEIGHT; row++) {
+        for (uint8_t col = 0; col < COINFLIP_BORDER_WIDTH; col++) {
+            // Skip inner 5x5 coin area (rows 1-5, cols 1-5)
+            if (row >= 1 && row <= 5 && col >= 1 && col <= 5) continue;
+            set_bkg_tile_xy(x + col, y + row, COINFLIP_WHITE_TILE);
+        }
     }
 }
 
@@ -437,8 +417,8 @@ void init_coinflip(void) {
     set_bkg_data(COINFLIP_LIGHT_TILE_START, COINFLIP_LIGHT_TILE_COUNT, light_coin_tiles);
     set_bkg_data(COINFLIP_DARK_TILE_START, COINFLIP_DARK_TILE_COUNT, dark_coin_tiles);
 
-    // Load border tiles
-    set_bkg_data(COINFLIP_BORDER_TILE_START, 8, border_tiles);
+    // Load border tiles (normal, dark on white background)
+    set_bkg_data(COINFLIP_BORDER_TILE_START, 25, border_tiles);
 
     // Load inverted font (black text on white background)
     load_font_inverted();

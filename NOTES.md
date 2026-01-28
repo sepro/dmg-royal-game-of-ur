@@ -6,6 +6,5 @@
   * Define places where the sparkle sprite can appear
   * Update names and description for players
   * Revise opponent profiles
-  * Improve border for character selection
   
 

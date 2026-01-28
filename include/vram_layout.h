@@ -41,7 +41,7 @@
 #define VRAM_TITLE_COUNT 139
 
 /* ----------------------------------------------------------------------------
- * Opponent Select Screen (Tiles 1-94)
+ * Opponent Select Screen (Tiles 1-111)
  * Screen-isolated: Overlaps with title screen range
  * ---------------------------------------------------------------------------- */
 // Opponent portraits: 4 characters with variable sizes
@@ -50,10 +50,10 @@
 #define VRAM_OPPONENT_PORTRAITS_END 86
 #define VRAM_OPPONENT_PORTRAITS_COUNT 86
 
-// Selection border: 8 unique border tiles for 7x7 frame
+// Selection border: 25 unique border tiles for 7x7 frame (from border.png)
 #define VRAM_BORDER_START 87
-#define VRAM_BORDER_END 94
-#define VRAM_BORDER_COUNT 8
+#define VRAM_BORDER_END 111
+#define VRAM_BORDER_COUNT 25
 
 /* ----------------------------------------------------------------------------
  * Difficulty Select Screen (Tiles 1-24)
@@ -64,7 +64,7 @@
 #define VRAM_DIFF_PORTRAIT_COUNT 25  // Selected opponent's portrait (5x5 tiles)
 
 /* ----------------------------------------------------------------------------
- * Coin Flip Screen (Tiles 0-58) - Screen-isolated
+ * Coin Flip Screen (Tiles 0-75) - Screen-isolated
  * Overlaps with title/opponent/difficulty screens (each reloads on entry)
  * ---------------------------------------------------------------------------- */
 // Tile 0: White tile (screen-specific)
@@ -80,10 +80,10 @@
 #define VRAM_COINFLIP_DARK_END 50
 #define VRAM_COINFLIP_DARK_COUNT 25
 
-// Border tiles: 8 tiles (reused pattern from opponent select)
+// Border tiles: 25 tiles (from border.png)
 #define VRAM_COINFLIP_BORDER_START 51
-#define VRAM_COINFLIP_BORDER_END 58
-#define VRAM_COINFLIP_BORDER_COUNT 8
+#define VRAM_COINFLIP_BORDER_END 75
+#define VRAM_COINFLIP_BORDER_COUNT 25
 
 /* ----------------------------------------------------------------------------
  * Font System (Tiles 140-196) - SHARED across all screens
@@ -201,7 +201,7 @@
  *
  * Future Phase Planning:
  * ---------------------
- * - Phase 5 (coin flip) uses screen-isolated tiles 0-58
+ * - Phase 5 (coin flip) uses screen-isolated tiles 0-75
  * - Phase 6 (game board) has 59 tiles at 197-255
  * - If game board needs more tiles, consider:
  *   * Reusing font tiles for UI text (already available)

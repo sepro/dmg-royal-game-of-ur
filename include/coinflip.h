@@ -23,19 +23,19 @@
 #define COINFLIP_DARK_X       13
 #define COINFLIP_DARK_Y       4
 
-// Selection label positions
+// Selection label positions (below border which ends at y=9)
 #define COINFLIP_LIGHT_LABEL_X  3
-#define COINFLIP_LIGHT_LABEL_Y  9
+#define COINFLIP_LIGHT_LABEL_Y  11
 #define COINFLIP_DARK_LABEL_X   14
-#define COINFLIP_DARK_LABEL_Y   9
+#define COINFLIP_DARK_LABEL_Y   11
 
 // Animation coin position (centered, 5x5)
 #define COINFLIP_ANIM_X       7
-#define COINFLIP_ANIM_Y       11
+#define COINFLIP_ANIM_Y       6
 
-// Result text position
+// Result text position (below animation coin)
 #define COINFLIP_RESULT_X     3
-#define COINFLIP_RESULT_Y     17
+#define COINFLIP_RESULT_Y     12
 
 // Coin dimensions (tiles)
 #define COIN_WIDTH  5

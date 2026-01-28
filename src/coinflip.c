@@ -332,16 +332,12 @@ static void start_animation(void) {
     anim_counter = 0;
 
     // Hide selection coins and show animation area
-    // Clear selection area
-    for (uint8_t y = COINFLIP_LIGHT_Y - 1; y < COINFLIP_LIGHT_Y + COIN_HEIGHT + 1; y++) {
+    // Clear from row 3 to row 11 (covers coins, border, and labels)
+    for (uint8_t y = 3; y <= 11; y++) {
         for (uint8_t x = 0; x < 20; x++) {
             set_bkg_tile_xy(x, y, COINFLIP_WHITE_TILE);
         }
     }
-
-    // Clear labels
-    clear_text_row_inverted(COINFLIP_LIGHT_LABEL_X, COINFLIP_LIGHT_LABEL_Y, 5);
-    clear_text_row_inverted(COINFLIP_DARK_LABEL_X, COINFLIP_DARK_LABEL_Y, 4);
 
     // Draw initial chaotic coin
     draw_animation_coin();

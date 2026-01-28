@@ -16,9 +16,6 @@
 obj/
 build/
 
-# Generated assets (from png2asset)
-assets/generated/
-
 # Emulator files
 *.sav
 *.srm

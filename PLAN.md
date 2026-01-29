@@ -33,73 +33,17 @@ This plan breaks down the development into manageable phases, each building on t
 - Result display determines starting player based on player's choice
 - Flash transition to game state (placeholder)
 
----
+### Phase 6: Game Board Display (Static) ✓
+- H-shaped board layout with empty, rosette, and border tiles
+- Reserve areas for unplayed and finished pieces
+- UI elements for prompts and dice display area
+- Light and dark piece sprites loaded based on player assignment
 
-## Phase 6: Game Board Display (Static)
-
-**Goal:** Draw the Royal Game of Ur board and piece reserves.
-
-### Tasks
-
-1. **Board layout design**
-   - Map the Ur board shape to tile positions (the distinctive H-shape)
-   - Design tiles for: empty square, rosette square, board edges
-   - Position board centered on screen
-
-2. **Reserve areas**
-   - Left side: space to show unplayed pieces
-   - Right side: space to show captured/finished pieces (or use consistent side)
-
-3. **UI elements**
-   - Bottom text area for prompts ("Press A to roll")
-   - Area for dice display (4 binary dice)
-
-4. **Piece sprites**
-   - Light pieces and dark pieces as distinct sprites
-   - Load both sets, display based on player assignment
-
-### Assets Needed
-
-| Asset | Format | Notes |
-|-------|--------|-------|
-| Board tiles | 8x8 each | Empty, rosette, border variants |
-| Light piece sprite | 8x8 or 8x16 | Distinct shape/pattern |
-| Dark piece sprite | 8x8 or 8x16 | Visually different from light |
-| Dice sprites | 8x8 each | Showing 0 and 1 states |
-
-### Deliverable
-
-Game screen shows complete board, piece reserves, and UI areas (no interaction yet).
-
----
-
-## Phase 7: Dice Rolling
-
-**Goal:** Implement dice roll mechanic with animation.
-
-### Tasks
-
-1. **Dice data**
-   - 4 binary dice (each 50% chance of 0 or 1)
-   - Total roll = sum (0-4)
-
-2. **Roll animation**
-   - Dice sprites cycle through 0/1 rapidly
-   - Settle to final values after ~1 second
-   - Display total prominently
-
-3. **Input flow**
-   - "Press A to roll" prompt
-   - On A press, animate and calculate roll
-   - Store result for move selection phase
-
-### Assets Needed
-
-*Already covered in Phase 6*
-
-### Deliverable
-
-Player presses A, dice animate and show result (0-4).
+### Phase 7: Dice Rolling ✓
+- 4 binary dice implementation (total roll 0-4)
+- Roll animation with dice cycling through values rapidly
+- "Press A to roll" input flow with result display
+- Roll result stored for move selection phase
 
 ---
 

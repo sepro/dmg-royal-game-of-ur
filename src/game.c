@@ -22,6 +22,20 @@ extern const uint8_t dice_black_tiles[];
 extern const uint8_t piece_white_tiles[];
 extern const uint8_t piece_black_tiles[];
 
+// External references to profile assets
+extern const uint8_t profile_01_tiles[];
+extern const unsigned char profile_01_map[];
+extern const uint8_t profile_02_tiles[];
+extern const unsigned char profile_02_map[];
+extern const uint8_t profile_03_tiles[];
+extern const unsigned char profile_03_map[];
+extern const uint8_t profile_04_tiles[];
+extern const unsigned char profile_04_map[];
+
+// External reference to opponent data
+extern const uint8_t profile_tile_counts[];
+extern uint8_t selected_opponent;
+
 // External reference to next_state from main.c
 extern ScreenState_t next_state;
 
@@ -94,6 +108,53 @@ static void fill_ui_area(void) {
 
     for (uint8_t y = UI_START_Y; y <= UI_END_Y; y++) {
         set_bkg_tiles(0, y, BOARD_WIDTH, 1, row);
+    }
+}
+
+/**
+ * Draw the selected opponent's portrait on the right side of UI
+ */
+static void draw_opponent_portrait(void) {
+    const uint8_t *tiles;
+    const unsigned char *map;
+    uint8_t tile_count;
+
+    // Select the correct profile based on selected_opponent
+    switch (selected_opponent) {
+        case 0:
+            tiles = profile_01_tiles;
+            map = profile_01_map;
+            tile_count = profile_tile_counts[0];
+            break;
+        case 1:
+            tiles = profile_02_tiles;
+            map = profile_02_map;
+            tile_count = profile_tile_counts[1];
+            break;
+        case 2:
+            tiles = profile_03_tiles;
+            map = profile_03_map;
+            tile_count = profile_tile_counts[2];
+            break;
+        case 3:
+            tiles = profile_04_tiles;
+            map = profile_04_map;
+            tile_count = profile_tile_counts[3];
+            break;
+        default:
+            return;
+    }
+
+    // Load portrait tiles after board tiles
+    set_bkg_data(GAME_PORTRAIT_TILE_START, tile_count, tiles);
+
+    // Draw 5x5 portrait using tilemap
+    uint8_t row_buf[GAME_PORTRAIT_WIDTH];
+    for (uint8_t row = 0; row < GAME_PORTRAIT_HEIGHT; row++) {
+        for (uint8_t col = 0; col < GAME_PORTRAIT_WIDTH; col++) {
+            row_buf[col] = GAME_PORTRAIT_TILE_START + map[row * GAME_PORTRAIT_WIDTH + col];
+        }
+        set_bkg_tiles(GAME_PORTRAIT_X, GAME_PORTRAIT_Y + row, GAME_PORTRAIT_WIDTH, 1, row_buf);
     }
 }
 
@@ -337,6 +398,9 @@ void init_game(void) {
 
     // Fill UI area with background color
     fill_ui_area();
+
+    // Draw opponent portrait on right side
+    draw_opponent_portrait();
 
     // Load inverted font for UI text
     load_font_inverted();

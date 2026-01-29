@@ -117,6 +117,16 @@
 #define PIECES_PER_PLAYER   7   // Each player has 7 pieces
 #define NUM_DICE            4   // 4 binary dice
 
+// ============================================================================
+// Opponent Portrait (5x5 tiles on right side of UI)
+// ============================================================================
+#define GAME_PORTRAIT_TILE_START  38  // After board tiles (0-37)
+#define GAME_PORTRAIT_TILE_MAX    25  // 5x5 = 25 tiles maximum
+#define GAME_PORTRAIT_X           14  // Tile X position (right side)
+#define GAME_PORTRAIT_Y           10  // Tile Y position (one row above CPU info)
+#define GAME_PORTRAIT_WIDTH       5
+#define GAME_PORTRAIT_HEIGHT      5
+
 /**
  * Initialize game screen
  * Loads board tiles, draws board, sets up UI area

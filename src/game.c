@@ -462,12 +462,6 @@ void update_game(void) {
     // Update input state
     input_update();
 
-    // B button returns to coinflip for testing
-    if (input_pressed(J_B)) {
-        next_state = STATE_COINFLIP;
-        return;
-    }
-
     // Game phase state machine
     switch (game_phase) {
         case PHASE_WAIT_ROLL:

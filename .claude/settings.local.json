@@ -15,7 +15,8 @@
       "Bash(wc:*)",
       "Bash(png2asset:*)",
       "Bash($GBDK_HOME/bin/png2asset)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash($GBDK_HOME/bin/png2asset assets/images/raw/board.png -o assets/generated/board.c -map)"
     ]
   }
 }

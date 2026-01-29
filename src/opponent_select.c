@@ -2,6 +2,7 @@
  * opponent_select.c
  * Opponent selection screen implementation
  * 2x2 grid of opponent portraits with navigation
+ * White background with dark border and black text
  */
 
 #include <gb/gb.h>
@@ -136,13 +137,13 @@ static void draw_border(uint8_t idx) {
  * Update the description text for selected opponent
  */
 static void update_description(uint8_t idx) {
-    // Clear description area (2 rows)
-    clear_text_row(DESC_TEXT_X, DESC_TEXT_Y, DESC_TEXT_WIDTH);
-    clear_text_row(DESC_TEXT_X, DESC_TEXT_Y + 1, DESC_TEXT_WIDTH);
+    // Clear description area (2 rows) with white background
+    clear_text_row_inverted(DESC_TEXT_X, DESC_TEXT_Y, DESC_TEXT_WIDTH);
+    clear_text_row_inverted(DESC_TEXT_X, DESC_TEXT_Y + 1, DESC_TEXT_WIDTH);
 
-    // Draw opponent name and description
-    draw_text(DESC_TEXT_X, DESC_TEXT_Y, opponent_names[idx]);
-    draw_text(DESC_TEXT_X, DESC_TEXT_Y + 1, opponent_descs[idx]);
+    // Draw opponent name and description (black text on white)
+    draw_text_inverted(DESC_TEXT_X, DESC_TEXT_Y, opponent_names[idx]);
+    draw_text_inverted(DESC_TEXT_X, DESC_TEXT_Y + 1, opponent_descs[idx]);
 }
 
 /**
@@ -159,10 +160,10 @@ static inline uint8_t grid_row(uint8_t idx) {
     return idx >> 1;  // 0 or 1
 }
 
-// Black tile data (8x8 pixels, all color 3 = black on DMG)
-static const uint8_t black_tile[16] = {
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+// White tile data (8x8 pixels, all color 0 = white on DMG)
+static const uint8_t white_tile[16] = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
 /**
@@ -217,8 +218,8 @@ void init_opponent_select(void) {
     // Disable display during VRAM writes
     DISPLAY_OFF;
 
-    // Load black tile at index 0 (may have been overwritten by other screens)
-    set_bkg_data(BLANK_TILE, 1, black_tile);
+    // Load white tile at index 0 (may have been overwritten by other screens)
+    set_bkg_data(BLANK_TILE, 1, white_tile);
 
     // Clear the entire screen with black tiles
     clear_rect(0, 0, 20, 18);
@@ -243,11 +244,11 @@ void init_opponent_select(void) {
     profile_offsets[3] = tile_offset;
     set_bkg_data(tile_offset, profile_tile_counts[3], profile_04_tiles);
 
-    // Load border tiles (inverted for dark background)
-    load_border_inverted(BORDER_TILE_START);
+    // Load border tiles (normal, dark on white background)
+    set_bkg_data(BORDER_TILE_START, 25, border_tiles);
 
-    // Load font tiles
-    load_font();
+    // Load inverted font tiles (black text on white background)
+    load_font_inverted();
 
     // Draw all 4 portraits with correct tile offsets
     draw_portrait(0, profile_offsets[0]);

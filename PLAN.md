@@ -71,7 +71,29 @@ The overlay layer can shift up over the game in a simple animation
 
 The game can be paused and while paused the screen shows relevant stats
 
-## Phase 8b: Move Selection (Human Player)
+## Phase 8b: Track game state
+
+**Goal:** Implement a way to keep track of pieces on the board.
+
+### Tasks
+
+1. Add two lists, one for the CPU and one for the human player which can be used to keep track where pieces are on the board.
+2. Implement a way to check if a move is valid
+3. After a dice roll, check which moves are valid (including moving a new piece on the board) and execute a random one, if there are no valid moves the turn is over (this will later be replaced with AI for CPU and selection of the player)
+4. Move the selected piece (capturing other pieces if needed or finishing)
+5. Draw the board with the current game state. There will be tiles available with a black or white piece on them. These should be used to draw the board with the pieces.
+
+**Note:** While both players will have their own list of 14 positions on the board (1 to 14). This can be one bit (either there is a piece or not, you cannot move to a spot where you already have a piece), but positions 5-12 are shared on the board. Here if a piece would move to a space with an opponents piece that piece is captured and goes back to the reserve pile. However, spot 8 is safe. Furthermore, position 4, 8, 14 are rosette spots, if a piece moves here the current player get's an extra turn.
+
+### Assets needed
+
+tiles with pieces on top of them
+
+### Deliverable
+
+The board state should be tracked, each turn based on the roll a random move will be carried out (also for the human player). The board state is correctly visualized. 
+
+## Phase 8c: Move Selection (Human Player)
 
 **Goal:** Allow player to select which piece to move.
 

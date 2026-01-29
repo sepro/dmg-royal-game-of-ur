@@ -442,6 +442,187 @@ const uint8_t font_tiles[] = {
     // CHAR_BLANK (index 27) - solid black for background clearing
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+
+    // CHAR_WHITE (index 28) - solid white for inverted text background
+    // (Note: only used in inverted font, but included for index consistency)
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+
+    // CHAR_0 (index 29)
+    // .####.
+    // ##..##
+    // ##..##
+    // ##..##
+    // ##..##
+    // .####.
+    0xFF, 0xFF,
+    0xC3, 0xC3,  // .####. -> 11000011
+    0x99, 0x99,  // ##..## -> 10011001
+    0x99, 0x99,  // ##..## -> 10011001
+    0x99, 0x99,  // ##..## -> 10011001
+    0x99, 0x99,  // ##..## -> 10011001
+    0xC3, 0xC3,  // .####. -> 11000011
+    0xFF, 0xFF,
+
+    // CHAR_1 (index 30)
+    // ..##..
+    // .###..
+    // ..##..
+    // ..##..
+    // ..##..
+    // ######
+    0xFF, 0xFF,
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xC7, 0xC7,  // .###.. -> 11000111
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0x81, 0x81,  // ###### -> 10000001
+    0xFF, 0xFF,
+
+    // CHAR_2 (index 31)
+    // .####.
+    // ##..##
+    // ....##
+    // .####.
+    // ##....
+    // ######
+    0xFF, 0xFF,
+    0xC3, 0xC3,  // .####. -> 11000011
+    0x99, 0x99,  // ##..## -> 10011001
+    0xF9, 0xF9,  // ....## -> 11111001
+    0xC3, 0xC3,  // .####. -> 11000011
+    0x9F, 0x9F,  // ##.... -> 10011111
+    0x81, 0x81,  // ###### -> 10000001
+    0xFF, 0xFF,
+
+    // CHAR_3 (index 32)
+    // .####.
+    // ##..##
+    // ...##.
+    // ...##.
+    // ##..##
+    // .####.
+    0xFF, 0xFF,
+    0xC3, 0xC3,  // .####. -> 11000011
+    0x99, 0x99,  // ##..## -> 10011001
+    0xF3, 0xF3,  // ...##. -> 11110011
+    0xF3, 0xF3,  // ...##. -> 11110011
+    0x99, 0x99,  // ##..## -> 10011001
+    0xC3, 0xC3,  // .####. -> 11000011
+    0xFF, 0xFF,
+
+    // CHAR_4 (index 33)
+    // ##..##
+    // ##..##
+    // ######
+    // ....##
+    // ....##
+    // ....##
+    0xFF, 0xFF,
+    0x99, 0x99,  // ##..## -> 10011001
+    0x99, 0x99,  // ##..## -> 10011001
+    0x81, 0x81,  // ###### -> 10000001
+    0xF9, 0xF9,  // ....## -> 11111001
+    0xF9, 0xF9,  // ....## -> 11111001
+    0xF9, 0xF9,  // ....## -> 11111001
+    0xFF, 0xFF,
+
+    // CHAR_5 (index 34)
+    // ######
+    // ##....
+    // #####.
+    // ....##
+    // ##..##
+    // .####.
+    0xFF, 0xFF,
+    0x81, 0x81,  // ###### -> 10000001
+    0x9F, 0x9F,  // ##.... -> 10011111
+    0x83, 0x83,  // #####. -> 10000011
+    0xF9, 0xF9,  // ....## -> 11111001
+    0x99, 0x99,  // ##..## -> 10011001
+    0xC3, 0xC3,  // .####. -> 11000011
+    0xFF, 0xFF,
+
+    // CHAR_6 (index 35)
+    // .####.
+    // ##....
+    // #####.
+    // ##..##
+    // ##..##
+    // .####.
+    0xFF, 0xFF,
+    0xC3, 0xC3,  // .####. -> 11000011
+    0x9F, 0x9F,  // ##.... -> 10011111
+    0x83, 0x83,  // #####. -> 10000011
+    0x99, 0x99,  // ##..## -> 10011001
+    0x99, 0x99,  // ##..## -> 10011001
+    0xC3, 0xC3,  // .####. -> 11000011
+    0xFF, 0xFF,
+
+    // CHAR_7 (index 36)
+    // ######
+    // ....##
+    // ...##.
+    // ..##..
+    // ..##..
+    // ..##..
+    0xFF, 0xFF,
+    0x81, 0x81,  // ###### -> 10000001
+    0xF9, 0xF9,  // ....## -> 11111001
+    0xF3, 0xF3,  // ...##. -> 11110011
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xFF, 0xFF,
+
+    // CHAR_8 (index 37)
+    // .####.
+    // ##..##
+    // .####.
+    // ##..##
+    // ##..##
+    // .####.
+    0xFF, 0xFF,
+    0xC3, 0xC3,  // .####. -> 11000011
+    0x99, 0x99,  // ##..## -> 10011001
+    0xC3, 0xC3,  // .####. -> 11000011
+    0x99, 0x99,  // ##..## -> 10011001
+    0x99, 0x99,  // ##..## -> 10011001
+    0xC3, 0xC3,  // .####. -> 11000011
+    0xFF, 0xFF,
+
+    // CHAR_9 (index 38)
+    // .####.
+    // ##..##
+    // ##..##
+    // .#####
+    // ....##
+    // .####.
+    0xFF, 0xFF,
+    0xC3, 0xC3,  // .####. -> 11000011
+    0x99, 0x99,  // ##..## -> 10011001
+    0x99, 0x99,  // ##..## -> 10011001
+    0xC1, 0xC1,  // .##### -> 11000001
+    0xF9, 0xF9,  // ....## -> 11111001
+    0xC3, 0xC3,  // .####. -> 11000011
+    0xFF, 0xFF,
+
+    // CHAR_COLON (index 39)
+    // ......
+    // ..##..
+    // ..##..
+    // ......
+    // ..##..
+    // ..##..
+    0xFF, 0xFF,
+    0xFF, 0xFF,  // ...... -> 11111111
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xFF, 0xFF,  // ...... -> 11111111
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xFF, 0xFF,
 };
 
 /**
@@ -453,13 +634,19 @@ void load_font(void) {
 
 /**
  * Convert ASCII character to font tile index
- * @param c Character to convert (A-Z supported, others become space)
+ * @param c Character to convert (A-Z, 0-9, : supported, others become space)
  * @param base Base tile index (FONT_TILE_START or FONT_INVERTED_TILE_START)
  * @return Tile index for the character
  */
 static uint8_t char_to_tile(char c, uint8_t base) {
     if (c >= 'A' && c <= 'Z') {
         return base + CHAR_A + (c - 'A');  // base + 1 + (c - 'A')
+    }
+    if (c >= '0' && c <= '9') {
+        return base + CHAR_0 + (c - '0');  // base + 29 + (c - '0')
+    }
+    if (c == ':') {
+        return base + CHAR_COLON;  // base + 39
     }
     return base + CHAR_SPACE;  // Space (index 0) for unknown chars
 }
@@ -498,12 +685,13 @@ void clear_text_row(uint8_t x, uint8_t y, uint8_t width) {
 /**
  * Load inverted font tiles into VRAM starting at FONT_INVERTED_TILE_START
  * Generates inverted tiles at runtime by XOR'ing normal font with 0xFF
- * This saves ~464 bytes of ROM compared to storing pre-inverted data
+ * This saves ROM compared to storing pre-inverted data
  */
 void load_font_inverted(void) {
     uint8_t inverted_buffer[16];  // Buffer for one tile (16 bytes)
 
-    // Generate and load 28 inverted character tiles
+    // Generate and load all inverted character tiles (40 total)
+    // This includes letters, space, blank, white, numbers, and colon
     for (uint8_t tile_idx = 0; tile_idx < FONT_CHAR_COUNT; tile_idx++) {
         // Calculate source offset in font_tiles array
         const uint8_t* source = font_tiles + (tile_idx * 16);
@@ -517,8 +705,9 @@ void load_font_inverted(void) {
         set_bkg_data(FONT_INVERTED_TILE_START + tile_idx, 1, inverted_buffer);
     }
 
-    // Generate CHAR_WHITE tile (index 28) - all white (0x00)
-    // This is the inverse of CHAR_BLANK (all black/0xFF)
+    // Special case: CHAR_WHITE tile should be all white (0x00), not inverted
+    // The source CHAR_WHITE is 0x00, which inverts to 0xFF (black) - wrong!
+    // Override with explicit white tile for clear_text_row_inverted()
     for (uint8_t byte_idx = 0; byte_idx < 16; byte_idx++) {
         inverted_buffer[byte_idx] = 0x00;
     }

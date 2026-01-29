@@ -43,6 +43,17 @@
 #define CHAR_Z 26
 #define CHAR_BLANK 27  // Solid black tile for text background
 #define CHAR_WHITE 28  // Solid white tile for inverted text background
+#define CHAR_0 29
+#define CHAR_1 30
+#define CHAR_2 31
+#define CHAR_3 32
+#define CHAR_4 33
+#define CHAR_5 34
+#define CHAR_6 35
+#define CHAR_7 36
+#define CHAR_8 37
+#define CHAR_9 38
+#define CHAR_COLON 39  // Colon character for "R:7 F:0" display
 
 // Inverted font configuration (black text on white background)
 #define FONT_INVERTED_TILE_START VRAM_FONT_INVERTED_START

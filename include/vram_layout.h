@@ -86,38 +86,36 @@
 #define VRAM_COINFLIP_BORDER_COUNT 25
 
 /* ----------------------------------------------------------------------------
- * Font System (Tiles 140-196) - SHARED across all screens
+ * Font System (Tiles 140-219) - SHARED across all screens
  * These tiles persist across screen transitions and are never reloaded
  * ---------------------------------------------------------------------------- */
-// Regular font: 26 letters + space + blank tile
+// Regular font: 26 letters + space + blank + 10 numbers (0-9) + colon = 40 tiles
 #define VRAM_FONT_START 140
-#define VRAM_FONT_END 167
-#define VRAM_FONT_COUNT 28
+#define VRAM_FONT_END 179
+#define VRAM_FONT_COUNT 40
 
 // Inverted font: Generated at runtime via XOR (black text on white bg)
-// Contains: 26 letters + space + blank + white tile
-#define VRAM_FONT_INVERTED_START 168
-#define VRAM_FONT_INVERTED_END 196
-#define VRAM_FONT_INVERTED_COUNT 29
+// Contains: 26 letters + space + blank + white + 10 numbers + colon = 41 tiles
+#define VRAM_FONT_INVERTED_START 180
+#define VRAM_FONT_INVERTED_END 220
+#define VRAM_FONT_INVERTED_COUNT 41
 
 /* ----------------------------------------------------------------------------
- * Phase 6: Game Board (Tiles 197-255) - RESERVED
- * Now has 59 tiles available (197-255) since coin flip uses screen-isolated tiles
- * NOTE: May need optimization via:
- *   - Reusing symmetrical tiles
- *   - Using sprites for some UI elements
- *   - Palette tricks for color variation
+ * Phase 6: Game Board (Tiles 0-37) - SCREEN ISOLATED
+ * Game board is screen-isolated and uses tiles 0-37
+ * Board tiles do not overlap with font system (starts at 140)
+ * Tiles 217-255 remain available for future use
  * ---------------------------------------------------------------------------- */
-#define VRAM_GAMEBOARD_START 197
-#define VRAM_GAMEBOARD_END 255
-#define VRAM_GAMEBOARD_COUNT 59
+#define VRAM_GAMEBOARD_START 0
+#define VRAM_GAMEBOARD_END 37
+#define VRAM_GAMEBOARD_COUNT 38
 
 /* ----------------------------------------------------------------------------
  * Background Tile Budget Summary
  * ---------------------------------------------------------------------------- */
 #define VRAM_BG_TOTAL 256
-#define VRAM_BG_USED 197   // Peak usage: font system + reserved game board start
-#define VRAM_BG_AVAILABLE 59  // Tiles 197-255 available for game board
+#define VRAM_BG_USED 221   // Peak usage: font system (normal + inverted with numbers + colon)
+#define VRAM_BG_AVAILABLE 35  // Tiles 221-255 available for future use
 
 /* ============================================================================
  * SPRITE TILES (256 total, 0-255, separate address space)
@@ -165,14 +163,15 @@
 #error "VRAM conflict: Font overlaps with opponent select border tiles"
 #endif
 
-// Verify inverted font fits before game board reserved range
-#if VRAM_FONT_INVERTED_END >= VRAM_GAMEBOARD_START
-#error "VRAM conflict: Inverted font overlaps with game board reserved range"
+// Verify inverted font fits within VRAM
+#if VRAM_FONT_INVERTED_END > 255
+#error "VRAM overflow: Inverted font allocation exceeds 256 tile limit"
 #endif
 
-// Verify game board doesn't exceed VRAM
-#if VRAM_GAMEBOARD_END > 255
-#error "VRAM overflow: Game board allocation exceeds 256 tile limit"
+// Verify game board (screen-isolated) doesn't overlap with font
+// This is OK because game board only uses 0-37 and font starts at 140
+#if VRAM_GAMEBOARD_END >= VRAM_FONT_START
+#error "VRAM conflict: Game board overlaps with font tiles"
 #endif
 
 // Verify sprite allocations

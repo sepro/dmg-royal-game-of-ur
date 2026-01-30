@@ -745,6 +745,27 @@ void clear_text_row_inverted(uint8_t x, uint8_t y, uint8_t width) {
     set_bkg_tiles(x, y, width, 1, tile_buf);
 }
 
+/**
+ * Draw a string using inverted font to either background or window layer
+ */
+void draw_text_at(uint8_t x, uint8_t y, const char *str, uint8_t use_window) {
+    uint8_t tile_buf[20];  // Max 20 tiles per row
+    uint8_t i = 0;
+
+    while (str[i] != '\0' && i < 20) {
+        tile_buf[i] = char_to_tile(str[i], FONT_INVERTED_TILE_START);
+        i++;
+    }
+
+    if (i > 0) {
+        if (use_window) {
+            set_win_tiles(x, y, i, 1, tile_buf);
+        } else {
+            set_bkg_tiles(x, y, i, 1, tile_buf);
+        }
+    }
+}
+
 // External reference to border tiles (from border.c)
 extern const uint8_t border_tiles[];
 

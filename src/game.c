@@ -9,6 +9,8 @@
 #include "game_types.h"
 #include "game.h"
 #include "coinflip.h"
+#include "difficulty_select.h"
+#include "opponent_data.h"
 #include "font.h"
 #include "input.h"
 
@@ -32,9 +34,8 @@ extern const unsigned char profile_03_map[];
 extern const uint8_t profile_04_tiles[];
 extern const unsigned char profile_04_map[];
 
-// External reference to opponent data
-extern const uint8_t profile_tile_counts[];
-extern uint8_t selected_opponent;
+// External reference to opponent data (from opponent_data.h and opponent_select.h)
+// profile_tile_counts, opponent_names, selected_opponent declared in included headers
 
 // External reference to next_state from main.c
 extern ScreenState_t next_state;
@@ -69,6 +70,15 @@ static uint8_t result_timer;           // Timer for result display
 // Random state (LFSR)
 static uint16_t rand_state;
 static uint8_t frame_counter;
+
+// Turn and time tracking (Phase 8a)
+static uint16_t turn_count;          // Number of turns played
+static uint16_t elapsed_frames;      // Frames since game started (for time tracking)
+
+// Pause state (Phase 8a)
+static uint8_t is_paused;            // 1 = paused, 0 = running
+static uint8_t pause_animating;      // 1 = window sliding, 0 = static
+static uint8_t window_y;             // Current window Y position
 
 // ============================================================================
 // Random Number Generator (Galois LFSR)
@@ -300,6 +310,175 @@ static void update_dice_sprites(void) {
 }
 
 // ============================================================================
+// Pause Screen Functions (Phase 8a)
+// ============================================================================
+
+/**
+ * Draw a number (up to 3 digits) at position in window
+ */
+static void draw_number_win(uint8_t x, uint8_t y, uint16_t num) {
+    char buf[4];
+    uint8_t i = 0;
+
+    if (num >= 100) {
+        buf[i++] = '0' + (num / 100);
+        num %= 100;
+        buf[i++] = '0' + (num / 10);
+        buf[i++] = '0' + (num % 10);
+    } else if (num >= 10) {
+        buf[i++] = '0' + (num / 10);
+        buf[i++] = '0' + (num % 10);
+    } else {
+        buf[i++] = '0' + num;
+    }
+    buf[i] = '\0';
+
+    draw_text_at(x, y, buf, 1);  // 1 = use window layer
+}
+
+/**
+ * Draw time in MM:SS format at position in window
+ */
+static void draw_time_win(uint8_t x, uint8_t y, uint16_t total_frames) {
+    uint16_t total_seconds = total_frames / 60;
+    uint8_t minutes = total_seconds / 60;
+    uint8_t seconds = total_seconds % 60;
+
+    char buf[6];
+    buf[0] = '0' + (minutes / 10);
+    buf[1] = '0' + (minutes % 10);
+    buf[2] = ':';
+    buf[3] = '0' + (seconds / 10);
+    buf[4] = '0' + (seconds % 10);
+    buf[5] = '\0';
+
+    draw_text_at(x, y, buf, 1);  // 1 = use window layer
+}
+
+/**
+ * Fill window with blank tiles
+ */
+static void clear_pause_window(void) {
+    uint8_t blank_tile = VRAM_FONT_INVERTED_START;  // Blank inverted tile
+    uint8_t row[PAUSE_WIN_WIDTH];
+
+    for (uint8_t i = 0; i < PAUSE_WIN_WIDTH; i++) {
+        row[i] = blank_tile;
+    }
+
+    for (uint8_t y = 0; y < PAUSE_WIN_HEIGHT; y++) {
+        set_win_tiles(0, y, PAUSE_WIN_WIDTH, 1, row);
+    }
+}
+
+/**
+ * Draw the pause screen content on the window layer
+ */
+static void draw_pause_content(void) {
+    // Clear window first
+    clear_pause_window();
+
+    // Title
+    draw_text_at(PAUSE_TITLE_X, PAUSE_TITLE_Y, "PAUSED", 1);
+
+    // Turn count
+    draw_text_at(PAUSE_TURN_X, PAUSE_TURN_Y, "TURN:", 1);
+    draw_number_win(PAUSE_TURN_X + 6, PAUSE_TURN_Y, turn_count);
+
+    // Time played
+    draw_text_at(PAUSE_TIME_X, PAUSE_TIME_Y, "TIME:", 1);
+    draw_time_win(PAUSE_TIME_X + 6, PAUSE_TIME_Y, elapsed_frames);
+
+    // Player scores
+    draw_text_at(PAUSE_YOU_X, PAUSE_YOU_Y, "YOU FINISHED:", 1);
+    draw_number_win(PAUSE_YOU_X + 14, PAUSE_YOU_Y, human_finished);
+
+    draw_text_at(PAUSE_CPU_X, PAUSE_CPU_Y, "CPU FINISHED:", 1);
+    draw_number_win(PAUSE_CPU_X + 14, PAUSE_CPU_Y, cpu_finished);
+
+    // Opponent name
+    draw_text_at(PAUSE_VS_X, PAUSE_VS_Y, "VS", 1);
+    draw_text_at(PAUSE_VS_X + 3, PAUSE_VS_Y, opponent_names[selected_opponent], 1);
+
+    // Difficulty
+    draw_text_at(PAUSE_DIFF_X, PAUSE_DIFF_Y, "DIFFICULTY:", 1);
+    switch (selected_difficulty) {
+        case DIFFICULTY_EASY:
+            draw_text_at(PAUSE_DIFF_X + 12, PAUSE_DIFF_Y, "EASY", 1);
+            break;
+        case DIFFICULTY_MEDIUM:
+            draw_text_at(PAUSE_DIFF_X + 12, PAUSE_DIFF_Y, "MEDIUM", 1);
+            break;
+        case DIFFICULTY_HARD:
+            draw_text_at(PAUSE_DIFF_X + 12, PAUSE_DIFF_Y, "HARD", 1);
+            break;
+    }
+
+    // Hint to unpause
+    draw_text_at(PAUSE_HINT_X, PAUSE_HINT_Y, "PRESS START", 1);
+}
+
+/**
+ * Start pause sequence - begin sliding window up
+ */
+static void start_pause(void) {
+    is_paused = 1;
+    pause_animating = 1;
+
+    // Draw pause content before showing
+    draw_pause_content();
+
+    // Position window at bottom (off screen) and enable it
+    window_y = PAUSE_WIN_Y_HIDDEN;
+    move_win(PAUSE_WIN_X, window_y);
+    SHOW_WIN;
+}
+
+/**
+ * Start unpause sequence - begin sliding window down
+ */
+static void start_unpause(void) {
+    pause_animating = 1;
+}
+
+/**
+ * Update pause animation (window sliding)
+ * Returns 1 if still animating, 0 if done
+ */
+static uint8_t update_pause_animation(void) {
+    if (!pause_animating) return 0;
+
+    if (is_paused) {
+        // Sliding up (showing pause screen)
+        if (window_y > PAUSE_WIN_Y_VISIBLE) {
+            window_y -= PAUSE_ANIM_SPEED;
+            if (window_y < PAUSE_WIN_Y_VISIBLE) {
+                window_y = PAUSE_WIN_Y_VISIBLE;
+            }
+            move_win(PAUSE_WIN_X, window_y);
+        } else {
+            pause_animating = 0;  // Animation complete
+        }
+    } else {
+        // Sliding down (hiding pause screen)
+        if (window_y < PAUSE_WIN_Y_HIDDEN) {
+            window_y += PAUSE_ANIM_SPEED;
+            if (window_y >= PAUSE_WIN_Y_HIDDEN) {
+                window_y = PAUSE_WIN_Y_HIDDEN;
+                HIDE_WIN;
+                pause_animating = 0;  // Animation complete
+            }
+            move_win(PAUSE_WIN_X, window_y);
+        } else {
+            HIDE_WIN;
+            pause_animating = 0;
+        }
+    }
+
+    return pause_animating;
+}
+
+// ============================================================================
 // Dice Rolling Logic
 // ============================================================================
 
@@ -371,6 +550,7 @@ static void update_dice_animation(void) {
  */
 static void switch_turn(void) {
     current_turn = (current_turn == 0) ? 1 : 0;
+    turn_count++;  // Increment turn counter
     draw_turn_indicator();
 
     // Reset to wait for roll
@@ -433,6 +613,16 @@ void init_game(void) {
     frame_counter = 0;
     seed_random();
 
+    // Initialize turn and time tracking (Phase 8a)
+    turn_count = 1;          // Start at turn 1
+    elapsed_frames = 0;
+
+    // Initialize pause state (Phase 8a)
+    is_paused = 0;
+    pause_animating = 0;
+    window_y = PAUSE_WIN_Y_HIDDEN;
+    HIDE_WIN;  // Ensure window starts hidden
+
     // Draw UI elements
     draw_player_info();
     draw_turn_indicator();
@@ -461,6 +651,32 @@ void update_game(void) {
 
     // Update input state
     input_update();
+
+    // Handle pause toggle with START button
+    if (input_pressed(J_START) && !pause_animating) {
+        if (is_paused) {
+            // Unpause
+            is_paused = 0;
+            start_unpause();
+        } else {
+            // Pause
+            start_pause();
+        }
+    }
+
+    // Update pause animation if active
+    if (pause_animating) {
+        update_pause_animation();
+        return;  // Don't update game while animating
+    }
+
+    // If paused, don't update game logic or time
+    if (is_paused) {
+        return;
+    }
+
+    // Increment elapsed time (only when not paused)
+    elapsed_frames++;
 
     // Game phase state machine
     switch (game_phase) {

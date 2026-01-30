@@ -112,6 +112,37 @@
 #define RESULT_PAUSE_FRAMES 30  // Show result for half second
 
 // ============================================================================
+// Pause Screen Constants
+// ============================================================================
+// Window layer positioning (hardware offsets: WX has +7, WY is absolute)
+#define PAUSE_WIN_X             7   // Left edge (WX minimum is 7)
+#define PAUSE_WIN_Y_HIDDEN      144 // Off screen (below visible area)
+#define PAUSE_WIN_Y_VISIBLE     40  // Target Y when paused (row 5)
+#define PAUSE_ANIM_SPEED        8   // Pixels per frame for slide animation
+
+// Pause window layout (tile coordinates within window)
+#define PAUSE_TITLE_X           6   // "PAUSED" centered
+#define PAUSE_TITLE_Y           1
+#define PAUSE_TURN_X            2   // "TURN: XXX"
+#define PAUSE_TURN_Y            3
+#define PAUSE_TIME_X            2   // "TIME: MM:SS"
+#define PAUSE_TIME_Y            4
+#define PAUSE_YOU_X             2   // "YOU:  FINISHED: X"
+#define PAUSE_YOU_Y             6
+#define PAUSE_CPU_X             2   // "CPU:  FINISHED: X"
+#define PAUSE_CPU_Y             7
+#define PAUSE_VS_X              2   // "VS THE SCHOLAR"
+#define PAUSE_VS_Y              9
+#define PAUSE_DIFF_X            2   // "DIFFICULTY: EASY"
+#define PAUSE_DIFF_Y            10
+#define PAUSE_HINT_X            3   // "PRESS START"
+#define PAUSE_HINT_Y            12
+
+// Window dimensions in tiles
+#define PAUSE_WIN_WIDTH         20
+#define PAUSE_WIN_HEIGHT        13
+
+// ============================================================================
 // Game Constants
 // ============================================================================
 #define PIECES_PER_PLAYER   7   // Each player has 7 pieces

@@ -62,4 +62,4 @@ $(OBJDIR)/coinflip.o: $(INCDIR)/game_types.h $(INCDIR)/coinflip.h $(INCDIR)/font
 $(OBJDIR)/font.o: $(INCDIR)/font.h
 $(OBJDIR)/input.o: $(INCDIR)/input.h
 $(OBJDIR)/opponent_data.o: $(INCDIR)/opponent_data.h
-$(OBJDIR)/game.o: $(INCDIR)/game_types.h $(INCDIR)/game.h $(INCDIR)/coinflip.h $(INCDIR)/font.h $(INCDIR)/input.h
+$(OBJDIR)/game.o: $(INCDIR)/game_types.h $(INCDIR)/game.h $(INCDIR)/coinflip.h $(INCDIR)/difficulty_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h

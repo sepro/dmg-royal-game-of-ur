@@ -112,6 +112,15 @@ void draw_text_inverted(uint8_t x, uint8_t y, const char *str);
 void clear_text_row_inverted(uint8_t x, uint8_t y, uint8_t width);
 
 /**
+ * Draw a string using inverted font to either background or window layer
+ * @param x Tile X position (0-19)
+ * @param y Tile Y position (0-17 for BKG, 0-31 for WIN)
+ * @param str String to draw (uppercase, limited charset)
+ * @param use_window 0 = background layer, 1 = window layer
+ */
+void draw_text_at(uint8_t x, uint8_t y, const char *str, uint8_t use_window);
+
+/**
  * Load border tiles inverted (XOR with 0xFF) into VRAM
  * Used for dark background screens (opponent select) where border
  * needs to be light-on-dark instead of dark-on-light

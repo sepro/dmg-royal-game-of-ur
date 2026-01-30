@@ -45,31 +45,15 @@ This plan breaks down the development into manageable phases, each building on t
 - "Press A to roll" input flow with result display
 - Roll result stored for move selection phase
 
+### Phase 8a: Pause Screen ✓
+- Turn counter tracking (increments each turn switch)
+- Elapsed time tracking in frames (pauses when game is paused)
+- Window layer overlay with smooth slide-up/down animation
+- Pause screen displays: turn number, time (MM:SS), player scores, opponent name, difficulty
+- START button toggles pause state
+- Sprites hidden during pause to prevent rendering over window layer
+
 ---
-
-## Phase 8a: Pause Screen
-
-**Goal:** When start is pressed, bring up a pause screen, with some stats about the game
-
-### Tasks
-1. **Track the number of turns**
-2. **Track how long the game has been going on**
-  - Count the number of seconds since the game has started
-  - Don't increase while paused
-3. **Using the overlay layer, if start is pressed bring up a paused screen showing stats**
-  - Current turn
-  - Time played in MM:SS
-  - Current scores
-  - Current opponent and difficulty
-4. **If start is pressed the game is unpaused, the timer continues and the overlay is removed**
-
-### Note
-
-The overlay layer can shift up over the game in a simple animation
-
-### Deliverable
-
-The game can be paused and while paused the screen shows relevant stats
 
 ## Phase 8b: Track game state
 

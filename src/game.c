@@ -425,6 +425,9 @@ static void start_pause(void) {
     is_paused = 1;
     pause_animating = 1;
 
+    // Hide sprites so they don't render on top of window
+    HIDE_SPRITES;
+
     // Draw pause content before showing
     draw_pause_content();
 
@@ -466,11 +469,13 @@ static uint8_t update_pause_animation(void) {
             if (window_y >= PAUSE_WIN_Y_HIDDEN) {
                 window_y = PAUSE_WIN_Y_HIDDEN;
                 HIDE_WIN;
+                SHOW_SPRITES;  // Restore sprites when fully unpaused
                 pause_animating = 0;  // Animation complete
             }
             move_win(PAUSE_WIN_X, window_y);
         } else {
             HIDE_WIN;
+            SHOW_SPRITES;  // Restore sprites when fully unpaused
             pause_animating = 0;
         }
     }

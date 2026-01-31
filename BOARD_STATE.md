@@ -38,6 +38,20 @@ The Royal Game of Ur uses an H-shaped board with this logical path:
 
 ---
 
+## Board layout
+
+Note that the board is layed out like as shown below:
+
+
+[4][3][2][1][S][F][14][13]    // P1 Private side
+[5][6][7][8][9][10][11][12]   // Shared path
+[4][3][2][1][S][F][14][13]    // P2 Private side
+
+[S] is the starting zone, here a sprite could be shown, which when selected would move a piece on the board at a later phase.
+[F] is the final zone, when a piece would move off the board when selected a sprite could be shown here. 
+
+[S] and [F] are empty gaps in the board.
+
 ## Required Data Structures
 
 ### Piece Position Arrays

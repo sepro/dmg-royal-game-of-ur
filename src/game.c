@@ -53,6 +53,9 @@ extern uint8_t starting_player;
 // Game State Variables
 // ============================================================================
 
+// Win/lose state (exported for endgame screen)
+uint8_t human_won = 0;
+
 // Player state (exported for board_state.c)
 uint8_t human_color;      // SIDE_LIGHT or SIDE_DARK
 uint8_t cpu_color;        // Opposite of human_color
@@ -834,6 +837,7 @@ void update_game(void) {
                         update_board_display();
 
                         if (check_win_condition()) {
+                            human_won = (current_turn == 0) ? 1 : 0;  // 0 = human, 1 = CPU
                             next_state = STATE_ENDGAME;
                         } else if (extra_turn) {
                             draw_prompt("ROSETTE! GO AGAIN");

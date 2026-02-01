@@ -185,4 +185,10 @@ void update_game(void);
  */
 void cleanup_game(void);
 
+/**
+ * Win/lose state for endgame screen
+ * 1 = human won, 0 = human lost
+ */
+extern uint8_t human_won;
+
 #endif // GAME_H

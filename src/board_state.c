@@ -75,39 +75,39 @@ static const BoardSquare_t p2_private_squares[6] = {
 static const uint8_t piece_tiles[6][3][4] = {
     // SQUARE_TYPE_ROSETTE (row 0)
     {
-        {  0,  1,  6,  7 },  // PIECE_NONE
-        {  2,  3,  8,  9 },  // PIECE_WHITE
-        {  4,  5, 10, 11 },  // PIECE_BLACK
+        {  0,  2,  1,  3 },  // PIECE_NONE
+        {  4,  6,  5,  7 },  // PIECE_WHITE
+        {  8,  10, 9, 11 },  // PIECE_BLACK
     },
     // SQUARE_TYPE_A (row 1)
     {
-        { 12, 13, 18, 19 },  // PIECE_NONE
-        { 14, 15, 20, 21 },  // PIECE_WHITE
-        { 16, 17, 22, 23 },  // PIECE_BLACK
+        { 12, 14, 13, 15 },  // PIECE_NONE
+        { 16, 18, 17, 19 },  // PIECE_WHITE
+        { 20, 22, 21, 23 },  // PIECE_BLACK
     },
     // SQUARE_TYPE_B (row 2)
     {
-        { 24, 25, 30, 31 },  // PIECE_NONE
-        { 26, 27, 32, 33 },  // PIECE_WHITE
-        { 28, 29, 34, 35 },  // PIECE_BLACK
+        { 24, 26, 25, 27 },  // PIECE_NONE
+        { 28, 30, 29, 31 },  // PIECE_WHITE
+        { 32, 34, 33, 35 },  // PIECE_BLACK
     },
     // SQUARE_TYPE_C (row 3)
     {
-        { 36, 37, 42, 43 },  // PIECE_NONE
-        { 38, 39, 44, 45 },  // PIECE_WHITE
-        { 40, 41, 46, 47 },  // PIECE_BLACK
+        { 36, 38, 37, 39 },  // PIECE_NONE
+        { 40, 42, 41, 43 },  // PIECE_WHITE
+        { 44, 46, 45, 47 },  // PIECE_BLACK
     },
     // SQUARE_TYPE_D (row 4)
     {
-        { 48, 49, 54, 55 },  // PIECE_NONE
-        { 50, 51, 56, 57 },  // PIECE_WHITE
-        { 52, 53, 58, 59 },  // PIECE_BLACK
+        { 48, 50, 49, 51 },  // PIECE_NONE
+        { 52, 54, 53, 55 },  // PIECE_WHITE
+        { 56, 58, 57, 59 },  // PIECE_BLACK
     },
     // SQUARE_TYPE_E (row 5)
     {
-        { 60, 61, 66, 67 },  // PIECE_NONE
-        { 62, 63, 68, 69 },  // PIECE_WHITE
-        { 64, 65, 70, 71 },  // PIECE_BLACK
+        { 60, 62, 61, 63 },  // PIECE_NONE
+        { 64, 66, 65, 67 },  // PIECE_WHITE
+        { 68, 70, 69, 71 },  // PIECE_BLACK
     },
 };
 

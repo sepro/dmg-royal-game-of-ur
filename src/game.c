@@ -59,8 +59,8 @@ uint8_t cpu_color;        // Opposite of human_color
 static uint8_t current_turn;     // 0 = human, 1 = cpu
 
 // Piece position arrays (exported for board_state.c)
-uint8_t human_pieces[7];  // Position of each piece (0=reserve, 1-14=board, 15=finished)
-uint8_t cpu_pieces[7];
+uint8_t human_pieces[PIECES_PER_PLAYER];  // Position of each piece (0=reserve, 1-14=board, 15=finished)
+uint8_t cpu_pieces[PIECES_PER_PLAYER];
 
 // Piece counts (derived from position arrays)
 static uint8_t human_reserve;    // Pieces not yet on board
@@ -622,7 +622,7 @@ static void update_piece_counts(void) {
     cpu_reserve = 0;
     cpu_finished = 0;
 
-    for (uint8_t i = 0; i < 7; i++) {
+    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
         if (human_pieces[i] == POS_RESERVE) human_reserve++;
         else if (human_pieces[i] == POS_FINISHED) human_finished++;
 
@@ -632,13 +632,13 @@ static void update_piece_counts(void) {
 }
 
 /**
- * Check if current player has won (7 pieces finished)
+ * Check if current player has won (all pieces finished)
  */
 static uint8_t check_win_condition(void) {
     if (current_turn == 0) {
-        return (human_finished >= 7) ? 1 : 0;
+        return (human_finished >= PIECES_PER_PLAYER) ? 1 : 0;
     } else {
-        return (cpu_finished >= 7) ? 1 : 0;
+        return (cpu_finished >= PIECES_PER_PLAYER) ? 1 : 0;
     }
 }
 
@@ -683,7 +683,7 @@ void init_game(void) {
     current_turn = starting_player;
 
     // Initialize piece position arrays (Phase 8b)
-    for (uint8_t i = 0; i < 7; i++) {
+    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
         human_pieces[i] = POS_RESERVE;
         cpu_pieces[i] = POS_RESERVE;
     }

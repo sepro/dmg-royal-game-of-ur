@@ -9,14 +9,15 @@
 #include "board_state.h"
 #include "coinflip.h"
 #include "vram_layout.h"
+#include "game.h"
 
 // ============================================================================
 // External References
 // ============================================================================
 
 // Piece position arrays from game.c
-extern uint8_t human_pieces[7];
-extern uint8_t cpu_pieces[7];
+extern uint8_t human_pieces[PIECES_PER_PLAYER];
+extern uint8_t cpu_pieces[PIECES_PER_PLAYER];
 
 // Player colors from game.c
 extern uint8_t human_color;
@@ -139,7 +140,7 @@ static uint8_t get_piece_at(uint8_t pos, uint8_t player) {
     uint8_t *pieces = (player == PLAYER_HUMAN) ? human_pieces : cpu_pieces;
     uint8_t color = (player == PLAYER_HUMAN) ? human_color : cpu_color;
 
-    for (uint8_t i = 0; i < 7; i++) {
+    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
         if (pieces[i] == pos) {
             return (color == SIDE_LIGHT) ? PIECE_WHITE : PIECE_BLACK;
         }
@@ -153,13 +154,13 @@ static uint8_t get_piece_at(uint8_t pos, uint8_t player) {
  */
 static uint8_t get_piece_at_shared(uint8_t pos) {
     // Check human pieces
-    for (uint8_t i = 0; i < 7; i++) {
+    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
         if (human_pieces[i] == pos) {
             return (human_color == SIDE_LIGHT) ? PIECE_WHITE : PIECE_BLACK;
         }
     }
     // Check CPU pieces
-    for (uint8_t i = 0; i < 7; i++) {
+    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
         if (cpu_pieces[i] == pos) {
             return (cpu_color == SIDE_LIGHT) ? PIECE_WHITE : PIECE_BLACK;
         }
@@ -248,7 +249,7 @@ uint8_t is_valid_move(uint8_t player, uint8_t piece_idx, uint8_t roll) {
     }
 
     // Can't land on own piece
-    for (uint8_t i = 0; i < 7; i++) {
+    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
         if (pieces[i] == new_pos && i != piece_idx) return 0;
     }
 
@@ -256,7 +257,7 @@ uint8_t is_valid_move(uint8_t player, uint8_t piece_idx, uint8_t roll) {
     if (new_pos >= 5 && new_pos <= 12) {
         // Can't capture on rosette (position 8)
         if (is_rosette(new_pos)) {
-            for (uint8_t i = 0; i < 7; i++) {
+            for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
                 if (opponent[i] == new_pos) return 0;  // Opponent on rosette = safe
             }
         }
@@ -285,7 +286,7 @@ uint8_t execute_move(uint8_t player, uint8_t piece_idx, uint8_t roll) {
 
     // Check for capture on shared squares (5-12, excluding rosette 8)
     if (new_pos >= 5 && new_pos <= 12 && !is_rosette(new_pos)) {
-        for (uint8_t i = 0; i < 7; i++) {
+        for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
             if (opponent[i] == new_pos) {
                 // Capture! Send opponent piece back to reserve
                 opponent[i] = POS_RESERVE;
@@ -306,11 +307,11 @@ uint8_t execute_move(uint8_t player, uint8_t piece_idx, uint8_t roll) {
 }
 
 uint8_t find_random_valid_move(uint8_t player, uint8_t roll, uint8_t *out_piece_idx) {
-    uint8_t valid_moves[7];
+    uint8_t valid_moves[PIECES_PER_PLAYER];
     uint8_t num_valid = 0;
 
     // Find all valid moves
-    for (uint8_t i = 0; i < 7; i++) {
+    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
         if (is_valid_move(player, i, roll)) {
             valid_moves[num_valid] = i;
             num_valid++;

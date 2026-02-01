@@ -13,7 +13,7 @@ static uint8_t cpu_reserve;
 static uint8_t cpu_finished;
 ```
 
-The board is drawn once as a static image from `board_tiles` and `board_map` and never updated during gameplay.
+The board is drawn once as a static image from `board_tiles` and `board_map` and never updated during gameplay. --> You can keep drawing this initially as it also includes a border, we can optimize at a later stage!
 
 ---
 

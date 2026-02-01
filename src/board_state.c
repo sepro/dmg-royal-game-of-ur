@@ -60,44 +60,56 @@ static const BoardSquare_t p2_private_squares[6] = {
 };
 
 // ============================================================================
-// Tile Index Calculation
+// Tile Index Lookup Table
 // ============================================================================
 
 /**
- * Get base tile index for a square type and piece state
- * board_tiles_pieces.png layout:
- * - 3 columns: empty, white piece, black piece
- * - 6 rows: rosette, type A, B, C, D, E
- * - Each cell is 2x2 tiles (16x16 pixels) = 4 tiles
- * - Tiles arranged row by row: row0_col0, row0_col1, row0_col2, row1_col0, ...
+ * Tile indices for each [square_type][piece_state] combination
+ * board_tiles_pieces.png layout (48x96 pixels = 6x12 tiles of 8x8 each):
+ * - 3 columns: empty (0), white piece (1), black piece (2)
+ * - 6 rows: rosette (0), type A (1), B (2), C (3), D (4), E (5)
+ * - Each 16x16 square uses 4 tiles: [0]top-left, [1]top-right, [2]bottom-left, [3]bottom-right
+ * - Source tiles are numbered 0-71 (6 wide × 12 tall)
+ * - After loading to VRAM at VRAM_PIECE_TILES_START, add that offset to use them
  */
-static uint8_t get_tile_base(uint8_t square_type, uint8_t piece_state) {
-    // Each row has 3 columns x 4 tiles = 12 tiles
-    // Each column has 4 tiles (2x2)
-    // tile_index = (row * 12) + (col * 4)
-    // But png2asset outputs tiles left-to-right, top-to-bottom
-    // So: (row * 3 * 4) + (col * 4) = (row * 12) + (col * 4)
-
-    // However, png2asset processes 8x8 tiles in row order:
-    // For a 48x96 image: 6 tiles wide, 12 tiles tall
-    // Row 0 of squares = tile rows 0-1 (16 pixels)
-    // Each 16x16 square uses 4 tiles in this pattern within its 2x2 area
-
-    // Corrected calculation for png2asset tile ordering:
-    // Image is 48x96 pixels = 6x12 tiles (8x8 each)
-    // Each square type row is 2 tile rows (16 pixels)
-    // Each piece state column is 2 tile columns (16 pixels)
-    // Tiles are numbered left-to-right, top-to-bottom
-
-    // For row R (0-5) and column C (0-2):
-    // Top-left tile of 16x16 square = (R * 2) * 6 + (C * 2)
-    // Pattern within 2x2:
-    //   [base+0] [base+1]
-    //   [base+6] [base+7]
-
-    uint8_t base = (square_type * 2 * 6) + (piece_state * 2);
-    return VRAM_PIECE_TILES_START + base;
-}
+static const uint8_t piece_tiles[6][3][4] = {
+    // SQUARE_TYPE_ROSETTE (row 0)
+    {
+        {  0,  1,  6,  7 },  // PIECE_NONE
+        {  2,  3,  8,  9 },  // PIECE_WHITE
+        {  4,  5, 10, 11 },  // PIECE_BLACK
+    },
+    // SQUARE_TYPE_A (row 1)
+    {
+        { 12, 13, 18, 19 },  // PIECE_NONE
+        { 14, 15, 20, 21 },  // PIECE_WHITE
+        { 16, 17, 22, 23 },  // PIECE_BLACK
+    },
+    // SQUARE_TYPE_B (row 2)
+    {
+        { 24, 25, 30, 31 },  // PIECE_NONE
+        { 26, 27, 32, 33 },  // PIECE_WHITE
+        { 28, 29, 34, 35 },  // PIECE_BLACK
+    },
+    // SQUARE_TYPE_C (row 3)
+    {
+        { 36, 37, 42, 43 },  // PIECE_NONE
+        { 38, 39, 44, 45 },  // PIECE_WHITE
+        { 40, 41, 46, 47 },  // PIECE_BLACK
+    },
+    // SQUARE_TYPE_D (row 4)
+    {
+        { 48, 49, 54, 55 },  // PIECE_NONE
+        { 50, 51, 56, 57 },  // PIECE_WHITE
+        { 52, 53, 58, 59 },  // PIECE_BLACK
+    },
+    // SQUARE_TYPE_E (row 5)
+    {
+        { 60, 61, 66, 67 },  // PIECE_NONE
+        { 62, 63, 68, 69 },  // PIECE_WHITE
+        { 64, 65, 70, 71 },  // PIECE_BLACK
+    },
+};
 
 // ============================================================================
 // Drawing Functions
@@ -108,16 +120,14 @@ static uint8_t get_tile_base(uint8_t square_type, uint8_t piece_state) {
  */
 static void draw_board_square(uint8_t tile_x, uint8_t tile_y,
                               uint8_t square_type, uint8_t piece_state) {
-    uint8_t base = get_tile_base(square_type, piece_state);
+    const uint8_t *tiles = piece_tiles[square_type][piece_state];
 
-    // Draw 2x2 tile block
-    // png2asset tile layout within 2x2 square:
-    //   [base+0] [base+1]
-    //   [base+6] [base+7]  (next row is +6 because image is 6 tiles wide)
-    set_bkg_tile_xy(tile_x,     tile_y,     base);
-    set_bkg_tile_xy(tile_x + 1, tile_y,     base + 1);
-    set_bkg_tile_xy(tile_x,     tile_y + 1, base + 6);
-    set_bkg_tile_xy(tile_x + 1, tile_y + 1, base + 7);
+    // Draw 2x2 tile block using explicit tile indices from lookup table
+    // Tiles are source indices (0-71), add VRAM_PIECE_TILES_START for VRAM position
+    set_bkg_tile_xy(tile_x,     tile_y,     VRAM_PIECE_TILES_START + tiles[0]);
+    set_bkg_tile_xy(tile_x + 1, tile_y,     VRAM_PIECE_TILES_START + tiles[1]);
+    set_bkg_tile_xy(tile_x,     tile_y + 1, VRAM_PIECE_TILES_START + tiles[2]);
+    set_bkg_tile_xy(tile_x + 1, tile_y + 1, VRAM_PIECE_TILES_START + tiles[3]);
 }
 
 /**

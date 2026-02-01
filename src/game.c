@@ -38,6 +38,10 @@ extern const unsigned char profile_04_map[];
 // External reference to opponent data (from opponent_data.h and opponent_select.h)
 // profile_tile_counts, opponent_names, selected_opponent declared in included headers
 
+// External reference to border assets
+extern const uint8_t border_tiles[];
+extern const unsigned char border_map[];
+
 // External reference to next_state from main.c
 extern ScreenState_t next_state;
 
@@ -377,11 +381,47 @@ static void clear_pause_window(void) {
 }
 
 /**
+ * Draw decorative border around pause window
+ * Uses border tiles to create a frame
+ */
+static void draw_pause_border(void) {
+    uint8_t row_buf[PAUSE_WIN_WIDTH];
+
+    // Top row (y=0): Left corner + repeated top edges + right corner
+    row_buf[0] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x00);  // Top-left corner
+    for (uint8_t x = 1; x < 19; x++) {
+        // Repeat top edge tiles (0x01-0x05 pattern)
+        row_buf[x] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x01 + ((x - 1) % 5));
+    }
+    row_buf[19] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x06);  // Top-right corner
+    set_win_tiles(0, 0, PAUSE_WIN_WIDTH, 1, row_buf);
+
+    // Middle rows (y=1-16): Left edge + white fill + right edge
+    for (uint8_t y = 1; y < 17; y++) {
+        row_buf[0] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x07);  // Left edge
+        for (uint8_t x = 1; x < 19; x++) {
+            row_buf[x] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x08);  // White fill
+        }
+        row_buf[19] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x09);  // Right edge
+        set_win_tiles(0, y, PAUSE_WIN_WIDTH, 1, row_buf);
+    }
+
+    // Bottom row (y=17): Left corner + repeated bottom edges + right corner
+    row_buf[0] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x12);  // Bottom-left corner
+    for (uint8_t x = 1; x < 19; x++) {
+        // Repeat bottom edge tiles (0x13-0x17 pattern)
+        row_buf[x] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x13 + ((x - 1) % 5));
+    }
+    row_buf[19] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x18);  // Bottom-right corner
+    set_win_tiles(0, 17, PAUSE_WIN_WIDTH, 1, row_buf);
+}
+
+/**
  * Draw the pause screen content on the window layer
  */
 static void draw_pause_content(void) {
-    // Clear window first
-    clear_pause_window();
+    // Draw border frame first
+    draw_pause_border();
 
     // Title
     draw_text_at(PAUSE_TITLE_X, PAUSE_TITLE_Y, "PAUSED", 1);
@@ -433,6 +473,9 @@ static void start_pause(void) {
     // Hide sprites so they don't render on top of window
     HIDE_SPRITES;
 
+    // Load border tiles for pause window decoration
+    set_win_data(PAUSE_BORDER_TILE_START, PAUSE_BORDER_COUNT, border_tiles);
+
     // Draw pause content before showing
     draw_pause_content();
 
@@ -459,8 +502,9 @@ static uint8_t update_pause_animation(void) {
     if (is_paused) {
         // Sliding up (showing pause screen)
         if (window_y > PAUSE_WIN_Y_VISIBLE) {
-            window_y -= PAUSE_ANIM_SPEED;
-            if (window_y < PAUSE_WIN_Y_VISIBLE) {
+            if (window_y >= PAUSE_ANIM_SPEED) {
+                window_y -= PAUSE_ANIM_SPEED;
+            } else {
                 window_y = PAUSE_WIN_Y_VISIBLE;
             }
             move_win(PAUSE_WIN_X, window_y);

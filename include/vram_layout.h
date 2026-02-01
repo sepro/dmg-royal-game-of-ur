@@ -120,11 +120,19 @@
 #define VRAM_PIECE_TILES_END      135
 
 /* ----------------------------------------------------------------------------
+ * Pause Screen Border (Tiles 221-245)
+ * Shared with game screen, loaded only when pause is active
+ * ---------------------------------------------------------------------------- */
+#define VRAM_PAUSE_BORDER_START 221
+#define VRAM_PAUSE_BORDER_END 245
+#define VRAM_PAUSE_BORDER_COUNT 25
+
+/* ----------------------------------------------------------------------------
  * Background Tile Budget Summary
  * ---------------------------------------------------------------------------- */
 #define VRAM_BG_TOTAL 256
-#define VRAM_BG_USED 221   // Peak usage: font system (normal + inverted with numbers + colon)
-#define VRAM_BG_AVAILABLE 35  // Tiles 221-255 available for future use
+#define VRAM_BG_USED 246   // Peak usage: font + inverted font + pause border
+#define VRAM_BG_AVAILABLE 10  // Tiles 246-255 available for future use
 
 /* ============================================================================
  * SPRITE TILES (256 total, 0-255, separate address space)

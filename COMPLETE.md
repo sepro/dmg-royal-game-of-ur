@@ -53,4 +53,14 @@
 - Automatic turn progression with rosette bonus turns and capture mechanics
 - Board display updates after each move showing current game state
 
+### Phase 11: End Game Screen ✓
+- Win/lose detection and state communication from game screen
+- White background screen with inverted font text
+- Opponent portrait display (5x5 tiles) with decorative border frame
+- Win screen displays: "YOU WON !", opponent portrait, "YOU BEAT [NAME]"
+- Lose screen displays: "YOU LOST !", opponent portrait
+- Border reuses tiles from pause screen and selection screens (7x7 frame)
+- A button returns to opponent selection for new game
+- Layout: result text at row 1 (offset right), portrait at rows 4-8 with border at rows 3-9
+
 ---

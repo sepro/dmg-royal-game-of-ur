@@ -117,43 +117,6 @@ Full game can be played to completion with correct rule enforcement.
 
 ---
 
-## Phase 11: End Game Screen
-
-**Goal:** Show victory/defeat with opponent reaction.
-
-### Tasks
-
-1. **Result screen layout**
-   - Show opponent portrait (large version or same as select)
-   - Happy expression if AI won
-   - Sad expression if player won
-
-2. **Opponent emotion variants**
-   - Need happy/sad version of each opponent portrait
-   - Or: use sprite overlay for expression change
-
-3. **Menu options**
-   - "Rematch" - same opponent, same difficulty, swap colors
-   - "New Game" - return to opponent select
-
-4. **Navigation**
-   - Up/down to select option
-   - A to confirm
-
-### Assets Needed
-
-| Asset | Format | Notes |
-|-------|--------|-------|
-| 4 opponent happy portraits | Same size as select | Victory pose/expression |
-| 4 opponent sad portraits | Same size as select | Defeat pose/expression |
-| "You Win!"/"You Lose!" text | Tiles or pre-rendered | Celebratory/consolation message |
-
-### Deliverable
-
-Game ends with appropriate screen, player can rematch or start new game.
-
----
-
 ## Phase 12: Polish & Optimization
 
 **Goal:** Refine experience, optimize for hardware.

@@ -792,7 +792,7 @@ void update_game(void) {
                         if (check_win_condition()) {
                             next_state = STATE_ENDGAME;
                         } else if (extra_turn) {
-                            draw_prompt("ROSETTE! ROLL AGAIN");
+                            draw_prompt("ROSETTE! GO AGAIN");
                             result_timer = RESULT_PAUSE_FRAMES;
                             game_phase = PHASE_ROSETTE_BONUS;
                         } else {

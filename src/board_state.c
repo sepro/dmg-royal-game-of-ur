@@ -31,11 +31,12 @@ extern const uint8_t board_tiles_pieces_tiles[];
 
 // P1's full path (index 0-13 for positions 1-14)
 // Coordinates are top-left tile of 2x2 square
+// Human player path - now on bottom row (y=6)
 static const BoardSquare_t p1_squares[14] = {
-    { 8, 2, SQUARE_TYPE_A,       0}, // Pos 1
-    { 6, 2, SQUARE_TYPE_B,       0}, // Pos 2
-    { 4, 2, SQUARE_TYPE_A,       0}, // Pos 3
-    { 2, 2, SQUARE_TYPE_ROSETTE, 1}, // Pos 4 (rosette)
+    { 8, 6, SQUARE_TYPE_A,       0}, // Pos 1
+    { 6, 6, SQUARE_TYPE_B,       0}, // Pos 2
+    { 4, 6, SQUARE_TYPE_A,       0}, // Pos 3
+    { 2, 6, SQUARE_TYPE_ROSETTE, 1}, // Pos 4 (rosette)
     { 2, 4, SQUARE_TYPE_D,       0}, // Pos 5
     { 4, 4, SQUARE_TYPE_B,       0}, // Pos 6
     { 6, 4, SQUARE_TYPE_E,       0}, // Pos 7
@@ -44,19 +45,20 @@ static const BoardSquare_t p1_squares[14] = {
     {12, 4, SQUARE_TYPE_E,       0}, // Pos 10
     {14, 4, SQUARE_TYPE_A,       0}, // Pos 11
     {16, 4, SQUARE_TYPE_B,       0}, // Pos 12
-    {16, 2, SQUARE_TYPE_C,       0}, // Pos 13
-    {14, 2, SQUARE_TYPE_ROSETTE, 1}, // Pos 14 (rosette)
+    {16, 6, SQUARE_TYPE_C,       0}, // Pos 13
+    {14, 6, SQUARE_TYPE_ROSETTE, 1}, // Pos 14 (rosette)
 };
 
 // P2's private squares only (positions 1-4 and 13-14)
 // Shared squares (5-12) use same coordinates as P1
+// CPU player path - now on top row (y=2)
 static const BoardSquare_t p2_private_squares[6] = {
-    { 8, 6, SQUARE_TYPE_A,       0}, // Pos 1
-    { 6, 6, SQUARE_TYPE_B,       0}, // Pos 2
-    { 4, 6, SQUARE_TYPE_A,       0}, // Pos 3
-    { 2, 6, SQUARE_TYPE_ROSETTE, 1}, // Pos 4 (rosette)
-    {16, 6, SQUARE_TYPE_C,       0}, // Pos 13
-    {14, 6, SQUARE_TYPE_ROSETTE, 1}, // Pos 14 (rosette)
+    { 8, 2, SQUARE_TYPE_A,       0}, // Pos 1
+    { 6, 2, SQUARE_TYPE_B,       0}, // Pos 2
+    { 4, 2, SQUARE_TYPE_A,       0}, // Pos 3
+    { 2, 2, SQUARE_TYPE_ROSETTE, 1}, // Pos 4 (rosette)
+    {16, 2, SQUARE_TYPE_C,       0}, // Pos 13
+    {14, 2, SQUARE_TYPE_ROSETTE, 1}, // Pos 14 (rosette)
 };
 
 // ============================================================================

@@ -445,17 +445,17 @@ static void draw_pause_content(void) {
     draw_text_at(PAUSE_VS_X, PAUSE_VS_Y, "VS", 1);
     draw_text_at(PAUSE_VS_X + 3, PAUSE_VS_Y, opponent_names[selected_opponent], 1);
 
-    // Difficulty
+    // Difficulty (split across two lines)
     draw_text_at(PAUSE_DIFF_X, PAUSE_DIFF_Y, "DIFFICULTY:", 1);
     switch (selected_difficulty) {
         case DIFFICULTY_EASY:
-            draw_text_at(PAUSE_DIFF_X + 12, PAUSE_DIFF_Y, "EASY", 1);
+            draw_text_at(PAUSE_DIFF_X + 5, PAUSE_DIFF_Y + 1, "EASY", 1);
             break;
         case DIFFICULTY_MEDIUM:
-            draw_text_at(PAUSE_DIFF_X + 12, PAUSE_DIFF_Y, "MEDIUM", 1);
+            draw_text_at(PAUSE_DIFF_X + 5, PAUSE_DIFF_Y + 1, "MEDIUM", 1);
             break;
         case DIFFICULTY_HARD:
-            draw_text_at(PAUSE_DIFF_X + 12, PAUSE_DIFF_Y, "HARD", 1);
+            draw_text_at(PAUSE_DIFF_X + 5, PAUSE_DIFF_Y + 1, "HARD", 1);
             break;
     }
 

@@ -6,41 +6,6 @@ This plan breaks down the development into manageable phases, each building on t
 
 
 
-## Phase 8b: Track game state
-
-**Goal:** Implement a way to keep track of pieces on the board.
-
-### Tasks
-
-1. Add two lists, one for the CPU and one for the human player which can be used to keep track where pieces are on the board.
-2. Implement a way to check if a move is valid
-3. After a dice roll, check which moves are valid (including moving a new piece on the board) and execute a random one, if there are no valid moves the turn is over (this will later be replaced with AI for CPU and selection of the player)
-4. Move the selected piece (capturing other pieces if needed or finishing)
-5. Draw the board with the current game state. There will be tiles available with a black or white piece on them. These should be used to draw the board with the pieces.
-
-**Note:** While both players will have their own list of 14 positions on the board (1 to 14). This can be one bit (either there is a piece or not, you cannot move to a spot where you already have a piece), but positions 5-12 are shared on the board. Here if a piece would move to a space with an opponents piece that piece is captured and goes back to the reserve pile. However, spot 8 is safe. Furthermore, position 4, 8, 14 are rosette spots, if a piece moves here the current player get's an extra turn.
-
-### Assets needed
-
-Board square images can be found in `assets/images/raw/board_tiles.png`:
-
-- **Size**: 48x96 pixels (3 columns x 6 rows of 16x16 squares)
-- **Layout**:
-  - Column 0 (x: 0-15): Empty squares
-  - Column 1 (x: 16-31): Squares with white piece
-  - Column 2 (x: 32-47): Squares with black piece
-- **Rows** (top to bottom):
-  - Row 0: Rosette
-  - Row 1: Type A
-  - Row 2: Type B
-  - Row 3: Type C
-  - Row 4: Type D
-  - Row 5: Type E
-
-### Deliverable
-
-The board state should be tracked, each turn based on the roll a random move will be carried out (also for the human player). The board state is correctly visualized. 
-
 ## Phase 8c: Move Selection (Human Player)
 
 **Goal:** Allow player to select which piece to move.

@@ -45,4 +45,12 @@
 - START button toggles pause state
 - Sprites hidden during pause to prevent rendering over window layer
 
+### Phase 8b: Track Game State ✓
+- Piece position tracking with arrays for both players (7 pieces each, positions 0-15)
+- Board state visualization using tile-based pieces (white/black on various square types)
+- Move validation system checking legal moves, captures, and rosette rules
+- Random move execution for both players based on dice roll
+- Automatic turn progression with rosette bonus turns and capture mechanics
+- Board display updates after each move showing current game state
+
 ---

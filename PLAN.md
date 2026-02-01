@@ -30,9 +30,6 @@ This plan breaks down the development into manageable phases, each building on t
 
 5. **Confirm move**
    - A executes the move
-   - Animate piece moving to destination
-   - Handle captures (remove opponent piece)
-   - Check for rosette (grants another turn)
 
 ### Assets Needed
 

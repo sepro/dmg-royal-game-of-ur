@@ -17,6 +17,9 @@ extern const unsigned char profile_03_map[];
 extern const uint8_t profile_04_tiles[];
 extern const unsigned char profile_04_map[];
 
+extern const uint8_t border_tiles[];
+extern const unsigned char border_map[];
+
 extern ScreenState_t next_state;
 extern uint8_t selected_opponent;
 extern uint8_t human_won;
@@ -89,6 +92,22 @@ static void draw_opponent_portrait(void) {
     }
 }
 
+// Draw border around portrait
+static void draw_border(void) {
+    uint8_t x = ENDGAME_PORTRAIT_X - 1;  // Border is 1 tile outside portrait
+    uint8_t y = ENDGAME_PORTRAIT_Y - 1;
+
+    // Draw 7x7 border frame using tilemap (skip inner 5x5)
+    for (uint8_t row = 0; row < ENDGAME_BORDER_HEIGHT; row++) {
+        for (uint8_t col = 0; col < ENDGAME_BORDER_WIDTH; col++) {
+            // Skip inner 5x5 portrait area (rows 1-5, cols 1-5)
+            if (row >= 1 && row <= 5 && col >= 1 && col <= 5) continue;
+            uint8_t tile = ENDGAME_BORDER_TILE_START + border_map[row * ENDGAME_BORDER_WIDTH + col];
+            set_bkg_tile_xy(x + col, y + row, tile);
+        }
+    }
+}
+
 void init_endgame(void) {
     DISPLAY_OFF;
 
@@ -99,16 +118,26 @@ void init_endgame(void) {
     // Load inverted font
     load_font_inverted();
 
+    // Load border tiles
+    set_bkg_data(ENDGAME_BORDER_TILE_START, 25, border_tiles);
+
     // Draw opponent portrait
     draw_opponent_portrait();
 
-    // Draw result text
+    // Draw border around portrait
+    draw_border();
+
+    // Draw result text (offset 1 character to the right)
     if (human_won) {
-        draw_centered_text(ENDGAME_RESULT_Y, "YOU WON !");
+        const char *result_text = "YOU WON !";
+        uint8_t x = (20 - strlen(result_text)) / 2 + 1;  // Centered + 1 offset
+        draw_text_inverted(x, ENDGAME_RESULT_Y, result_text);
         draw_centered_text(ENDGAME_YOU_BEAT_Y, "YOU BEAT");
         draw_centered_text(ENDGAME_NAME_Y, opponent_names[selected_opponent]);
     } else {
-        draw_centered_text(ENDGAME_RESULT_Y, "YOU LOST !");
+        const char *result_text = "YOU LOST !";
+        uint8_t x = (20 - strlen(result_text)) / 2 + 1;  // Centered + 1 offset
+        draw_text_inverted(x, ENDGAME_RESULT_Y, result_text);
     }
 
     // Draw instructions

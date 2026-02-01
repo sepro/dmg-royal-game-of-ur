@@ -64,4 +64,4 @@ $(OBJDIR)/input.o: $(INCDIR)/input.h
 $(OBJDIR)/opponent_data.o: $(INCDIR)/opponent_data.h
 $(OBJDIR)/game.o: $(INCDIR)/game_types.h $(INCDIR)/game.h $(INCDIR)/coinflip.h $(INCDIR)/difficulty_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/board_state.h $(INCDIR)/vram_layout.h
 $(OBJDIR)/board_state.o: $(INCDIR)/board_state.h $(INCDIR)/coinflip.h $(INCDIR)/vram_layout.h
-$(OBJDIR)/endgame.o: $(INCDIR)/game_types.h $(INCDIR)/endgame.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h
+$(OBJDIR)/endgame.o: $(INCDIR)/game_types.h $(INCDIR)/endgame.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/vram_layout.h

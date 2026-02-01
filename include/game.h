@@ -37,6 +37,7 @@
 #define PHASE_SELECT_MOVE   3   // Player selecting which piece to move (Phase 8)
 #define PHASE_CPU_THINK     4   // CPU calculating move
 #define PHASE_ANIMATE_MOVE  5   // Piece movement animation (Phase 8)
+#define PHASE_ROSETTE_BONUS 6   // Extra roll after landing on rosette
 
 // ============================================================================
 // Sprite Tile Allocation (0-255 in sprite VRAM)

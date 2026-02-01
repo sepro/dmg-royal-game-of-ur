@@ -111,6 +111,15 @@
 #define VRAM_GAMEBOARD_COUNT 38
 
 /* ----------------------------------------------------------------------------
+ * Phase 8b: Piece Tiles (Tiles 64-135) - SCREEN ISOLATED
+ * 6 square types x 3 piece states x 4 tiles per 16x16 square = 72 tiles
+ * Used to overlay pieces on board squares during gameplay
+ * ---------------------------------------------------------------------------- */
+#define VRAM_PIECE_TILES_START    64
+#define VRAM_PIECE_TILES_COUNT    72   // 6 types x 3 states x 4 tiles
+#define VRAM_PIECE_TILES_END      135
+
+/* ----------------------------------------------------------------------------
  * Background Tile Budget Summary
  * ---------------------------------------------------------------------------- */
 #define VRAM_BG_TOTAL 256
@@ -172,6 +181,11 @@
 // This is OK because game board only uses 0-37 and font starts at 140
 #if VRAM_GAMEBOARD_END >= VRAM_FONT_START
 #error "VRAM conflict: Game board overlaps with font tiles"
+#endif
+
+// Verify piece tiles don't overlap with font
+#if VRAM_PIECE_TILES_END >= VRAM_FONT_START
+#error "VRAM conflict: Piece tiles overlap with font tiles"
 #endif
 
 // Verify sprite allocations

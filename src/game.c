@@ -13,6 +13,7 @@
 #include "opponent_data.h"
 #include "font.h"
 #include "input.h"
+#include "board_state.h"
 
 // External references to generated board asset
 extern const uint8_t board_tiles[];
@@ -48,12 +49,16 @@ extern uint8_t starting_player;
 // Game State Variables
 // ============================================================================
 
-// Player state
-static uint8_t human_color;      // SIDE_LIGHT or SIDE_DARK
-static uint8_t cpu_color;        // Opposite of human_color
+// Player state (exported for board_state.c)
+uint8_t human_color;      // SIDE_LIGHT or SIDE_DARK
+uint8_t cpu_color;        // Opposite of human_color
 static uint8_t current_turn;     // 0 = human, 1 = cpu
 
-// Piece counts
+// Piece position arrays (exported for board_state.c)
+uint8_t human_pieces[7];  // Position of each piece (0=reserve, 1-14=board, 15=finished)
+uint8_t cpu_pieces[7];
+
+// Piece counts (derived from position arrays)
 static uint8_t human_reserve;    // Pieces not yet on board
 static uint8_t human_finished;   // Pieces that completed the path
 static uint8_t cpu_reserve;
@@ -564,6 +569,35 @@ static void switch_turn(void) {
     draw_prompt("PRESS A TO ROLL");
 }
 
+/**
+ * Recalculate piece counts from position arrays
+ */
+static void update_piece_counts(void) {
+    human_reserve = 0;
+    human_finished = 0;
+    cpu_reserve = 0;
+    cpu_finished = 0;
+
+    for (uint8_t i = 0; i < 7; i++) {
+        if (human_pieces[i] == POS_RESERVE) human_reserve++;
+        else if (human_pieces[i] == POS_FINISHED) human_finished++;
+
+        if (cpu_pieces[i] == POS_RESERVE) cpu_reserve++;
+        else if (cpu_pieces[i] == POS_FINISHED) cpu_finished++;
+    }
+}
+
+/**
+ * Check if current player has won (7 pieces finished)
+ */
+static uint8_t check_win_condition(void) {
+    if (current_turn == 0) {
+        return (human_finished >= 7) ? 1 : 0;
+    } else {
+        return (cpu_finished >= 7) ? 1 : 0;
+    }
+}
+
 // ============================================================================
 // Main Game Functions
 // ============================================================================
@@ -577,6 +611,9 @@ void init_game(void) {
 
     // Load board tiles into VRAM
     set_bkg_data(GAME_BOARD_TILE_START, GAME_BOARD_TILE_COUNT, board_tiles);
+
+    // Load piece overlay tiles (Phase 8b)
+    load_piece_tiles();
 
     // Draw the board tilemap at top of screen
     set_bkg_tiles(BOARD_X, BOARD_Y, BOARD_WIDTH, BOARD_HEIGHT, board_map);
@@ -601,7 +638,13 @@ void init_game(void) {
     cpu_color = (selected_side == SIDE_LIGHT) ? SIDE_DARK : SIDE_LIGHT;
     current_turn = starting_player;
 
-    // Initialize piece counts
+    // Initialize piece position arrays (Phase 8b)
+    for (uint8_t i = 0; i < 7; i++) {
+        human_pieces[i] = POS_RESERVE;
+        cpu_pieces[i] = POS_RESERVE;
+    }
+
+    // Initialize piece counts from arrays
     human_reserve = PIECES_PER_PLAYER;
     human_finished = 0;
     cpu_reserve = PIECES_PER_PLAYER;
@@ -632,6 +675,9 @@ void init_game(void) {
     draw_player_info();
     draw_turn_indicator();
     draw_prompt("PRESS A TO ROLL");
+
+    // Draw initial board state (Phase 8b)
+    update_board_display();
 
     // Setup sprites
     setup_piece_sprites();
@@ -726,8 +772,43 @@ void update_game(void) {
             break;
 
         case PHASE_SELECT_MOVE:
-            // Placeholder for Phase 8 move selection
-            // For now, just wait and switch turns
+            // Phase 8b: Execute random move or handle no valid moves
+            if (result_timer > 0) {
+                result_timer--;
+            } else {
+                if (dice_total == 0) {
+                    // Zero roll already handled - switch turns
+                    switch_turn();
+                } else {
+                    uint8_t piece_idx;
+                    uint8_t player = (current_turn == 0) ? PLAYER_HUMAN : PLAYER_CPU;
+
+                    if (find_random_valid_move(player, dice_total, &piece_idx)) {
+                        uint8_t extra_turn = execute_move(player, piece_idx, dice_total);
+                        update_piece_counts();
+                        update_reserve_display();
+                        update_board_display();
+
+                        if (check_win_condition()) {
+                            next_state = STATE_ENDGAME;
+                        } else if (extra_turn) {
+                            draw_prompt("ROSETTE! ROLL AGAIN");
+                            result_timer = RESULT_PAUSE_FRAMES;
+                            game_phase = PHASE_ROSETTE_BONUS;
+                        } else {
+                            switch_turn();
+                        }
+                    } else {
+                        draw_prompt("NO VALID MOVES");
+                        result_timer = RESULT_PAUSE_FRAMES;
+                        game_phase = PHASE_CPU_THINK;  // Use as wait state
+                    }
+                }
+            }
+            break;
+
+        case PHASE_CPU_THINK:
+            // Used as wait state after "NO VALID MOVES"
             if (result_timer > 0) {
                 result_timer--;
             } else {
@@ -735,9 +816,15 @@ void update_game(void) {
             }
             break;
 
-        case PHASE_CPU_THINK:
-            // Placeholder for AI (Phase 8+)
-            switch_turn();
+        case PHASE_ROSETTE_BONUS:
+            // Wait then go back to roll phase for extra turn
+            if (result_timer > 0) {
+                result_timer--;
+            } else {
+                game_phase = PHASE_WAIT_ROLL;
+                hide_dice();
+                draw_prompt("PRESS A TO ROLL");
+            }
             break;
 
         default:

@@ -4,56 +4,7 @@
 
 This plan breaks down the development into manageable phases, each building on the previous one. Each phase results in a testable milestone. The plan assumes familiarity with GBDK-2020 and Game Boy hardware constraints (4 colors, 8x8 tiles, 40 sprites max, etc.).
 
----
 
-## Completed Phases
-
-### Phase 1: Project Setup & Title Screen (Static) ✓
-- Project scaffolding with GBDK-2020 toolchain and Makefile
-- Title screen background with tileset and tilemap
-- Menu navigation with arrow sprite between "Start Game" and "Link Cable"
-
-### Phase 2: Title Screen Animation ✓
-- Sprite-based specular highlight animation across title letters
-- Seamless looping shine effect
-
-### Phase 3: Opponent Selection Screen ✓
-- 2x2 grid layout with 4 opponent portraits
-- Description box updates on selection change
-- Navigation and confirmation with screen transitions
-
-### Phase 4: Difficulty Selection Screen ✓
-- Vertical menu with Easy/Medium/Hard options
-- B returns to opponent selection, A proceeds to coin flip
-- Difficulty stored in game state for AI reference
-
-### Phase 5: Side Selection & Coin Flip ✓
-- Light/Dark coin selection with border highlight navigation
-- Tile-flipping coin flip animation with chaotic and lock-in phases
-- Result display determines starting player based on player's choice
-- Flash transition to game state (placeholder)
-
-### Phase 6: Game Board Display (Static) ✓
-- H-shaped board layout with empty, rosette, and border tiles
-- Reserve areas for unplayed and finished pieces
-- UI elements for prompts and dice display area
-- Light and dark piece sprites loaded based on player assignment
-
-### Phase 7: Dice Rolling ✓
-- 4 binary dice implementation (total roll 0-4)
-- Roll animation with dice cycling through values rapidly
-- "Press A to roll" input flow with result display
-- Roll result stored for move selection phase
-
-### Phase 8a: Pause Screen ✓
-- Turn counter tracking (increments each turn switch)
-- Elapsed time tracking in frames (pauses when game is paused)
-- Window layer overlay with smooth slide-up/down animation
-- Pause screen displays: turn number, time (MM:SS), player scores, opponent name, difficulty
-- START button toggles pause state
-- Sprites hidden during pause to prevent rendering over window layer
-
----
 
 ## Phase 8b: Track game state
 
@@ -71,7 +22,20 @@ This plan breaks down the development into manageable phases, each building on t
 
 ### Assets needed
 
-tiles with pieces on top of them
+Board square images can be found in `assets/images/raw/board_tiles.png`:
+
+- **Size**: 48x96 pixels (3 columns x 6 rows of 16x16 squares)
+- **Layout**:
+  - Column 0 (x: 0-15): Empty squares
+  - Column 1 (x: 16-31): Squares with white piece
+  - Column 2 (x: 32-47): Squares with black piece
+- **Rows** (top to bottom):
+  - Row 0: Rosette
+  - Row 1: Type A
+  - Row 2: Type B
+  - Row 3: Type C
+  - Row 4: Type D
+  - Row 5: Type E
 
 ### Deliverable
 

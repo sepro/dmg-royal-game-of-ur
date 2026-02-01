@@ -21,22 +21,11 @@ The board is drawn once as a static image from `board_tiles` and `board_map` and
 
 The Royal Game of Ur uses an H-shaped board with this logical path:
 
-```
-        P1 Private       Shared Path                    P1 Private
-        [1][2][3][4] → [5][6][7][8*][9][10][11][12] → [13][14*] → FINISH
-                        ↑
-        P2 Private      ↓                              P2 Private
-        [1][2][3][4] ←─────────────────────────────── [13][14*] → FINISH
-
-        * = Rosette squares (safe from capture, grants extra turn)
-```
 
 - **Positions 1-4**: Player's private start section (no captures possible)
 - **Positions 5-12**: Shared middle section (captures possible)
 - **Positions 13-14**: Player's private exit section (no captures possible)
 - **Rosettes at positions 4, 8, 14**: Safe squares, landing grants another turn
-
----
 
 ## Board layout
 
@@ -77,12 +66,12 @@ for (uint8_t i = 0; i < 7; i++) {
 The board uses 6 distinct visual square patterns (see tile template):
 
 ```c
-#define SQUARE_TYPE_A       0  // Simple bordered pattern
-#define SQUARE_TYPE_B       1  // Dots pattern
-#define SQUARE_TYPE_C       2  // Diamond pattern
-#define SQUARE_TYPE_ROSETTE 3  // Flower/star design
-#define SQUARE_TYPE_EYE_A   4  // Large eye pattern
-#define SQUARE_TYPE_EYE_B   5  // Eye variant pattern
+#define SQUARE_TYPE_ROSETTE 0  // Rosette Position 4, 8, 14
+#define SQUARE_TYPE_A       1  // Position 1, 3, 11
+#define SQUARE_TYPE_B       2  // Position 2, 6, 9, 12
+#define SQUARE_TYPE_C       3  // Position 13
+#define SQUARE_TYPE_D       4  // Position 5
+#define SQUARE_TYPE_E       5  // Position 7, 10
 ```
 
 ### Piece State Constants
@@ -105,17 +94,17 @@ Each board position maps to a tile coordinate and square type. The board tilemap
 |----------|------------|-------------|-------|
 | 1 | (2, 2) | TYPE_A | P1 start |
 | 2 | (4, 2) | TYPE_B | P1 start |
-| 3 | (6, 2) | TYPE_C | P1 start |
-| 4 | (8, 2) | TYPE_B | P1 start, ROSETTE |
-| 5 | (2, 4) | TYPE_EYE_A | Shared |
-| 6 | (4, 4) | TYPE_C | Shared |
-| 7 | (6, 4) | TYPE_EYE_B | Shared |
-| 8 | (8, 4) | TYPE_A | Shared, ROSETTE |
-| 9 | (10, 4) | TYPE_C | Shared |
-| 10 | (12, 4) | TYPE_EYE_B | Shared |
-| 11 | (14, 4) | TYPE_B | Shared |
-| 12 | (16, 4) | TYPE_C | Shared |
-| 13 | (14, 2) | TYPE_A | P1 exit |
+| 3 | (6, 2) | TYPE_A | P1 start |
+| 4 | (8, 2) | TYPE_ROSETTE | P1 start, ROSETTE |
+| 5 | (2, 4) | TYPE_D | Shared |
+| 6 | (4, 4) | TYPE_B | Shared |
+| 7 | (6, 4) | TYPE_E | Shared |
+| 8 | (8, 4) | TYPE_ROSETTE | Shared, ROSETTE |
+| 9 | (10, 4) | TYPE_B | Shared |
+| 10 | (12, 4) | TYPE_E | Shared |
+| 11 | (14, 4) | TYPE_A | Shared |
+| 12 | (16, 4) | TYPE_B | Shared |
+| 13 | (14, 2) | TYPE_C | P1 exit |
 | 14 | (16, 2) | TYPE_ROSETTE | P1 exit, ROSETTE |
 
 ### Player 2 Path Coordinates
@@ -124,10 +113,10 @@ Each board position maps to a tile coordinate and square type. The board tilemap
 |----------|------------|-------------|-------|
 | 1 | (2, 6) | TYPE_A | P2 start |
 | 2 | (4, 6) | TYPE_B | P2 start |
-| 3 | (6, 6) | TYPE_C | P2 start |
-| 4 | (8, 6) | TYPE_B | P2 start, ROSETTE |
+| 3 | (6, 6) | TYPE_A | P2 start |
+| 4 | (8, 6) | TYPE_ROSETTE | P2 start, ROSETTE |
 | 5-12 | (same as P1) | (same) | Shared section |
-| 13 | (14, 6) | TYPE_A | P2 exit |
+| 13 | (14, 6) | TYPE_C | P2 exit |
 | 14 | (16, 6) | TYPE_ROSETTE | P2 exit, ROSETTE |
 
 ### Lookup Table Implementation
@@ -142,31 +131,31 @@ typedef struct {
 
 // P1's path (index 0-13 for positions 1-14)
 const BoardSquare_t p1_squares[14] = {
-    { 2, 2, SQUARE_TYPE_A,       0}, // Pos 1
-    { 4, 2, SQUARE_TYPE_B,       0}, // Pos 2
-    { 6, 2, SQUARE_TYPE_C,       0}, // Pos 3
-    { 8, 2, SQUARE_TYPE_B,       1}, // Pos 4 (rosette)
-    { 2, 4, SQUARE_TYPE_EYE_A,   0}, // Pos 5
-    { 4, 4, SQUARE_TYPE_C,       0}, // Pos 6
-    { 6, 4, SQUARE_TYPE_EYE_B,   0}, // Pos 7
-    { 8, 4, SQUARE_TYPE_A,       1}, // Pos 8 (rosette)
-    {10, 4, SQUARE_TYPE_C,       0}, // Pos 9
-    {12, 4, SQUARE_TYPE_EYE_B,   0}, // Pos 10
-    {14, 4, SQUARE_TYPE_B,       0}, // Pos 11
-    {16, 4, SQUARE_TYPE_C,       0}, // Pos 12
-    {14, 2, SQUARE_TYPE_A,       0}, // Pos 13
-    {16, 2, SQUARE_TYPE_ROSETTE, 1}, // Pos 14 (rosette)
+    { 8, 2, SQUARE_TYPE_A,       0}, // Pos 1
+    { 6, 2, SQUARE_TYPE_B,       0}, // Pos 2
+    { 4, 2, SQUARE_TYPE_A,       0}, // Pos 3
+    { 2, 2, SQUARE_TYPE_ROSETTE, 1}, // Pos 4 (rosette)
+    { 2, 4, SQUARE_TYPE_D,       0}, // Pos 5
+    { 4, 4, SQUARE_TYPE_B,       0}, // Pos 6
+    { 6, 4, SQUARE_TYPE_E,       0}, // Pos 7
+    { 8, 4, SQUARE_TYPE_ROSETTE, 1}, // Pos 8 (rosette)
+    {10, 4, SQUARE_TYPE_B,       0}, // Pos 9
+    {12, 4, SQUARE_TYPE_E,       0}, // Pos 10
+    {14, 4, SQUARE_TYPE_A,       0}, // Pos 11
+    {16, 4, SQUARE_TYPE_B,       0}, // Pos 12
+    {16, 2, SQUARE_TYPE_C,       0}, // Pos 13
+    {14, 2, SQUARE_TYPE_ROSETTE, 1}, // Pos 14 (rosette)
 };
 
 // P2's private squares only (positions 1-4 and 13-14)
 // Shared squares (5-12) use same coordinates as P1
 const BoardSquare_t p2_private_squares[6] = {
-    { 2, 6, SQUARE_TYPE_A,       0}, // Pos 1
-    { 4, 6, SQUARE_TYPE_B,       0}, // Pos 2
-    { 6, 6, SQUARE_TYPE_C,       0}, // Pos 3
-    { 8, 6, SQUARE_TYPE_B,       1}, // Pos 4 (rosette)
-    {14, 6, SQUARE_TYPE_A,       0}, // Pos 13
-    {16, 6, SQUARE_TYPE_ROSETTE, 1}, // Pos 14 (rosette)
+    { 8, 6, SQUARE_TYPE_A,       0}, // Pos 1
+    { 6, 6, SQUARE_TYPE_B,       0}, // Pos 2
+    { 4, 6, SQUARE_TYPE_A,       0}, // Pos 3
+    { 2, 6, SQUARE_TYPE_ROSETTE,       1}, // Pos 4 (rosette)
+    {16, 6, SQUARE_TYPE_C,       0}, // Pos 13
+    {14, 6, SQUARE_TYPE_ROSETTE, 1}, // Pos 14 (rosette)
 };
 ```
 
@@ -174,9 +163,7 @@ const BoardSquare_t p2_private_squares[6] = {
 
 ## Tile Graphics System
 
-### Template File
-
-A tile template has been created at `assets/images/raw/board_tiles_template.png`:
+Board square images can be found in `assets/images/raw/board_tiles.png`:
 
 - **Size**: 48x96 pixels (3 columns x 6 rows of 16x16 squares)
 - **Layout**:
@@ -184,12 +171,12 @@ A tile template has been created at `assets/images/raw/board_tiles_template.png`
   - Column 1 (x: 16-31): Squares with white piece
   - Column 2 (x: 32-47): Squares with black piece
 - **Rows** (top to bottom):
-  - Row 0: Type A (simple bordered)
-  - Row 1: Type B (dots pattern)
-  - Row 2: Type C (diamond pattern)
-  - Row 3: Rosette (flower design)
-  - Row 4: Eye A (large eye)
-  - Row 5: Eye B (eye variant)
+  - Row 0: Rosette
+  - Row 1: Type A
+  - Row 2: Type B
+  - Row 3: Type C
+  - Row 4: Type D
+  - Row 5: Type E
 
 ### Color Palette (Game Boy 4-color)
 
@@ -439,7 +426,7 @@ assets/
 
 ## Implementation Checklist
 
-- [ ] Artist completes `board_tiles.png` with white/black pieces
+- [X] Artist completes `board_tiles.png` with white/black pieces
 - [ ] Run png2asset to generate `board_tiles_pieces.c`
 - [ ] Create `board_state.h` with types and constants
 - [ ] Create `board_state.c` with lookup tables and functions

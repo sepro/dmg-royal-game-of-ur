@@ -63,6 +63,38 @@ static const BoardSquare_t p2_private_squares[6] = {
 };
 
 // ============================================================================
+// Dirty Square Tracking
+// ============================================================================
+
+/**
+ * Dirty flags for 20 unique visual squares:
+ * Bits 0-3:   Human private (pos 1-4)
+ * Bits 4-5:   Human exit (pos 13-14)
+ * Bits 6-13:  Shared (pos 5-12)
+ * Bits 14-17: CPU private (pos 1-4)
+ * Bits 18-19: CPU exit (pos 13-14)
+ */
+static uint32_t dirty_squares = 0;
+
+/**
+ * Convert (player, position) to dirty bit index
+ */
+static uint8_t get_square_index(uint8_t player, uint8_t pos) {
+    if (pos >= 5 && pos <= 12) {
+        // Shared squares: bits 6-13
+        return 6 + (pos - 5);
+    } else if (player == PLAYER_HUMAN) {
+        // Human private: bits 0-5
+        if (pos <= 4) return pos - 1;       // pos 1-4 -> bits 0-3
+        else return 4 + (pos - 13);          // pos 13-14 -> bits 4-5
+    } else {
+        // CPU private: bits 14-19
+        if (pos <= 4) return 14 + (pos - 1); // pos 1-4 -> bits 14-17
+        else return 18 + (pos - 13);          // pos 13-14 -> bits 18-19
+    }
+}
+
+// ============================================================================
 // Tile Index Lookup Table
 // ============================================================================
 
@@ -177,44 +209,80 @@ void load_piece_tiles(void) {
 }
 
 void update_board_display(void) {
+    // Mark all squares dirty and update them
+    mark_all_squares_dirty();
+    update_dirty_squares();
+}
+
+void mark_square_dirty(uint8_t player, uint8_t pos) {
+    if (pos >= 1 && pos <= 14) {
+        uint8_t idx = get_square_index(player, pos);
+        dirty_squares |= (1UL << idx);
+    }
+}
+
+void mark_all_squares_dirty(void) {
+    dirty_squares = 0xFFFFF;  // Lower 20 bits set
+}
+
+void update_dirty_squares(void) {
+    if (dirty_squares == 0) return;
+
     BoardSquare_t sq;
     uint8_t piece;
 
-    // Draw human private squares (positions 1-4)
-    for (uint8_t pos = 1; pos <= 4; pos++) {
-        piece = get_piece_at(pos, PLAYER_HUMAN);
-        sq = p1_squares[pos - 1];
-        draw_board_square(sq.tile_x, sq.tile_y, sq.square_type, piece);
-    }
-
-    // Draw human exit squares (positions 13-14)
-    for (uint8_t pos = 13; pos <= 14; pos++) {
-        piece = get_piece_at(pos, PLAYER_HUMAN);
-        sq = p1_squares[pos - 1];
-        draw_board_square(sq.tile_x, sq.tile_y, sq.square_type, piece);
-    }
-
-    // Draw shared squares (positions 5-12) - check both players
-    for (uint8_t pos = 5; pos <= 12; pos++) {
-        piece = get_piece_at_shared(pos);
-        sq = p1_squares[pos - 1];
-        draw_board_square(sq.tile_x, sq.tile_y, sq.square_type, piece);
-    }
-
-    // Draw CPU private squares (positions 1-4)
+    // Check human private squares (bits 0-3: pos 1-4)
     for (uint8_t i = 0; i < 4; i++) {
-        piece = get_piece_at(i + 1, PLAYER_CPU);
-        sq = p2_private_squares[i];
-        draw_board_square(sq.tile_x, sq.tile_y, sq.square_type, piece);
+        if (dirty_squares & (1UL << i)) {
+            uint8_t pos = i + 1;
+            piece = get_piece_at(pos, PLAYER_HUMAN);
+            sq = p1_squares[pos - 1];
+            draw_board_square(sq.tile_x, sq.tile_y, sq.square_type, piece);
+        }
     }
 
-    // Draw CPU exit squares (positions 13-14)
+    // Check human exit squares (bits 4-5: pos 13-14)
     for (uint8_t i = 4; i < 6; i++) {
-        uint8_t pos = (i == 4) ? 13 : 14;
-        piece = get_piece_at(pos, PLAYER_CPU);
-        sq = p2_private_squares[i];
-        draw_board_square(sq.tile_x, sq.tile_y, sq.square_type, piece);
+        if (dirty_squares & (1UL << i)) {
+            uint8_t pos = 13 + (i - 4);
+            piece = get_piece_at(pos, PLAYER_HUMAN);
+            sq = p1_squares[pos - 1];
+            draw_board_square(sq.tile_x, sq.tile_y, sq.square_type, piece);
+        }
     }
+
+    // Check shared squares (bits 6-13: pos 5-12)
+    for (uint8_t i = 6; i < 14; i++) {
+        if (dirty_squares & (1UL << i)) {
+            uint8_t pos = 5 + (i - 6);
+            piece = get_piece_at_shared(pos);
+            sq = p1_squares[pos - 1];
+            draw_board_square(sq.tile_x, sq.tile_y, sq.square_type, piece);
+        }
+    }
+
+    // Check CPU private squares (bits 14-17: pos 1-4)
+    for (uint8_t i = 14; i < 18; i++) {
+        if (dirty_squares & (1UL << i)) {
+            uint8_t pos = (i - 14) + 1;
+            piece = get_piece_at(pos, PLAYER_CPU);
+            sq = p2_private_squares[pos - 1];
+            draw_board_square(sq.tile_x, sq.tile_y, sq.square_type, piece);
+        }
+    }
+
+    // Check CPU exit squares (bits 18-19: pos 13-14)
+    for (uint8_t i = 18; i < 20; i++) {
+        if (dirty_squares & (1UL << i)) {
+            uint8_t pos = 13 + (i - 18);
+            piece = get_piece_at(pos, PLAYER_CPU);
+            uint8_t idx = 4 + (i - 18);  // p2_private_squares indices 4-5
+            sq = p2_private_squares[idx];
+            draw_board_square(sq.tile_x, sq.tile_y, sq.square_type, piece);
+        }
+    }
+
+    dirty_squares = 0;
 }
 
 uint8_t is_rosette(uint8_t pos) {
@@ -269,8 +337,14 @@ uint8_t is_valid_move(uint8_t player, uint8_t piece_idx, uint8_t roll) {
 uint8_t execute_move(uint8_t player, uint8_t piece_idx, uint8_t roll) {
     uint8_t *pieces = (player == PLAYER_HUMAN) ? human_pieces : cpu_pieces;
     uint8_t *opponent = (player == PLAYER_HUMAN) ? cpu_pieces : human_pieces;
+    uint8_t opponent_id = (player == PLAYER_HUMAN) ? PLAYER_CPU : PLAYER_HUMAN;
     uint8_t current_pos = pieces[piece_idx];
     uint8_t new_pos;
+
+    // Mark source square dirty (if on board)
+    if (current_pos >= 1 && current_pos <= 14) {
+        mark_square_dirty(player, current_pos);
+    }
 
     // Calculate new position
     if (current_pos == POS_RESERVE) {
@@ -289,10 +363,16 @@ uint8_t execute_move(uint8_t player, uint8_t piece_idx, uint8_t roll) {
         for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
             if (opponent[i] == new_pos) {
                 // Capture! Send opponent piece back to reserve
+                // Note: The captured square will be marked dirty below as destination
                 opponent[i] = POS_RESERVE;
                 break;
             }
         }
+    }
+
+    // Mark destination square dirty (if on board)
+    if (new_pos >= 1 && new_pos <= 14) {
+        mark_square_dirty(player, new_pos);
     }
 
     // Move the piece

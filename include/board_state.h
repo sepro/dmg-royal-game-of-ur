@@ -65,6 +65,25 @@ void load_piece_tiles(void);
 void update_board_display(void);
 
 /**
+ * Mark a specific board square as needing redraw
+ * @param player  PLAYER_HUMAN or PLAYER_CPU (for private squares 1-4, 13-14)
+ * @param pos     Board position (1-14)
+ */
+void mark_square_dirty(uint8_t player, uint8_t pos);
+
+/**
+ * Mark all board squares as needing redraw
+ * Call on initial board setup or after major state changes
+ */
+void mark_all_squares_dirty(void);
+
+/**
+ * Redraw only the squares marked as dirty
+ * More efficient than update_board_display() when only a few squares changed
+ */
+void update_dirty_squares(void);
+
+/**
  * Check if a move is valid
  * @param player     PLAYER_HUMAN or PLAYER_CPU
  * @param piece_idx  Index of piece to move (0-6)

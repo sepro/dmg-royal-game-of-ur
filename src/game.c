@@ -499,7 +499,7 @@ static void update_move_selection(void) {
         uint8_t extra_turn = execute_move(PLAYER_HUMAN, piece_idx, dice_total);
         update_piece_counts();
         update_reserve_display();
-        update_board_display();
+        update_dirty_squares();  // Only redraw affected squares
 
         // Check win condition
         if (check_win_condition()) {
@@ -1037,7 +1037,7 @@ void update_game(void) {
                         uint8_t extra_turn = execute_move(PLAYER_CPU, piece_idx, dice_total);
                         update_piece_counts();
                         update_reserve_display();
-                        update_board_display();
+                        update_dirty_squares();  // Only redraw affected squares
 
                         if (check_win_condition()) {
                             human_won = 0;  // CPU won, human lost

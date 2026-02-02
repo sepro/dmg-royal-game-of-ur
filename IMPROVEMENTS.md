@@ -36,31 +36,6 @@ These should be addressed to improve code quality and reduce resource usage.
 
 **Solution:** Load fonts once during initial boot (in `main.c` before first screen), add a `fonts_loaded` flag to skip redundant loads.
 
-### 8. Large Embedded Font Data
-
-**Location:** `font.c:21-626` - 626 lines, ~640 bytes
-
-**Problem:** The font tiles are stored as C arrays in ROM. For 40 characters at 16 bytes each = 640 bytes.
-
-**Potential Optimization:**
-- Consider using GBDK's built-in font if style permits
-- Or use compression for the tile data
-- Or generate some characters programmatically (0-9 could share pixel patterns with letters)
-
-### 9. Inefficient Board Display Updates
-
-**Location:** `board_state.c:179-218`
-
-**Problem:** `update_board_display()` redraws ALL 20 squares every call, even if only one piece moved.
-
-**Impact:** Excessive VRAM writes. On a move, only 1-3 squares change (source, destination, possibly capture).
-
-**Solution:** Track dirty squares and only redraw changed positions:
-```c
-void mark_square_dirty(uint8_t pos);
-void update_dirty_squares(void);
-```
-
 ### 10. Game Phase State Machine Complexity
 
 **Location:** `game.c:1054-1155`

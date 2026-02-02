@@ -6,16 +6,30 @@
 
 BANKREF(dice_black)
 
-const palette_color_t dice_black_palettes[4] = {
-	RGB8(255,255,255), RGB8(  0,  0,  0), RGB8(224, 28,143), RGB8(143,127,  0)
+const palette_color_t dice_black_palettes[32] = {
+	RGB8(195,195,195), RGB8(255,255,255), RGB8(127,127,127), RGB8(  0,  0,  0)
+	,
+	RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0)
+	,
+	RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0)
+	,
+	RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0)
+	,
+	RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0)
+	,
+	RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0)
+	,
+	RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0)
+	,
+	RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0)
 	
 };
 
 const uint8_t dice_black_tiles[16] = {
-	0x08,0x00,0x1c,0x00,
-	0x1c,0x00,0x3e,0x00,
-	0x3e,0x00,0x7f,0x00,
-	0x7f,0x00,0x00,0x00
+	0x08,0x08,0x1c,0x1c,
+	0x1c,0x1c,0x3e,0x3e,
+	0x3e,0x3e,0x7f,0x7f,
+	0x7f,0x7f,0x00,0x00
 	
 };
 

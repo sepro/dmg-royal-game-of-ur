@@ -53,6 +53,15 @@
 - Automatic turn progression with rosette bonus turns and capture mechanics
 - Board display updates after each move showing current game state
 
+### Phase 8c: Move Selection (Human Player) ✓
+- Valid move calculation determining which pieces can legally move based on dice roll
+- Selection sprite (square border) positioned over selectable pieces
+- Left/right navigation cycling through valid pieces only
+- Destination preview showing blinking piece sprite on target square
+- A button confirms and executes the selected move
+- Support for entering pieces from reserve with visual indicator
+- Handles entering board, normal movement, capturing, rosette rules, and bearing off
+
 ### Phase 11: End Game Screen ✓
 - Win/lose detection and state communication from game screen
 - White background screen with inverted font text

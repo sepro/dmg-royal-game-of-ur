@@ -8,22 +8,6 @@ This document identifies areas for improvement before continuing with AI impleme
 
 These issues should be addressed before adding more features.
 
-### 2. Duplicated Random Number Generators
-
-**Location:** `game.c:124-137`, `coinflip.c:67-72`, `title.c:42-51`
-
-**Problem:** Three different implementations of random number generation:
-- `game.c`: Full Galois LFSR with seeding
-- `coinflip.c`: Same Galois LFSR (duplicated)
-- `title.c`: Simple DIV_REG read
-
-**Impact:**
-- Wastes ~50 bytes of ROM
-- Inconsistent random quality across screens
-- Duplicated state variables (`rand_state` in both game.c and coinflip.c)
-
-**Solution:** Create a shared `random.c` module with one LFSR implementation.
-
 ### 3. Duplicated `white_tile` Data
 
 **Location:** `opponent_select.c:164-168`, `difficulty_select.c:46-50`, `coinflip.c:55-59`, `endgame.c:28-32`
@@ -200,18 +184,6 @@ Nice-to-have optimizations that can be deferred.
 **Problem:** While constants are defined, there are still hardcoded values like `18` for row clear width throughout the code.
 
 **Improvement:** Add `#define UI_WIDTH 18` or similar.
-
-### 18. Board Lookup Table Memory
-
-**Location:** `board_state.c:36-63`
-
-**Problem:** The `p1_squares` and `p2_private_squares` arrays store `BoardSquare_t` structs with 4 bytes each. For 20 squares = 80 bytes of RAM.
-
-**Optimization:** These are constant and could be `const` (ROM) instead of RAM:
-```c
-static const BoardSquare_t p1_squares[14] = { ... };  // Already const, good!
-```
-Actually, they ARE const. No issue here.
 
 ### 19. Piece Tile Lookup Table Size
 

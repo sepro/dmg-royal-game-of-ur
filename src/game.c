@@ -15,6 +15,7 @@
 #include "input.h"
 #include "board_state.h"
 #include "random.h"
+#include "portrait.h"
 
 // External references to generated board asset
 extern const uint8_t board_tiles[];
@@ -31,18 +32,9 @@ extern const uint8_t selection_border_tiles[];
 extern const uint8_t dest_piece_white_tiles[];
 extern const uint8_t dest_piece_black_tiles[];
 
-// External references to profile assets
-extern const uint8_t profile_01_tiles[];
-extern const unsigned char profile_01_map[];
-extern const uint8_t profile_02_tiles[];
-extern const unsigned char profile_02_map[];
-extern const uint8_t profile_03_tiles[];
-extern const unsigned char profile_03_map[];
-extern const uint8_t profile_04_tiles[];
-extern const unsigned char profile_04_map[];
-
 // External reference to opponent data (from opponent_data.h and opponent_select.h)
 // profile_tile_counts, opponent_names, selected_opponent declared in included headers
+// Portrait assets handled by portrait.c
 
 // External reference to border assets
 extern const uint8_t border_tiles[];
@@ -136,47 +128,7 @@ static void fill_ui_area(void) {
  * Draw the selected opponent's portrait on the right side of UI
  */
 static void draw_opponent_portrait(void) {
-    const uint8_t *tiles;
-    const unsigned char *map;
-    uint8_t tile_count;
-
-    // Select the correct profile based on selected_opponent
-    switch (selected_opponent) {
-        case 0:
-            tiles = profile_01_tiles;
-            map = profile_01_map;
-            tile_count = profile_tile_counts[0];
-            break;
-        case 1:
-            tiles = profile_02_tiles;
-            map = profile_02_map;
-            tile_count = profile_tile_counts[1];
-            break;
-        case 2:
-            tiles = profile_03_tiles;
-            map = profile_03_map;
-            tile_count = profile_tile_counts[2];
-            break;
-        case 3:
-            tiles = profile_04_tiles;
-            map = profile_04_map;
-            tile_count = profile_tile_counts[3];
-            break;
-        default:
-            return;
-    }
-
-    // Load portrait tiles after board tiles
-    set_bkg_data(GAME_PORTRAIT_TILE_START, tile_count, tiles);
-
-    // Draw 5x5 portrait using tilemap
-    uint8_t row_buf[GAME_PORTRAIT_WIDTH];
-    for (uint8_t row = 0; row < GAME_PORTRAIT_HEIGHT; row++) {
-        for (uint8_t col = 0; col < GAME_PORTRAIT_WIDTH; col++) {
-            row_buf[col] = GAME_PORTRAIT_TILE_START + map[row * GAME_PORTRAIT_WIDTH + col];
-        }
-        set_bkg_tiles(GAME_PORTRAIT_X, GAME_PORTRAIT_Y + row, GAME_PORTRAIT_WIDTH, 1, row_buf);
-    }
+    draw_portrait(selected_opponent, GAME_PORTRAIT_TILE_START, GAME_PORTRAIT_X, GAME_PORTRAIT_Y);
 }
 
 /**

@@ -13,16 +13,9 @@
 #include "font.h"
 #include "input.h"
 #include "transition.h"
+#include "portrait.h"
 
-// External references to generated profile assets
-extern const uint8_t profile_01_tiles[];
-extern const unsigned char profile_01_map[];
-extern const uint8_t profile_02_tiles[];
-extern const unsigned char profile_02_map[];
-extern const uint8_t profile_03_tiles[];
-extern const unsigned char profile_03_map[];
-extern const uint8_t profile_04_tiles[];
-extern const unsigned char profile_04_map[];
+// Portrait assets handled by portrait.c
 
 // External reference to arrow sprite tiles
 extern const uint8_t arrow_tiles[];
@@ -67,46 +60,7 @@ static void fill_screen_white(void) {
  * Draw the selected opponent's portrait
  */
 static void draw_selected_portrait(void) {
-    const uint8_t *tiles;
-    const unsigned char *map;
-    uint8_t tile_count;
-
-    switch (selected_opponent) {
-        case 0:
-            tiles = profile_01_tiles;
-            map = profile_01_map;
-            tile_count = profile_tile_counts[0];
-            break;
-        case 1:
-            tiles = profile_02_tiles;
-            map = profile_02_map;
-            tile_count = profile_tile_counts[1];
-            break;
-        case 2:
-            tiles = profile_03_tiles;
-            map = profile_03_map;
-            tile_count = profile_tile_counts[2];
-            break;
-        case 3:
-            tiles = profile_04_tiles;
-            map = profile_04_map;
-            tile_count = profile_tile_counts[3];
-            break;
-        default:
-            return;
-    }
-
-    // Load portrait tiles starting after white tile
-    set_bkg_data(DIFF_PORTRAIT_TILE_START, tile_count, tiles);
-
-    // Draw 5x5 portrait
-    uint8_t row_buf[5];
-    for (uint8_t row = 0; row < 5; row++) {
-        for (uint8_t col = 0; col < 5; col++) {
-            row_buf[col] = DIFF_PORTRAIT_TILE_START + map[row * 5 + col];
-        }
-        set_bkg_tiles(DIFF_PORTRAIT_X, DIFF_PORTRAIT_Y + row, 5, 1, row_buf);
-    }
+    draw_portrait(selected_opponent, DIFF_PORTRAIT_TILE_START, DIFF_PORTRAIT_X, DIFF_PORTRAIT_Y);
 }
 
 /**

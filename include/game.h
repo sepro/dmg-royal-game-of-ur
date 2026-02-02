@@ -182,12 +182,12 @@
 #define CPU_RESERVE_TILE_X      10
 #define CPU_RESERVE_TILE_Y      2
 
-// Bear-off indicator: right of position 14 (exit point)
-// Human bearoff: right of human exit (tile 14,6 -> indicator at 18,6)
-#define HUMAN_BEAROFF_TILE_X    18
+// Bear-off indicator: left of position 14 (exit point)
+// Human bearoff: left of human exit (tile 14,6 -> indicator at 12,6)
+#define HUMAN_BEAROFF_TILE_X    12
 #define HUMAN_BEAROFF_TILE_Y    6
 // CPU bearoff: right of CPU exit (tile 14,2 -> indicator at 18,2)
-#define CPU_BEAROFF_TILE_X      18
+#define CPU_BEAROFF_TILE_X      12
 #define CPU_BEAROFF_TILE_Y      2
 
 // ============================================================================

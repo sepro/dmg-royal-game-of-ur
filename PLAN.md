@@ -13,6 +13,7 @@ This plan breaks down the development into manageable phases, each building on t
 1. **Valid move calculation**
    - Given roll value, determine which pieces can legally move
    - Handle: entering board, normal movement, capturing, rosette rules, bearing off
+   - If enterting the board with a piece from the reserve is possible, there needs to be a piece sprite drawn at the open slot right of the starting position, which can be selected to move that piece on the board. 
 
 2. **Selection sprite**
    - Create sprite which is a square border placed on the piece that can move 

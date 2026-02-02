@@ -8,24 +8,6 @@ This document identifies areas for improvement before continuing with AI impleme
 
 These issues should be addressed before adding more features.
 
-### 1. Massive Code Duplication: Transition System
-
-**Location:** `title.c:115-155`, `opponent_select.c:172-212`, `difficulty_select.c:58-101`, `coinflip.c:98-138`
-
-**Problem:** The exact same `transition_start()` and `update_transition()` functions are copy-pasted across 4 files (~40 lines each = ~160 lines of duplicated code).
-
-**Impact:**
-- Wastes ~400 bytes of ROM
-- Bug fixes require changes in 4 places
-- Increases maintenance burden
-
-**Solution:** Extract to a shared `transition.c` module:
-```c
-// transition.h
-void transition_start(ScreenState_t target, uint8_t phase_count);
-uint8_t update_transition(void);
-```
-
 ### 2. Duplicated Random Number Generators
 
 **Location:** `game.c:124-137`, `coinflip.c:67-72`, `title.c:42-51`

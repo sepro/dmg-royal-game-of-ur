@@ -1158,5 +1158,20 @@ void update_game(void) {
  * Cleanup game screen
  */
 void cleanup_game(void) {
-    HIDE_SPRITES;
+    // Clear all game sprites by moving them off-screen
+    // This prevents them from appearing on subsequent screens
+    move_sprite(OAM_CPU_PIECE, 0, 0);
+    move_sprite(OAM_HUMAN_PIECE, 0, 0);
+    move_sprite(OAM_DICE_0, 0, 0);
+    move_sprite(OAM_DICE_1, 0, 0);
+    move_sprite(OAM_DICE_2, 0, 0);
+    move_sprite(OAM_DICE_3, 0, 0);
+    move_sprite(OAM_SELECTION_TL, 0, 0);
+    move_sprite(OAM_SELECTION_TR, 0, 0);
+    move_sprite(OAM_SELECTION_BL, 0, 0);
+    move_sprite(OAM_SELECTION_BR, 0, 0);
+    move_sprite(OAM_DEST_TL, 0, 0);
+    move_sprite(OAM_DEST_TR, 0, 0);
+    move_sprite(OAM_DEST_BL, 0, 0);
+    move_sprite(OAM_DEST_BR, 0, 0);
 }

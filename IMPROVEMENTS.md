@@ -18,16 +18,6 @@ These issues should be addressed before adding more features.
 
 **Solution:** Define once in a shared location or use GBDK's built-in fill functions.
 
-### 5. Repeated Border Drawing Code
-
-**Location:** `opponent_select.c:103-134`, `coinflip.c:173-205`, `endgame.c:96-109`
-
-**Problem:** `draw_border()` and `clear_border()` functions duplicated with minor parameter differences.
-
-**Impact:** ~60 lines of duplicated code.
-
-**Solution:** Extract to shared utility with parameters for position and dimensions.
-
 ---
 
 ## Important Issues

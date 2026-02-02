@@ -98,4 +98,39 @@ uint8_t execute_move(uint8_t player, uint8_t piece_idx, uint8_t roll);
  */
 uint8_t find_random_valid_move(uint8_t player, uint8_t roll, uint8_t *out_piece_idx);
 
+/**
+ * Get all valid moves for a player with given roll
+ * @param player     PLAYER_HUMAN or PLAYER_CPU
+ * @param roll       Dice roll result (1-4)
+ * @param out_moves  Array to store piece indices (must be at least PIECES_PER_PLAYER)
+ * @return Number of valid moves found
+ */
+uint8_t get_valid_moves(uint8_t player, uint8_t roll, uint8_t *out_moves);
+
+/**
+ * Get screen pixel coordinates for a board position
+ * @param player  PLAYER_HUMAN or PLAYER_CPU (needed for private squares 1-4, 13-14)
+ * @param pos     Board position (1-14)
+ * @param out_x   Pointer to store sprite X coordinate
+ * @param out_y   Pointer to store sprite Y coordinate
+ * @return 1 if position is valid, 0 otherwise
+ */
+uint8_t get_position_screen_coords(uint8_t player, uint8_t pos, uint8_t *out_x, uint8_t *out_y);
+
+/**
+ * Get screen pixel coordinates for reserve indicator
+ * @param player  PLAYER_HUMAN or PLAYER_CPU
+ * @param out_x   Pointer to store sprite X coordinate
+ * @param out_y   Pointer to store sprite Y coordinate
+ */
+void get_reserve_screen_coords(uint8_t player, uint8_t *out_x, uint8_t *out_y);
+
+/**
+ * Get screen pixel coordinates for bearoff indicator
+ * @param player  PLAYER_HUMAN or PLAYER_CPU
+ * @param out_x   Pointer to store sprite X coordinate
+ * @param out_y   Pointer to store sprite Y coordinate
+ */
+void get_bearoff_screen_coords(uint8_t player, uint8_t *out_x, uint8_t *out_y);
+
 #endif // BOARD_STATE_H

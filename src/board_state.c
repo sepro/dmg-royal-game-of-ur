@@ -328,3 +328,71 @@ uint8_t find_random_valid_move(uint8_t player, uint8_t roll, uint8_t *out_piece_
 
     return 1;
 }
+
+uint8_t get_valid_moves(uint8_t player, uint8_t roll, uint8_t *out_moves) {
+    uint8_t num_valid = 0;
+
+    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
+        if (is_valid_move(player, i, roll)) {
+            out_moves[num_valid] = i;
+            num_valid++;
+        }
+    }
+
+    return num_valid;
+}
+
+uint8_t get_position_screen_coords(uint8_t player, uint8_t pos, uint8_t *out_x, uint8_t *out_y) {
+    if (pos < 1 || pos > 14) {
+        return 0;  // Invalid position
+    }
+
+    uint8_t tile_x, tile_y;
+
+    // Shared squares (5-12) use same coordinates for both players
+    if (pos >= 5 && pos <= 12) {
+        tile_x = p1_squares[pos - 1].tile_x;
+        tile_y = p1_squares[pos - 1].tile_y;
+    } else if (player == PLAYER_HUMAN) {
+        // Human private squares (1-4, 13-14)
+        tile_x = p1_squares[pos - 1].tile_x;
+        tile_y = p1_squares[pos - 1].tile_y;
+    } else {
+        // CPU private squares (1-4, 13-14)
+        uint8_t idx;
+        if (pos <= 4) {
+            idx = pos - 1;  // 0-3 for positions 1-4
+        } else {
+            idx = pos - 9;  // 4-5 for positions 13-14
+        }
+        tile_x = p2_private_squares[idx].tile_x;
+        tile_y = p2_private_squares[idx].tile_y;
+    }
+
+    // Convert tile coordinates to sprite pixel coordinates
+    // Sprite X offset is +8, Y offset is +16 on Game Boy
+    *out_x = tile_x * 8 + 8;
+    *out_y = tile_y * 8 + 16;
+
+    return 1;
+}
+
+void get_reserve_screen_coords(uint8_t player, uint8_t *out_x, uint8_t *out_y) {
+    if (player == PLAYER_HUMAN) {
+        *out_x = (uint8_t)(HUMAN_RESERVE_TILE_X * 8 + 8);
+        *out_y = (uint8_t)(HUMAN_RESERVE_TILE_Y * 8 + 16);
+    } else {
+        *out_x = (uint8_t)(CPU_RESERVE_TILE_X * 8 + 8);
+        *out_y = (uint8_t)(CPU_RESERVE_TILE_Y * 8 + 16);
+    }
+}
+
+void get_bearoff_screen_coords(uint8_t player, uint8_t *out_x, uint8_t *out_y) {
+    if (player == PLAYER_HUMAN) {
+        *out_x = (uint8_t)(HUMAN_BEAROFF_TILE_X * 8 + 8);
+        *out_y = (uint8_t)(HUMAN_BEAROFF_TILE_Y * 8 + 16);
+    } else {
+        *out_x = (uint8_t)(CPU_BEAROFF_TILE_X * 8 + 8);
+        *out_y = (uint8_t)(CPU_BEAROFF_TILE_Y * 8 + 16);
+    }
+}

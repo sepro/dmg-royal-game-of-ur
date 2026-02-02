@@ -25,6 +25,11 @@ extern const uint8_t dice_black_tiles[];
 extern const uint8_t piece_white_tiles[];
 extern const uint8_t piece_black_tiles[];
 
+// Phase 8c: Selection and destination preview sprite assets
+extern const uint8_t selection_border_tiles[];
+extern const uint8_t dest_piece_white_tiles[];
+extern const uint8_t dest_piece_black_tiles[];
+
 // External references to profile assets
 extern const uint8_t profile_01_tiles[];
 extern const unsigned char profile_01_map[];
@@ -91,6 +96,23 @@ static uint16_t elapsed_frames;      // Frames since game started (for time trac
 static uint8_t is_paused;            // 1 = paused, 0 = running
 static uint8_t pause_animating;      // 1 = window sliding, 0 = static
 static uint8_t window_y;             // Current window Y position
+
+// Phase 8c: Move selection state
+static uint8_t valid_moves[PIECES_PER_PLAYER];  // Indices of pieces with valid moves
+static uint8_t num_valid_moves;                  // Number of valid moves
+static uint8_t selection_index;                  // Current index into valid_moves[]
+static uint8_t dest_blink_timer;                 // Timer for destination blink
+static uint8_t dest_blink_visible;               // 1 = destination visible, 0 = hidden
+static uint8_t selection_sprites_loaded;         // 1 = sprites loaded into VRAM
+
+// ============================================================================
+// Forward Declarations (for functions used before definition)
+// ============================================================================
+static void switch_turn(void);
+static void update_piece_counts(void);
+static uint8_t check_win_condition(void);
+static void update_reserve_display(void);
+static void draw_prompt(const char *text);
 
 // ============================================================================
 // Random Number Generator (Galois LFSR)
@@ -317,6 +339,250 @@ static void update_dice_sprites(void) {
             set_sprite_tile(OAM_DICE_0 + i, SPRITE_DICE_WHITE);
         } else {
             set_sprite_tile(OAM_DICE_0 + i, SPRITE_DICE_BLACK);
+        }
+    }
+}
+
+// ============================================================================
+// Phase 8c: Move Selection Functions
+// ============================================================================
+
+/**
+ * Load selection and destination preview sprite tiles into VRAM
+ */
+static void load_selection_sprites(void) {
+    if (selection_sprites_loaded) return;
+
+    // Load selection border tile (1 tile, uses flip flags for corners)
+    set_sprite_data(VRAM_SPRITE_SELECTION_START, VRAM_SPRITE_SELECTION_COUNT, selection_border_tiles);
+
+    // Load destination preview tiles (4 tiles each for 16x16)
+    set_sprite_data(VRAM_SPRITE_DEST_WHITE_START, VRAM_SPRITE_DEST_WHITE_COUNT, dest_piece_white_tiles);
+    set_sprite_data(VRAM_SPRITE_DEST_BLACK_START, VRAM_SPRITE_DEST_BLACK_COUNT, dest_piece_black_tiles);
+
+    selection_sprites_loaded = 1;
+}
+
+/**
+ * Setup selection border OAM (4 sprites using flip flags for 16x16 border)
+ */
+static void setup_selection_oam(void) {
+    // All 4 corners use the same tile with different flip flags
+    set_sprite_tile(OAM_SELECTION_TL, VRAM_SPRITE_SELECTION_START);
+    set_sprite_tile(OAM_SELECTION_TR, VRAM_SPRITE_SELECTION_START);
+    set_sprite_tile(OAM_SELECTION_BL, VRAM_SPRITE_SELECTION_START);
+    set_sprite_tile(OAM_SELECTION_BR, VRAM_SPRITE_SELECTION_START);
+
+    // Set flip flags for corners
+    set_sprite_prop(OAM_SELECTION_TL, 0);                      // No flip (top-left)
+    set_sprite_prop(OAM_SELECTION_TR, S_FLIPX);                // Flip X (top-right)
+    set_sprite_prop(OAM_SELECTION_BL, S_FLIPY);                // Flip Y (bottom-left)
+    set_sprite_prop(OAM_SELECTION_BR, S_FLIPX | S_FLIPY);      // Flip both (bottom-right)
+}
+
+/**
+ * Setup destination preview OAM based on current player's color
+ */
+static void setup_destination_oam(void) {
+    uint8_t tile_start = (human_color == SIDE_LIGHT) ?
+                         VRAM_SPRITE_DEST_WHITE_START :
+                         VRAM_SPRITE_DEST_BLACK_START;
+
+    // Set tiles for 16x16 destination preview (4 x 8x8 tiles)
+    set_sprite_tile(OAM_DEST_TL, tile_start);
+    set_sprite_tile(OAM_DEST_TR, tile_start + 1);
+    set_sprite_tile(OAM_DEST_BL, tile_start + 2);
+    set_sprite_tile(OAM_DEST_BR, tile_start + 3);
+}
+
+/**
+ * Position a 16x16 sprite composite at given pixel coordinates
+ * @param base_oam  First OAM slot (expects 4 consecutive slots)
+ * @param px        Top-left X coordinate (sprite coords, +8 offset already applied)
+ * @param py        Top-left Y coordinate (sprite coords, +16 offset already applied)
+ */
+static void position_16x16_sprite(uint8_t base_oam, uint8_t px, uint8_t py) {
+    move_sprite(base_oam,     px,     py);      // Top-left
+    move_sprite(base_oam + 1, px + 8, py);      // Top-right
+    move_sprite(base_oam + 2, px,     py + 8);  // Bottom-left
+    move_sprite(base_oam + 3, px + 8, py + 8);  // Bottom-right
+}
+
+/**
+ * Hide selection and destination sprites (move off screen)
+ */
+static void hide_selection_sprites(void) {
+    // Hide selection border
+    move_sprite(OAM_SELECTION_TL, 0, 0);
+    move_sprite(OAM_SELECTION_TR, 0, 0);
+    move_sprite(OAM_SELECTION_BL, 0, 0);
+    move_sprite(OAM_SELECTION_BR, 0, 0);
+
+    // Hide destination preview
+    move_sprite(OAM_DEST_TL, 0, 0);
+    move_sprite(OAM_DEST_TR, 0, 0);
+    move_sprite(OAM_DEST_BL, 0, 0);
+    move_sprite(OAM_DEST_BR, 0, 0);
+}
+
+/**
+ * Position selection border on the currently selected piece
+ */
+static void position_selection_sprite(void) {
+    uint8_t piece_idx = valid_moves[selection_index];
+    uint8_t pos = human_pieces[piece_idx];
+    uint8_t px, py;
+
+    if (pos == POS_RESERVE) {
+        // Piece in reserve - show at reserve indicator position
+        get_reserve_screen_coords(PLAYER_HUMAN, &px, &py);
+    } else {
+        // Piece on board - get its position
+        get_position_screen_coords(PLAYER_HUMAN, pos, &px, &py);
+    }
+
+    position_16x16_sprite(OAM_SELECTION_TL, px, py);
+}
+
+/**
+ * Update destination preview position and blink animation
+ */
+static void update_destination_preview(void) {
+    uint8_t piece_idx = valid_moves[selection_index];
+    uint8_t current_pos = human_pieces[piece_idx];
+    uint8_t dest_pos;
+    uint8_t px, py;
+
+    // Calculate destination position
+    if (current_pos == POS_RESERVE) {
+        dest_pos = dice_total;  // Enter at position = roll
+    } else {
+        dest_pos = current_pos + dice_total;
+    }
+
+    // Get screen coordinates for destination
+    if (dest_pos >= POS_FINISHED) {
+        // Bearing off - show at bearoff indicator
+        get_bearoff_screen_coords(PLAYER_HUMAN, &px, &py);
+    } else {
+        get_position_screen_coords(PLAYER_HUMAN, dest_pos, &px, &py);
+    }
+
+    // Update blink timer
+    dest_blink_timer++;
+    if (dest_blink_timer >= DEST_BLINK_INTERVAL) {
+        dest_blink_timer = 0;
+        dest_blink_visible = !dest_blink_visible;
+    }
+
+    // Position or hide destination preview based on blink state
+    if (dest_blink_visible) {
+        position_16x16_sprite(OAM_DEST_TL, px, py);
+    } else {
+        // Hide destination preview
+        move_sprite(OAM_DEST_TL, 0, 0);
+        move_sprite(OAM_DEST_TR, 0, 0);
+        move_sprite(OAM_DEST_BL, 0, 0);
+        move_sprite(OAM_DEST_BR, 0, 0);
+    }
+}
+
+/**
+ * Start move selection mode for human player
+ */
+static void start_move_selection(void) {
+    // Get all valid moves
+    num_valid_moves = get_valid_moves(PLAYER_HUMAN, dice_total, valid_moves);
+
+    if (num_valid_moves == 0) {
+        // No valid moves - show message and prepare to switch turn
+        draw_prompt("NO VALID MOVES");
+        result_timer = NO_MOVES_PAUSE;
+        game_phase = PHASE_CPU_THINK;  // Reuse as wait state
+        return;
+    }
+
+    // Load sprites if not already loaded
+    load_selection_sprites();
+
+    // Setup OAM for selection and destination
+    setup_selection_oam();
+    setup_destination_oam();
+
+    // Initialize selection state
+    selection_index = 0;
+    dest_blink_timer = 0;
+    dest_blink_visible = 1;
+
+    // Position selection on first valid piece
+    position_selection_sprite();
+
+    // Show destination preview
+    update_destination_preview();
+
+    // Show prompt
+    draw_prompt("SELECT PIECE");
+}
+
+/**
+ * Update move selection (handle input each frame)
+ */
+static void update_move_selection(void) {
+    uint8_t selection_changed = 0;
+
+    // Handle left/right navigation
+    if (input_pressed(J_LEFT)) {
+        if (selection_index > 0) {
+            selection_index--;
+        } else {
+            selection_index = num_valid_moves - 1;  // Wrap to end
+        }
+        selection_changed = 1;
+    } else if (input_pressed(J_RIGHT)) {
+        selection_index++;
+        if (selection_index >= num_valid_moves) {
+            selection_index = 0;  // Wrap to start
+        }
+        selection_changed = 1;
+    }
+
+    // Update sprites if selection changed
+    if (selection_changed) {
+        position_selection_sprite();
+        dest_blink_timer = 0;
+        dest_blink_visible = 1;  // Reset blink to visible
+    }
+
+    // Update destination preview blink animation
+    update_destination_preview();
+
+    // Handle A button - confirm selection
+    if (input_pressed(J_A)) {
+        uint8_t piece_idx = valid_moves[selection_index];
+
+        // Hide selection sprites
+        hide_selection_sprites();
+
+        // Execute the move
+        uint8_t extra_turn = execute_move(PLAYER_HUMAN, piece_idx, dice_total);
+        update_piece_counts();
+        update_reserve_display();
+        update_board_display();
+
+        // Check win condition
+        if (check_win_condition()) {
+            human_won = 1;  // Human won
+            next_state = STATE_ENDGAME;
+            return;
+        }
+
+        // Handle rosette bonus or switch turn
+        if (extra_turn) {
+            draw_prompt("ROSETTE! GO AGAIN");
+            result_timer = RESULT_PAUSE_FRAMES;
+            game_phase = PHASE_ROSETTE_BONUS;
+        } else {
+            switch_turn();
         }
     }
 }
@@ -718,6 +984,11 @@ void init_game(void) {
     window_y = PAUSE_WIN_Y_HIDDEN;
     HIDE_WIN;  // Ensure window starts hidden
 
+    // Initialize move selection state (Phase 8c)
+    num_valid_moves = 0;
+    selection_index = 0;
+    selection_sprites_loaded = 0;
+
     // Draw UI elements
     draw_player_info();
     draw_turn_indicator();
@@ -803,15 +1074,17 @@ void update_game(void) {
             if (result_timer > 0) {
                 result_timer--;
             } else {
-                // Check for zero roll (no moves)
+                // Check for zero roll (no moves possible)
                 if (dice_total == 0) {
                     draw_prompt("NO MOVES");
-                    // Wait briefly then switch turn
                     result_timer = RESULT_PAUSE_FRAMES;
-                    game_phase = PHASE_SELECT_MOVE;  // Use as intermediate state
+                    game_phase = PHASE_CPU_THINK;  // Use as wait state before switch
+                } else if (current_turn == 0) {
+                    // Human player - start interactive move selection
+                    start_move_selection();
+                    game_phase = PHASE_SELECT_MOVE;
                 } else {
-                    // Has moves - go to move selection (Phase 8)
-                    // For now, just switch turns as placeholder
+                    // CPU player - go to CPU move selection
                     game_phase = PHASE_SELECT_MOVE;
                     result_timer = RESULT_PAUSE_FRAMES;
                 }
@@ -819,25 +1092,24 @@ void update_game(void) {
             break;
 
         case PHASE_SELECT_MOVE:
-            // Phase 8b: Execute random move or handle no valid moves
-            if (result_timer > 0) {
-                result_timer--;
+            if (current_turn == 0) {
+                // Human player - interactive move selection
+                update_move_selection();
             } else {
-                if (dice_total == 0) {
-                    // Zero roll already handled - switch turns
-                    switch_turn();
+                // CPU player - random move with brief delay
+                if (result_timer > 0) {
+                    result_timer--;
                 } else {
                     uint8_t piece_idx;
-                    uint8_t player = (current_turn == 0) ? PLAYER_HUMAN : PLAYER_CPU;
 
-                    if (find_random_valid_move(player, dice_total, &piece_idx)) {
-                        uint8_t extra_turn = execute_move(player, piece_idx, dice_total);
+                    if (find_random_valid_move(PLAYER_CPU, dice_total, &piece_idx)) {
+                        uint8_t extra_turn = execute_move(PLAYER_CPU, piece_idx, dice_total);
                         update_piece_counts();
                         update_reserve_display();
                         update_board_display();
 
                         if (check_win_condition()) {
-                            human_won = (current_turn == 0) ? 1 : 0;  // 0 = human, 1 = CPU
+                            human_won = 0;  // CPU won, human lost
                             next_state = STATE_ENDGAME;
                         } else if (extra_turn) {
                             draw_prompt("ROSETTE! GO AGAIN");
@@ -848,7 +1120,7 @@ void update_game(void) {
                         }
                     } else {
                         draw_prompt("NO VALID MOVES");
-                        result_timer = RESULT_PAUSE_FRAMES;
+                        result_timer = NO_MOVES_PAUSE;
                         game_phase = PHASE_CPU_THINK;  // Use as wait state
                     }
                 }

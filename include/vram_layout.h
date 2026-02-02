@@ -151,24 +151,47 @@
 #define VRAM_SPRITE_BLINK_COUNT 4
 
 /* ----------------------------------------------------------------------------
- * Phase 5+: Game Sprites (Tiles 5-255) - AVAILABLE
+ * Phase 7: Game UI Sprites (Tiles 5-8)
+ * ---------------------------------------------------------------------------- */
+// Piece indicator sprites (8x8 each)
+#define VRAM_SPRITE_PIECE_WHITE      5
+#define VRAM_SPRITE_PIECE_BLACK      6
+// Dice sprites (8x8 each)
+#define VRAM_SPRITE_DICE_WHITE       7
+#define VRAM_SPRITE_DICE_BLACK       8
+
+/* ----------------------------------------------------------------------------
+ * Phase 8c: Move Selection Sprites (Tiles 9-17)
+ * ---------------------------------------------------------------------------- */
+// Selection border: 1 tile (uses flip flags for 4 corners)
+#define VRAM_SPRITE_SELECTION_START    9
+#define VRAM_SPRITE_SELECTION_COUNT    1
+
+// Destination preview white piece: 4 tiles (16x16 = 4 x 8x8)
+#define VRAM_SPRITE_DEST_WHITE_START   10
+#define VRAM_SPRITE_DEST_WHITE_COUNT   4
+
+// Destination preview black piece: 4 tiles (16x16 = 4 x 8x8)
+#define VRAM_SPRITE_DEST_BLACK_START   14
+#define VRAM_SPRITE_DEST_BLACK_COUNT   4
+
+/* ----------------------------------------------------------------------------
+ * Phase 5+: Game Sprites (Tiles 18-255) - AVAILABLE
  * Reserved for:
  *   - Coin flip animation sprites
- *   - Game pieces (7 per player = 14 pieces, could use 1-2 tiles each)
- *   - Dice indicators/animations
- *   - Turn indicators
+ *   - Future game piece animations
  *   - Victory animations
  * ---------------------------------------------------------------------------- */
-#define VRAM_SPRITE_GAME_START 5
+#define VRAM_SPRITE_GAME_START 18
 #define VRAM_SPRITE_GAME_END 255
-#define VRAM_SPRITE_GAME_COUNT 251
+#define VRAM_SPRITE_GAME_COUNT 238
 
 /* ----------------------------------------------------------------------------
  * Sprite Tile Budget Summary
  * ---------------------------------------------------------------------------- */
 #define VRAM_SPRITE_TOTAL 256
-#define VRAM_SPRITE_USED 5
-#define VRAM_SPRITE_AVAILABLE 251
+#define VRAM_SPRITE_USED 18   // Arrow(1) + Blink(4) + Pieces(2) + Dice(2) + Selection(1) + DestWhite(4) + DestBlack(4)
+#define VRAM_SPRITE_AVAILABLE 238
 
 /* ============================================================================
  * COMPILE-TIME VALIDATION

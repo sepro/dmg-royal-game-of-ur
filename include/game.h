@@ -62,6 +62,18 @@
 #define OAM_DICE_2          4   // Third die
 #define OAM_DICE_3          5   // Fourth die
 
+// Phase 8c: Selection border (4 sprites for 16x16, uses flip flags)
+#define OAM_SELECTION_TL    6   // Top-left corner
+#define OAM_SELECTION_TR    7   // Top-right corner
+#define OAM_SELECTION_BL    8   // Bottom-left corner
+#define OAM_SELECTION_BR    9   // Bottom-right corner
+
+// Phase 8c: Destination preview (4 sprites for 16x16)
+#define OAM_DEST_TL         10  // Top-left
+#define OAM_DEST_TR         11  // Top-right
+#define OAM_DEST_BL         12  // Bottom-left
+#define OAM_DEST_BR         13  // Bottom-right
+
 // ============================================================================
 // UI Layout Constants (tile coordinates)
 // ============================================================================
@@ -111,6 +123,8 @@
 #define ROLL_ANIM_DURATION  60  // ~1 second at 60fps
 #define ROLL_UPDATE_INTERVAL 4  // Update dice every 4 frames
 #define RESULT_PAUSE_FRAMES 30  // Show result for half second
+#define DEST_BLINK_INTERVAL 15  // Frames between blink toggles (~4Hz)
+#define NO_MOVES_PAUSE      45  // Frames to show "NO VALID MOVES"
 
 // ============================================================================
 // Pause Screen Constants
@@ -156,6 +170,25 @@
 // ============================================================================
 #define PIECES_PER_PLAYER   3   // Each player has 7 pieces (set to 1 for testing)
 #define NUM_DICE            4   // 4 binary dice
+
+// ============================================================================
+// Phase 8c: Reserve and Bearoff Indicator Positions (tile coordinates)
+// ============================================================================
+// Reserve indicator: right of starting square (position 1)
+// Human reserve: right of human start (tile 8,6 -> indicator at 10,6)
+#define HUMAN_RESERVE_TILE_X    10
+#define HUMAN_RESERVE_TILE_Y    6
+// CPU reserve: right of CPU start (tile 8,2 -> indicator at 10,2)
+#define CPU_RESERVE_TILE_X      10
+#define CPU_RESERVE_TILE_Y      2
+
+// Bear-off indicator: right of position 14 (exit point)
+// Human bearoff: right of human exit (tile 14,6 -> indicator at 18,6)
+#define HUMAN_BEAROFF_TILE_X    18
+#define HUMAN_BEAROFF_TILE_Y    6
+// CPU bearoff: right of CPU exit (tile 14,2 -> indicator at 18,2)
+#define CPU_BEAROFF_TILE_X      18
+#define CPU_BEAROFF_TILE_Y      2
 
 // ============================================================================
 // Opponent Portrait (5x5 tiles on right side of UI)

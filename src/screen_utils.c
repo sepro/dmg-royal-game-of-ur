@@ -14,3 +14,28 @@ void fill_screen_with_tile(uint8_t tile_index) {
         set_bkg_tiles(0, y, 20, 1, row);
     }
 }
+
+void draw_border_frame(uint8_t x, uint8_t y, uint8_t width, uint8_t height,
+                       uint8_t border_tile_start, const uint8_t* border_map) {
+    // Draw border frame using tilemap (skip inner 5x5 area)
+    for (uint8_t row = 0; row < height; row++) {
+        for (uint8_t col = 0; col < width; col++) {
+            // Skip inner 5x5 portrait/coin area (rows 1-5, cols 1-5)
+            if (row >= 1 && row <= 5 && col >= 1 && col <= 5) continue;
+            uint8_t tile = border_tile_start + border_map[row * width + col];
+            set_bkg_tile_xy(x + col, y + row, tile);
+        }
+    }
+}
+
+void clear_border_frame(uint8_t x, uint8_t y, uint8_t width, uint8_t height,
+                        uint8_t clear_tile) {
+    // Clear border frame (skip inner 5x5 area)
+    for (uint8_t row = 0; row < height; row++) {
+        for (uint8_t col = 0; col < width; col++) {
+            // Skip inner 5x5 portrait/coin area (rows 1-5, cols 1-5)
+            if (row >= 1 && row <= 5 && col >= 1 && col <= 5) continue;
+            set_bkg_tile_xy(x + col, y + row, clear_tile);
+        }
+    }
+}

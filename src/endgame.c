@@ -40,16 +40,8 @@ static void draw_opponent_portrait(void) {
 static void draw_border(void) {
     uint8_t x = ENDGAME_PORTRAIT_X - 1;  // Border is 1 tile outside portrait
     uint8_t y = ENDGAME_PORTRAIT_Y - 1;
-
-    // Draw 7x7 border frame using tilemap (skip inner 5x5)
-    for (uint8_t row = 0; row < ENDGAME_BORDER_HEIGHT; row++) {
-        for (uint8_t col = 0; col < ENDGAME_BORDER_WIDTH; col++) {
-            // Skip inner 5x5 portrait area (rows 1-5, cols 1-5)
-            if (row >= 1 && row <= 5 && col >= 1 && col <= 5) continue;
-            uint8_t tile = ENDGAME_BORDER_TILE_START + border_map[row * ENDGAME_BORDER_WIDTH + col];
-            set_bkg_tile_xy(x + col, y + row, tile);
-        }
-    }
+    draw_border_frame(x, y, ENDGAME_BORDER_WIDTH, ENDGAME_BORDER_HEIGHT,
+                      ENDGAME_BORDER_TILE_START, border_map);
 }
 
 void init_endgame(void) {

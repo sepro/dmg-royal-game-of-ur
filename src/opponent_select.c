@@ -14,6 +14,7 @@
 #include "font.h"
 #include "input.h"
 #include "transition.h"
+#include "screen_utils.h"
 
 // External references to generated profile assets
 extern const uint8_t profile_01_tiles[];
@@ -98,15 +99,7 @@ static void draw_portrait(uint8_t idx, uint8_t tile_base) {
 static void clear_border(uint8_t idx) {
     uint8_t x = portrait_x[idx] - 1;  // Border is 1 tile outside portrait
     uint8_t y = portrait_y[idx] - 1;
-
-    // Clear entire 7x7 border frame (skip inner 5x5)
-    for (uint8_t row = 0; row < BORDER_HEIGHT; row++) {
-        for (uint8_t col = 0; col < BORDER_WIDTH; col++) {
-            // Skip inner 5x5 portrait area (rows 1-5, cols 1-5)
-            if (row >= 1 && row <= 5 && col >= 1 && col <= 5) continue;
-            set_bkg_tile_xy(x + col, y + row, BLANK_TILE);
-        }
-    }
+    clear_border_frame(x, y, BORDER_WIDTH, BORDER_HEIGHT, BLANK_TILE);
 }
 
 /**
@@ -116,16 +109,7 @@ static void clear_border(uint8_t idx) {
 static void draw_border(uint8_t idx) {
     uint8_t x = portrait_x[idx] - 1;  // Border is 1 tile outside portrait
     uint8_t y = portrait_y[idx] - 1;
-
-    // Draw 7x7 border frame using tilemap (skip inner 5x5)
-    for (uint8_t row = 0; row < BORDER_HEIGHT; row++) {
-        for (uint8_t col = 0; col < BORDER_WIDTH; col++) {
-            // Skip inner 5x5 portrait area (rows 1-5, cols 1-5)
-            if (row >= 1 && row <= 5 && col >= 1 && col <= 5) continue;
-            uint8_t tile = BORDER_TILE_START + border_map[row * BORDER_WIDTH + col];
-            set_bkg_tile_xy(x + col, y + row, tile);
-        }
-    }
+    draw_border_frame(x, y, BORDER_WIDTH, BORDER_HEIGHT, BORDER_TILE_START, border_map);
 }
 
 /**

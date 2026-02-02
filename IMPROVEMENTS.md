@@ -46,14 +46,6 @@ These should be addressed to improve code quality and reduce resource usage.
 
 **Solution:** Load fonts once during initial boot (in `main.c` before first screen), add a `fonts_loaded` flag to skip redundant loads.
 
-### 7. Unnecessary `fill_screen_white()` Duplication
-
-**Location:** `difficulty_select.c:106-114`, `coinflip.c:143-151`, `endgame.c:34-42`
-
-**Problem:** Same screen-filling function duplicated 3 times.
-
-**Solution:** Move to a shared utility module.
-
 ### 8. Large Embedded Font Data
 
 **Location:** `font.c:21-626` - 626 lines, ~640 bytes

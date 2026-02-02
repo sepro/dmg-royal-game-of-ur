@@ -100,16 +100,8 @@ static void draw_coin(uint8_t x, uint8_t y, uint8_t tile_base) {
 static void draw_border(uint8_t idx) {
     uint8_t x = coin_x[idx] - 1;  // Border is 1 tile outside coin
     uint8_t y = coin_y[idx] - 1;
-
-    // Draw 7x7 border frame using tilemap (skip inner 5x5)
-    for (uint8_t row = 0; row < COINFLIP_BORDER_HEIGHT; row++) {
-        for (uint8_t col = 0; col < COINFLIP_BORDER_WIDTH; col++) {
-            // Skip inner 5x5 coin area (rows 1-5, cols 1-5)
-            if (row >= 1 && row <= 5 && col >= 1 && col <= 5) continue;
-            uint8_t tile = COINFLIP_BORDER_TILE_START + border_map[row * COINFLIP_BORDER_WIDTH + col];
-            set_bkg_tile_xy(x + col, y + row, tile);
-        }
-    }
+    draw_border_frame(x, y, COINFLIP_BORDER_WIDTH, COINFLIP_BORDER_HEIGHT,
+                      COINFLIP_BORDER_TILE_START, border_map);
 }
 
 /**
@@ -119,15 +111,8 @@ static void draw_border(uint8_t idx) {
 static void clear_border(uint8_t idx) {
     uint8_t x = coin_x[idx] - 1;
     uint8_t y = coin_y[idx] - 1;
-
-    // Clear entire 7x7 border frame (skip inner 5x5)
-    for (uint8_t row = 0; row < COINFLIP_BORDER_HEIGHT; row++) {
-        for (uint8_t col = 0; col < COINFLIP_BORDER_WIDTH; col++) {
-            // Skip inner 5x5 coin area (rows 1-5, cols 1-5)
-            if (row >= 1 && row <= 5 && col >= 1 && col <= 5) continue;
-            set_bkg_tile_xy(x + col, y + row, COINFLIP_WHITE_TILE);
-        }
-    }
+    clear_border_frame(x, y, COINFLIP_BORDER_WIDTH, COINFLIP_BORDER_HEIGHT,
+                       COINFLIP_WHITE_TILE);
 }
 
 /**

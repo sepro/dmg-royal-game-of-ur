@@ -186,7 +186,7 @@
 // Human bearoff: left of human exit (tile 14,6 -> indicator at 12,6)
 #define HUMAN_BEAROFF_TILE_X    12
 #define HUMAN_BEAROFF_TILE_Y    6
-// CPU bearoff: right of CPU exit (tile 14,2 -> indicator at 18,2)
+// CPU bearoff: right of CPU exit (tile 14,2 -> indicator at 12,2)
 #define CPU_BEAROFF_TILE_X      12
 #define CPU_BEAROFF_TILE_Y      2
 

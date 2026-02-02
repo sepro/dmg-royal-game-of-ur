@@ -12,6 +12,7 @@
 #include "input.h"
 #include "transition.h"
 #include "random.h"
+#include "screen_utils.h"
 
 // External references to generated coin assets
 extern const uint8_t light_coin_tiles[];
@@ -73,19 +74,6 @@ static void lock_tile(uint8_t tile_idx) {
     if (!is_tile_locked(tile_idx)) {
         locked_tiles[byte_idx] |= (1 << bit_idx);
         locked_count++;
-    }
-}
-
-/**
- * Fill screen with white tiles
- */
-static void fill_screen_white(void) {
-    uint8_t row[20];
-    for (uint8_t i = 0; i < 20; i++) {
-        row[i] = COINFLIP_WHITE_TILE;
-    }
-    for (uint8_t y = 0; y < 18; y++) {
-        set_bkg_tiles(0, y, 20, 1, row);
     }
 }
 
@@ -349,7 +337,7 @@ void init_coinflip(void) {
     set_bkg_data(COINFLIP_WHITE_TILE, 1, white_tile);
 
     // Fill screen with white
-    fill_screen_white();
+    fill_screen_with_tile(COINFLIP_WHITE_TILE);
 
     // Load coin tiles
     set_bkg_data(COINFLIP_LIGHT_TILE_START, COINFLIP_LIGHT_TILE_COUNT, light_coin_tiles);

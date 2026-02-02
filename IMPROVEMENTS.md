@@ -18,16 +18,6 @@ These issues should be addressed before adding more features.
 
 **Solution:** Define once in a shared location or use GBDK's built-in fill functions.
 
-### 4. Repeated Portrait Drawing Code
-
-**Location:** `game.c:161-203`, `difficulty_select.c:119-160`, `endgame.c:52-93`
-
-**Problem:** Nearly identical `draw_opponent_portrait()` / `draw_selected_portrait()` functions with the same switch statement pattern.
-
-**Impact:** ~100 lines of duplicated code across 3 files.
-
-**Solution:** Create a shared `draw_portrait(uint8_t opponent_idx, uint8_t tile_base, uint8_t x, uint8_t y)` function in a common module.
-
 ### 5. Repeated Border Drawing Code
 
 **Location:** `opponent_select.c:103-134`, `coinflip.c:173-205`, `endgame.c:96-109`
@@ -139,24 +129,6 @@ extern const unsigned char profile_01_map[];
 ## Optional Improvements
 
 Nice-to-have optimizations that can be deferred.
-
-### 13. Switch Statement in Main Loop
-
-**Location:** `main.c:37-108`
-
-**Problem:** Three separate switch statements handle cleanup, init, and update. This is verbose but readable.
-
-**Alternative:** Function pointer tables would be more compact but less debuggable. Current approach is acceptable for 6 states.
-
-### 14. Pause Screen Over-Engineering
-
-**Location:** `game.c:599-805` - 200+ lines for pause screen
-
-**Problem:** The pause screen implementation is elaborate (sliding animation, border drawing, full stats display). For an embedded game, a simpler "PAUSED" overlay would suffice.
-
-**Impact:** Not a bug, but adds complexity. The animation code alone is ~100 lines.
-
-**Consider:** Whether this complexity is worth it for the final product.
 
 ### 15. Multiple Input State Variables
 

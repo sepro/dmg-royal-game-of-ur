@@ -7,6 +7,7 @@
 #include "font.h"
 #include "input.h"
 #include "portrait.h"
+#include "screen_utils.h"
 
 // Portrait assets handled by portrait.c
 
@@ -22,17 +23,6 @@ static const uint8_t white_tile[16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
-
-// Fill screen with white
-static void fill_screen_white(void) {
-    uint8_t row[20];
-    for (uint8_t i = 0; i < 20; i++) {
-        row[i] = ENDGAME_WHITE_TILE;
-    }
-    for (uint8_t y = 0; y < 18; y++) {
-        set_bkg_tiles(0, y, 20, 1, row);
-    }
-}
 
 // Draw centered text (centers horizontally)
 static void draw_centered_text(uint8_t y, const char *text) {
@@ -67,7 +57,7 @@ void init_endgame(void) {
 
     // Load white tile and fill screen
     set_bkg_data(ENDGAME_WHITE_TILE, 1, white_tile);
-    fill_screen_white();
+    fill_screen_with_tile(ENDGAME_WHITE_TILE);
 
     // Load inverted font
     load_font_inverted();

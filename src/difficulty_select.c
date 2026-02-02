@@ -14,6 +14,7 @@
 #include "input.h"
 #include "transition.h"
 #include "portrait.h"
+#include "screen_utils.h"
 
 // Portrait assets handled by portrait.c
 
@@ -44,19 +45,6 @@ static const char *difficulty_labels[DIFFICULTY_COUNT] = {
 };
 
 /**
- * Fill screen with white tiles
- */
-static void fill_screen_white(void) {
-    uint8_t row[20];
-    for (uint8_t i = 0; i < 20; i++) {
-        row[i] = WHITE_TILE;
-    }
-    for (uint8_t y = 0; y < 18; y++) {
-        set_bkg_tiles(0, y, 20, 1, row);
-    }
-}
-
-/**
  * Draw the selected opponent's portrait
  */
 static void draw_selected_portrait(void) {
@@ -74,7 +62,7 @@ void init_difficulty_select(void) {
     set_bkg_data(WHITE_TILE, 1, white_tile);
 
     // Fill screen with white
-    fill_screen_white();
+    fill_screen_with_tile(WHITE_TILE);
 
     // Draw selected opponent portrait
     draw_selected_portrait();

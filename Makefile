@@ -57,8 +57,8 @@ run: $(TARGET)
 $(OBJDIR)/main.o: $(INCDIR)/game_types.h $(INCDIR)/title.h $(INCDIR)/opponent_select.h $(INCDIR)/difficulty_select.h $(INCDIR)/coinflip.h $(INCDIR)/game.h $(INCDIR)/endgame.h
 $(OBJDIR)/title.o: $(INCDIR)/game_types.h $(INCDIR)/title.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/random.h
 $(OBJDIR)/opponent_select.o: $(INCDIR)/game_types.h $(INCDIR)/opponent_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h
-$(OBJDIR)/difficulty_select.o: $(INCDIR)/game_types.h $(INCDIR)/difficulty_select.h $(INCDIR)/opponent_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/portrait.h
-$(OBJDIR)/coinflip.o: $(INCDIR)/game_types.h $(INCDIR)/coinflip.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/random.h
+$(OBJDIR)/difficulty_select.o: $(INCDIR)/game_types.h $(INCDIR)/difficulty_select.h $(INCDIR)/opponent_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/portrait.h $(INCDIR)/screen_utils.h
+$(OBJDIR)/coinflip.o: $(INCDIR)/game_types.h $(INCDIR)/coinflip.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/random.h $(INCDIR)/screen_utils.h
 $(OBJDIR)/transition.o: $(INCDIR)/game_types.h $(INCDIR)/transition.h
 $(OBJDIR)/font.o: $(INCDIR)/font.h
 $(OBJDIR)/input.o: $(INCDIR)/input.h
@@ -66,5 +66,6 @@ $(OBJDIR)/opponent_data.o: $(INCDIR)/opponent_data.h
 $(OBJDIR)/random.o: $(INCDIR)/random.h
 $(OBJDIR)/game.o: $(INCDIR)/game_types.h $(INCDIR)/game.h $(INCDIR)/coinflip.h $(INCDIR)/difficulty_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/board_state.h $(INCDIR)/vram_layout.h $(INCDIR)/random.h $(INCDIR)/portrait.h
 $(OBJDIR)/board_state.o: $(INCDIR)/board_state.h $(INCDIR)/coinflip.h $(INCDIR)/vram_layout.h $(INCDIR)/game.h
-$(OBJDIR)/endgame.o: $(INCDIR)/game_types.h $(INCDIR)/endgame.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/vram_layout.h $(INCDIR)/portrait.h
+$(OBJDIR)/endgame.o: $(INCDIR)/game_types.h $(INCDIR)/endgame.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/vram_layout.h $(INCDIR)/portrait.h $(INCDIR)/screen_utils.h
 $(OBJDIR)/portrait.o: $(INCDIR)/portrait.h $(INCDIR)/opponent_data.h
+$(OBJDIR)/screen_utils.o: $(INCDIR)/screen_utils.h

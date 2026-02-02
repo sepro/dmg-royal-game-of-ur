@@ -12,6 +12,7 @@
 #include "opponent_data.h"
 #include "font.h"
 #include "input.h"
+#include "transition.h"
 
 // External references to generated profile assets
 extern const uint8_t profile_01_tiles[];
@@ -36,12 +37,6 @@ uint8_t selected_difficulty = DIFFICULTY_MEDIUM;
 static uint8_t current_selection = DIFFICULTY_MEDIUM;
 static const uint8_t arrow_sprite_index = 0;
 
-// Transition animation state
-static uint8_t transition_timer = 0;
-static uint8_t transition_phase = TRANSITION_IDLE;
-static ScreenState_t transition_target = STATE_DIFFICULTY_SELECT;
-static uint8_t transition_phase_count = 0;
-
 // White tile data (8x8 pixels, all color 0 = white on DMG)
 static const uint8_t white_tile[16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -54,51 +49,6 @@ static const char *difficulty_labels[DIFFICULTY_COUNT] = {
     "MEDIUM",
     "HARD"
 };
-
-/**
- * Start a screen transition animation
- */
-static void transition_start(ScreenState_t target, uint8_t phase_count) {
-    transition_phase = 0;
-    transition_timer = TRANSITION_FLASH_DURATION;
-    transition_target = target;
-    transition_phase_count = phase_count;
-    DISPLAY_OFF;
-}
-
-/**
- * Update transition animation (called every frame)
- * Returns 1 if transition is active, 0 if complete
- */
-static uint8_t update_transition(void) {
-    if (transition_phase == TRANSITION_IDLE) {
-        return 0;
-    }
-
-    if (transition_timer > 0) {
-        transition_timer--;
-        return 1;
-    }
-
-    transition_phase++;
-
-    if (transition_phase >= transition_phase_count) {
-        transition_phase = TRANSITION_IDLE;
-        DISPLAY_ON;
-        next_state = transition_target;
-        return 0;
-    }
-
-    transition_timer = TRANSITION_FLASH_DURATION;
-
-    if (transition_phase & 1) {
-        DISPLAY_ON;
-    } else {
-        DISPLAY_OFF;
-    }
-
-    return 1;
-}
 
 /**
  * Fill screen with white tiles
@@ -198,10 +148,6 @@ void init_difficulty_select(void) {
     move_sprite(arrow_sprite_index, DIFF_ARROW_X,
                 DIFF_ARROW_START_Y + (current_selection * DIFF_ARROW_SPACING));
 
-    // Initialize transition state
-    transition_phase = TRANSITION_IDLE;
-    transition_timer = 0;
-
     // Clear input state
     input_reset();
 
@@ -256,7 +202,6 @@ void cleanup_difficulty_select(void) {
     // Hide arrow sprite
     move_sprite(arrow_sprite_index, 0, 0);
 
-    // Ensure display is on and clear transition state
+    // Ensure display is on
     DISPLAY_ON;
-    transition_phase = TRANSITION_IDLE;
 }

@@ -9,6 +9,7 @@
 #include "title.h"
 #include "font.h"
 #include "input.h"
+#include "transition.h"
 
 // Forward declarations for generated assets
 // (Actual data is compiled separately from assets/generated/*.h)
@@ -29,12 +30,6 @@ static uint8_t blink_state;        // BLINK_STATE_HIDDEN or BLINK_STATE_ANIMATIN
 static uint8_t blink_frame;        // Current frame (0-3)
 static uint8_t blink_timer;        // Frame counter for animation/delay
 static uint8_t blink_x, blink_y;   // Current sprite position
-
-// Transition animation state
-static uint8_t transition_timer = 0;
-static uint8_t transition_phase = TRANSITION_IDLE;
-static ScreenState_t transition_target = STATE_TITLE;
-static uint8_t transition_phase_count = 0;
 
 /**
  * Get a pseudo-random value from DIV register
@@ -110,51 +105,6 @@ static void update_blink(void) {
 }
 
 /**
- * Start a screen transition animation
- */
-static void transition_start(ScreenState_t target, uint8_t phase_count) {
-    transition_phase = 0;
-    transition_timer = TRANSITION_FLASH_DURATION;
-    transition_target = target;
-    transition_phase_count = phase_count;
-    DISPLAY_OFF;
-}
-
-/**
- * Update transition animation (called every frame)
- * Returns 1 if transition is active, 0 if complete
- */
-static uint8_t update_transition(void) {
-    if (transition_phase == TRANSITION_IDLE) {
-        return 0;
-    }
-
-    if (transition_timer > 0) {
-        transition_timer--;
-        return 1;
-    }
-
-    transition_phase++;
-
-    if (transition_phase >= transition_phase_count) {
-        transition_phase = TRANSITION_IDLE;
-        DISPLAY_ON;
-        next_state = transition_target;
-        return 0;
-    }
-
-    transition_timer = TRANSITION_FLASH_DURATION;
-
-    if (transition_phase & 1) {
-        DISPLAY_ON;
-    } else {
-        DISPLAY_OFF;
-    }
-
-    return 1;
-}
-
-/**
  * Initialize title screen
  */
 void init_title(void) {
@@ -193,10 +143,6 @@ void init_title(void) {
 
     // Initialize blink animation in hidden state with random delay
     blink_start_delay();
-
-    // Initialize transition state
-    transition_phase = TRANSITION_IDLE;
-    transition_timer = 0;
 
     // Clear input state
     input_reset();
@@ -255,9 +201,8 @@ void cleanup_title(void) {
     // Hide blink sprite
     move_sprite(BLINK_SPRITE_INDEX, 0, 0);
 
-    // Ensure display is on and clear transition state
+    // Ensure display is on
     DISPLAY_ON;
-    transition_phase = TRANSITION_IDLE;
 
     // Clear sprite data if needed
     // (for now, we'll keep sprites loaded as they may be reused)

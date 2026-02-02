@@ -55,10 +55,11 @@ run: $(TARGET)
 # GBDK's lcc doesn't support automatic dependency generation (-MD -MP)
 # Manual dependencies ensure header changes trigger recompilation
 $(OBJDIR)/main.o: $(INCDIR)/game_types.h $(INCDIR)/title.h $(INCDIR)/opponent_select.h $(INCDIR)/difficulty_select.h $(INCDIR)/coinflip.h $(INCDIR)/game.h $(INCDIR)/endgame.h
-$(OBJDIR)/title.o: $(INCDIR)/game_types.h $(INCDIR)/title.h $(INCDIR)/font.h $(INCDIR)/input.h
-$(OBJDIR)/opponent_select.o: $(INCDIR)/game_types.h $(INCDIR)/opponent_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h
-$(OBJDIR)/difficulty_select.o: $(INCDIR)/game_types.h $(INCDIR)/difficulty_select.h $(INCDIR)/opponent_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h
-$(OBJDIR)/coinflip.o: $(INCDIR)/game_types.h $(INCDIR)/coinflip.h $(INCDIR)/font.h $(INCDIR)/input.h
+$(OBJDIR)/title.o: $(INCDIR)/game_types.h $(INCDIR)/title.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h
+$(OBJDIR)/opponent_select.o: $(INCDIR)/game_types.h $(INCDIR)/opponent_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h
+$(OBJDIR)/difficulty_select.o: $(INCDIR)/game_types.h $(INCDIR)/difficulty_select.h $(INCDIR)/opponent_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h
+$(OBJDIR)/coinflip.o: $(INCDIR)/game_types.h $(INCDIR)/coinflip.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h
+$(OBJDIR)/transition.o: $(INCDIR)/game_types.h $(INCDIR)/transition.h
 $(OBJDIR)/font.o: $(INCDIR)/font.h
 $(OBJDIR)/input.o: $(INCDIR)/input.h
 $(OBJDIR)/opponent_data.o: $(INCDIR)/opponent_data.h

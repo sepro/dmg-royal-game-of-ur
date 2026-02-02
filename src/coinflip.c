@@ -10,6 +10,7 @@
 #include "coinflip.h"
 #include "font.h"
 #include "input.h"
+#include "transition.h"
 
 // External references to generated coin assets
 extern const uint8_t light_coin_tiles[];
@@ -44,12 +45,6 @@ static uint8_t frame_counter = 0;
 // Using 4 bytes to hold 32 bits
 static uint8_t locked_tiles[4] = {0, 0, 0, 0};
 static uint8_t locked_count = 0;
-
-// Transition animation state
-static uint8_t transition_timer = 0;
-static uint8_t transition_phase = TRANSITION_IDLE;
-static ScreenState_t transition_target = STATE_COINFLIP;
-static uint8_t transition_phase_count = 0;
 
 // White tile data (8x8 pixels, all color 0 = white on DMG)
 static const uint8_t white_tile[16] = {
@@ -90,51 +85,6 @@ static void lock_tile(uint8_t tile_idx) {
         locked_tiles[byte_idx] |= (1 << bit_idx);
         locked_count++;
     }
-}
-
-/**
- * Start a screen transition animation
- */
-static void transition_start(ScreenState_t target, uint8_t phase_count) {
-    transition_phase = 0;
-    transition_timer = TRANSITION_FLASH_DURATION;
-    transition_target = target;
-    transition_phase_count = phase_count;
-    DISPLAY_OFF;
-}
-
-/**
- * Update transition animation (called every frame)
- * Returns 1 if transition is active, 0 if complete
- */
-static uint8_t update_transition(void) {
-    if (transition_phase == TRANSITION_IDLE) {
-        return 0;
-    }
-
-    if (transition_timer > 0) {
-        transition_timer--;
-        return 1;
-    }
-
-    transition_phase++;
-
-    if (transition_phase >= transition_phase_count) {
-        transition_phase = TRANSITION_IDLE;
-        DISPLAY_ON;
-        next_state = transition_target;
-        return 0;
-    }
-
-    transition_timer = TRANSITION_FLASH_DURATION;
-
-    if (transition_phase & 1) {
-        DISPLAY_ON;
-    } else {
-        DISPLAY_OFF;
-    }
-
-    return 1;
 }
 
 /**
@@ -447,10 +397,6 @@ void init_coinflip(void) {
     anim_timer = 0;
     frame_counter = 0;
 
-    // Initialize transition state
-    transition_phase = TRANSITION_IDLE;
-    transition_timer = 0;
-
     // Clear input state
     input_reset();
 
@@ -519,5 +465,4 @@ void cleanup_coinflip(void) {
     // Ensure display is on and clear animation state
     DISPLAY_ON;
     anim_phase = ANIM_PHASE_NONE;
-    transition_phase = TRANSITION_IDLE;
 }

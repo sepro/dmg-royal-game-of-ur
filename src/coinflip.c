@@ -331,9 +331,6 @@ void init_coinflip(void) {
     // Load border tiles (normal, dark on white background)
     set_bkg_data(COINFLIP_BORDER_TILE_START, 25, border_tiles);
 
-    // Load inverted font (black text on white background)
-    load_font_inverted();
-
     // Draw title
     draw_text_inverted(COINFLIP_TITLE_X, COINFLIP_TITLE_Y, "CHOOSE YOUR SIDE");
 

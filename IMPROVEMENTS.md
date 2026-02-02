@@ -24,17 +24,6 @@ These issues should be addressed before adding more features.
 
 These should be addressed to improve code quality and reduce resource usage.
 
-### 6. Redundant Font Loading
-
-**Location:** Multiple files call `load_font_inverted()` on every screen init
-
-**Problem:** According to `vram_layout.h`, font tiles (140-220) are "SHARED across all screens" and "persist across screen transitions." Yet every screen re-calls `load_font_inverted()`.
-
-**Impact:**
-- Wastes CPU cycles regenerating XOR'd tiles every screen transition
-- The inversion loop in `font.c:690-715` runs 40+ times per screen change
-
-**Solution:** Load fonts once during initial boot (in `main.c` before first screen), add a `fonts_loaded` flag to skip redundant loads.
 
 ### 10. Game Phase State Machine Complexity
 

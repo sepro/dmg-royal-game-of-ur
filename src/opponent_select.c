@@ -181,9 +181,6 @@ void init_opponent_select(void) {
     // Load border tiles (normal, dark on white background)
     set_bkg_data(BORDER_TILE_START, 25, border_tiles);
 
-    // Load inverted font tiles (black text on white background)
-    load_font_inverted();
-
     // Draw all 4 portraits with correct tile offsets
     draw_portrait(0, profile_offsets[0]);
     draw_portrait(1, profile_offsets[1]);

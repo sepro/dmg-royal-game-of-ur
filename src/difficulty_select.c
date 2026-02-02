@@ -67,9 +67,6 @@ void init_difficulty_select(void) {
     // Draw selected opponent portrait
     draw_selected_portrait();
 
-    // Load inverted font (black text on white background)
-    load_font_inverted();
-
     // Draw opponent name
     draw_text_inverted(DIFF_NAME_X, DIFF_NAME_Y, opponent_names[selected_opponent]);
 

@@ -869,9 +869,6 @@ void init_game(void) {
     // Draw opponent portrait on right side
     draw_opponent_portrait();
 
-    // Load inverted font for UI text
-    load_font_inverted();
-
     // Load sprite tiles
     set_sprite_data(SPRITE_PIECE_WHITE, 1, piece_white_tiles);
     set_sprite_data(SPRITE_PIECE_BLACK, 1, piece_black_tiles);

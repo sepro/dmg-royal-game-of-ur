@@ -12,6 +12,7 @@
 #include "coinflip.h"
 #include "game.h"
 #include "endgame.h"
+#include "font.h"
 
 // Global game state
 ScreenState_t current_state = STATE_TITLE;
@@ -21,6 +22,9 @@ ScreenState_t next_state = STATE_TITLE;
  * Main entry point
  */
 void main(void) {
+    // Load font tiles once at boot (shared across all screens)
+    load_font_inverted();
+
     // Initialize the title screen
     init_title();
 

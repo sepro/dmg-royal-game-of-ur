@@ -51,9 +51,6 @@ void init_endgame(void) {
     set_bkg_data(ENDGAME_WHITE_TILE, 1, white_tile);
     fill_screen_with_tile(ENDGAME_WHITE_TILE);
 
-    // Load inverted font
-    load_font_inverted();
-
     // Load border tiles
     set_bkg_data(ENDGAME_BORDER_TILE_START, 25, border_tiles);
 

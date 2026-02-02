@@ -42,38 +42,6 @@ AI opponent makes legal, strategic moves. Difficulty affects play strength.
 
 ---
 
-## Phase 10: Game Loop
-
-**Goal:** Complete turn cycle and detect victory.
-
-### Tasks
-
-1. **Turn management**
-   - Alternate between human and AI turns
-   - Handle rosette bonus turns correctly
-   - Handle roll of 0 (no move possible, turn passes)
-
-2. **Win detection**
-   - Track pieces borne off for each player
-   - First to bear off all 7 pieces wins
-   - Trigger end game sequence on victory
-
-3. **Move legality edge cases**
-   - No valid moves available (pass turn automatically)
-   - Cannot land on own piece
-   - Can capture opponent (except on rosette)
-   - Rosette squares are safe
-
-### Assets Needed
-
-*None new*
-
-### Deliverable
-
-Full game can be played to completion with correct rule enforcement.
-
----
-
 ## Phase 12: Polish & Optimization
 
 **Goal:** Refine experience, optimize for hardware.

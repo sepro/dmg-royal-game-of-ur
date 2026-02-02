@@ -62,6 +62,15 @@
 - Support for entering pieces from reserve with visual indicator
 - Handles entering board, normal movement, capturing, rosette rules, and bearing off
 
+### Phase 10: Game Loop ✓
+- Turn management alternating between human and CPU players
+- Rosette bonus turns handled correctly (landing on rosette grants extra turn)
+- Roll of 0 automatically passes turn with "NO MOVES" message
+- Win detection tracking pieces borne off (first to 7 wins)
+- End game sequence triggered on victory (transitions to endgame screen)
+- Move legality enforced: cannot land on own piece, captures allowed except on rosettes
+- Rosette squares provide safety from capture
+
 ### Phase 11: End Game Screen ✓
 - Win/lose detection and state communication from game screen
 - White background screen with inverted font text

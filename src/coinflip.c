@@ -11,6 +11,7 @@
 #include "font.h"
 #include "input.h"
 #include "transition.h"
+#include "random.h"
 
 // External references to generated coin assets
 extern const uint8_t light_coin_tiles[];
@@ -37,8 +38,6 @@ static uint8_t anim_phase = ANIM_PHASE_NONE;
 static uint8_t anim_timer = 0;
 static uint8_t anim_counter = 0;  // For chaotic update timing
 
-// Random state for coin flip
-static uint16_t rand_state = 0;
 static uint8_t frame_counter = 0;
 
 // Locked tiles bitmask (25 bits, one per animation tile)
@@ -55,16 +54,6 @@ static const uint8_t white_tile[16] = {
 // Position arrays for selection border
 static const uint8_t coin_x[2] = { COINFLIP_LIGHT_X, COINFLIP_DARK_X };
 static const uint8_t coin_y[2] = { COINFLIP_LIGHT_Y, COINFLIP_DARK_Y };
-
-/**
- * Get a pseudo-random byte using Galois LFSR
- */
-static uint8_t get_random(void) {
-    uint8_t lsb = rand_state & 1;
-    rand_state >>= 1;
-    if (lsb) rand_state ^= 0xB400;
-    return (uint8_t)(rand_state & 0xFF);
-}
 
 /**
  * Check if a tile is locked
@@ -238,8 +227,7 @@ static void draw_result_text(void) {
  */
 static void start_animation(void) {
     // Seed random from DIV register and frame counter
-    rand_state = DIV_REG ^ ((uint16_t)frame_counter << 8);
-    if (rand_state == 0) rand_state = 0xACE1;  // Avoid zero state
+    seed_random(DIV_REG ^ ((uint16_t)frame_counter << 8));
 
     // Determine result
     coin_result = get_random() & 1;

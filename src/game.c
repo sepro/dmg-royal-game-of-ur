@@ -14,6 +14,7 @@
 #include "font.h"
 #include "input.h"
 #include "board_state.h"
+#include "random.h"
 
 // External references to generated board asset
 extern const uint8_t board_tiles[];
@@ -84,8 +85,6 @@ static uint8_t roll_timer;             // Animation frame counter
 static uint8_t roll_update_counter;    // Sub-frame counter for dice updates
 static uint8_t result_timer;           // Timer for result display
 
-// Random state (LFSR)
-static uint16_t rand_state;
 static uint8_t frame_counter;
 
 // Turn and time tracking (Phase 8a)
@@ -113,28 +112,6 @@ static void update_piece_counts(void);
 static uint8_t check_win_condition(void);
 static void update_reserve_display(void);
 static void draw_prompt(const char *text);
-
-// ============================================================================
-// Random Number Generator (Galois LFSR)
-// ============================================================================
-
-/**
- * Get a pseudo-random byte using Galois LFSR
- */
-static uint8_t get_random(void) {
-    uint8_t lsb = rand_state & 1;
-    rand_state >>= 1;
-    if (lsb) rand_state ^= 0xB400;
-    return (uint8_t)(rand_state & 0xFF);
-}
-
-/**
- * Seed the random number generator
- */
-static void seed_random(void) {
-    rand_state = DIV_REG ^ ((uint16_t)frame_counter << 8);
-    if (rand_state == 0) rand_state = 0xACE1;
-}
 
 // ============================================================================
 // UI Drawing Functions
@@ -813,7 +790,7 @@ static uint8_t update_pause_animation(void) {
  */
 static void start_dice_roll(void) {
     // Seed random with fresh entropy
-    seed_random();
+    seed_random(DIV_REG ^ ((uint16_t)frame_counter << 8));
 
     // Initialize animation state
     game_phase = PHASE_ROLLING;
@@ -975,7 +952,7 @@ void init_game(void) {
 
     // Initialize random state
     frame_counter = 0;
-    seed_random();
+    seed_random(DIV_REG ^ ((uint16_t)frame_counter << 8));
 
     // Initialize turn and time tracking (Phase 8a)
     turn_count = 1;          // Start at turn 1

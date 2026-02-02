@@ -10,6 +10,7 @@
 #include "font.h"
 #include "input.h"
 #include "transition.h"
+#include "random.h"
 
 // Forward declarations for generated assets
 // (Actual data is compiled separately from assets/generated/*.h)
@@ -30,20 +31,6 @@ static uint8_t blink_state;        // BLINK_STATE_HIDDEN or BLINK_STATE_ANIMATIN
 static uint8_t blink_frame;        // Current frame (0-3)
 static uint8_t blink_timer;        // Frame counter for animation/delay
 static uint8_t blink_x, blink_y;   // Current sprite position
-
-/**
- * Get a pseudo-random value from DIV register
- */
-static uint8_t get_random(void) {
-    return DIV_REG;
-}
-
-/**
- * Get a random value in range [min, max]
- */
-static uint8_t get_random_range(uint8_t min, uint8_t max) {
-    return min + (get_random() % (max - min + 1));
-}
 
 /**
  * Start a new blink animation at a random position

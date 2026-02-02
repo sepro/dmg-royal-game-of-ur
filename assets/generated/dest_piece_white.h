@@ -7,7 +7,7 @@
 BANKREF(dest_piece_white)
 
 const palette_color_t dest_piece_white_palettes[32] = {
-	RGB8(  0,  0,  0), RGB8(255,255,255), RGB8(195,195,195), RGB8(127,127,127)
+	RGB8(  0,  0,  0), RGB8(255,255,255), RGB8(255,255,255), RGB8(195,195,195)
 	,
 	RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(  0,  0,  0)
 	,

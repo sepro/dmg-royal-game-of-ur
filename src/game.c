@@ -522,6 +522,9 @@ static void start_move_selection(void) {
 
     // Show prompt
     draw_prompt("SELECT PIECE");
+
+    // Transition to move selection phase
+    game_phase = PHASE_SELECT_MOVE;
 }
 
 /**
@@ -1082,7 +1085,6 @@ void update_game(void) {
                 } else if (current_turn == 0) {
                     // Human player - start interactive move selection
                     start_move_selection();
-                    game_phase = PHASE_SELECT_MOVE;
                 } else {
                     // CPU player - go to CPU move selection
                     game_phase = PHASE_SELECT_MOVE;

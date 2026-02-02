@@ -4,8 +4,6 @@
 
 This plan breaks down the development into manageable phases, each building on the previous one. Each phase results in a testable milestone. The plan assumes familiarity with GBDK-2020 and Game Boy hardware constraints (4 colors, 8x8 tiles, 40 sprites max, etc.).
 
-
-
 ## Phase 8c: Move Selection (Human Player)
 
 **Goal:** Allow player to select which piece to move.
@@ -16,27 +14,27 @@ This plan breaks down the development into manageable phases, each building on t
    - Given roll value, determine which pieces can legally move
    - Handle: entering board, normal movement, capturing, rosette rules, bearing off
 
-2. **Hand pointer sprite**
-   - Create pointing hand sprite
+2. **Selection sprite**
+   - Create sprite which is a square border placed on the piece that can move 
    - Position over first valid piece
 
 3. **Navigation**
    - Left/right cycles through valid pieces only
-   - Update hand position accordingly
+   - Update selection border position accordingly
 
 4. **Destination preview**
    - Calculate where selected piece would land
-   - Show blinking rectangle around destination square
+   - Show blinking sprite of a piece on destination square
 
 5. **Confirm move**
    - A executes the move
 
 ### Assets Needed
 
-| Asset | Format | Notes |
-|-------|--------|-------|
-| Hand pointer sprite | 8x16 or 16x16 | Pointing finger |
-| Destination highlight | Tiles or sprite | Blinking border effect |
+| Asset | Format | Notes | Location |
+|-------|--------|-------|----------|
+| Square Selection Sprite | 16x16 | Square border, white = transparant, black = border | ./assets/images/raw/selection_border.png (white is transparant) |
+| Destination piece| 16x16  | Blinking white/black piece | ./assets/images/raw/white_piece_sprite.png (black is transparant) and ./assets/images/raw/black_piece_sprite.png (light gray is transparant) |
 
 ### Deliverable
 
@@ -82,7 +80,7 @@ AI opponent makes legal, strategic moves. Difficulty affects play strength.
 
 ---
 
-## Phase 10: Game Loop & Win Condition
+## Phase 10: Game Loop
 
 **Goal:** Complete turn cycle and detect victory.
 

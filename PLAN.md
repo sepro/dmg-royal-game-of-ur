@@ -19,6 +19,7 @@ This plan breaks down the development into manageable phases, each building on t
      - THE SCHOLAR should be similar to the adaptive_agent.py
      - THE PRIESTESS should be similar to the phase_based_agent.py
    - A full Python program is included in ./python
+      - This also contains optimized weights for some of the agents
    - Agent Code is in ./python/src/agents
 
 

@@ -16,6 +16,7 @@
 #include "board_state.h"
 #include "random.h"
 #include "portrait.h"
+#include "ai.h"
 
 // External references to generated board asset
 extern const uint8_t board_tiles[];
@@ -1091,7 +1092,7 @@ void update_game(void) {
                 } else {
                     uint8_t piece_idx;
 
-                    if (find_random_valid_move(PLAYER_CPU, dice_total, &piece_idx)) {
+                    if (ai_select_move(dice_total, &piece_idx)) {
                         uint8_t extra_turn = execute_move(PLAYER_CPU, piece_idx, dice_total);
                         update_piece_counts();
                         update_reserve_display();

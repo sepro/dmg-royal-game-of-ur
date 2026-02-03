@@ -74,6 +74,13 @@
 #define OAM_DEST_BL         12  // Bottom-left
 #define OAM_DEST_BR         13  // Bottom-right
 
+// Phase 8c: Reserve piece indicator (4 sprites for 16x16)
+// Lower OAM index = rendered on top, so reserve indicator is behind selection border
+#define OAM_RESERVE_TL      14  // Top-left
+#define OAM_RESERVE_TR      15  // Top-right
+#define OAM_RESERVE_BL      16  // Bottom-left
+#define OAM_RESERVE_BR      17  // Bottom-right
+
 // ============================================================================
 // UI Layout Constants (tile coordinates)
 // ============================================================================

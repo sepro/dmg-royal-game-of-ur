@@ -325,6 +325,28 @@ static void setup_destination_oam(void) {
 }
 
 /**
+ * Setup reserve piece indicator OAM based on current player's color
+ * Uses same tiles as destination preview but at different OAM slots
+ */
+static void setup_reserve_piece_oam(void) {
+    uint8_t tile_start = (human_color == SIDE_LIGHT) ?
+                         VRAM_SPRITE_DEST_WHITE_START :
+                         VRAM_SPRITE_DEST_BLACK_START;
+
+    // Set tiles for 16x16 reserve piece indicator (4 x 8x8 tiles)
+    set_sprite_tile(OAM_RESERVE_TL, tile_start);
+    set_sprite_tile(OAM_RESERVE_TR, tile_start + 1);
+    set_sprite_tile(OAM_RESERVE_BL, tile_start + 2);
+    set_sprite_tile(OAM_RESERVE_BR, tile_start + 3);
+
+    // Ensure no garbage properties
+    set_sprite_prop(OAM_RESERVE_TL, 0);
+    set_sprite_prop(OAM_RESERVE_TR, 0);
+    set_sprite_prop(OAM_RESERVE_BL, 0);
+    set_sprite_prop(OAM_RESERVE_BR, 0);
+}
+
+/**
  * Position a 16x16 sprite composite at given pixel coordinates
  * @param base_oam  First OAM slot (expects 4 consecutive slots)
  * @param px        Top-left X coordinate (sprite coords, +8 offset already applied)
@@ -352,6 +374,12 @@ static void hide_selection_sprites(void) {
     move_sprite(OAM_DEST_TR, 0, 0);
     move_sprite(OAM_DEST_BL, 0, 0);
     move_sprite(OAM_DEST_BR, 0, 0);
+
+    // Hide reserve piece indicator
+    move_sprite(OAM_RESERVE_TL, 0, 0);
+    move_sprite(OAM_RESERVE_TR, 0, 0);
+    move_sprite(OAM_RESERVE_BL, 0, 0);
+    move_sprite(OAM_RESERVE_BR, 0, 0);
 }
 
 /**
@@ -371,6 +399,30 @@ static void position_selection_sprite(void) {
     }
 
     position_16x16_sprite(OAM_SELECTION_TL, px, py);
+}
+
+/**
+ * Update reserve piece indicator visibility
+ * Shows dest_piece sprite at reserve position when any reserve piece can move
+ */
+static void update_reserve_piece_indicator(void) {
+    // Check if any valid move is from reserve
+    for (uint8_t i = 0; i < num_valid_moves; i++) {
+        uint8_t piece_idx = valid_moves[i];
+        if (human_pieces[piece_idx] == POS_RESERVE) {
+            // A reserve piece can move - show indicator
+            uint8_t px, py;
+            get_reserve_screen_coords(PLAYER_HUMAN, &px, &py);
+            position_16x16_sprite(OAM_RESERVE_TL, px, py);
+            return;
+        }
+    }
+
+    // No reserve piece can move - hide indicator
+    move_sprite(OAM_RESERVE_TL, 0, 0);
+    move_sprite(OAM_RESERVE_TR, 0, 0);
+    move_sprite(OAM_RESERVE_BL, 0, 0);
+    move_sprite(OAM_RESERVE_BR, 0, 0);
 }
 
 /**
@@ -434,9 +486,10 @@ static void start_move_selection(void) {
     // Load sprites if not already loaded
     load_selection_sprites();
 
-    // Setup OAM for selection and destination
+    // Setup OAM for selection, destination, and reserve indicator
     setup_selection_oam();
     setup_destination_oam();
+    setup_reserve_piece_oam();
 
     // Initialize selection state
     selection_index = 0;
@@ -445,6 +498,9 @@ static void start_move_selection(void) {
 
     // Position selection on first valid piece
     position_selection_sprite();
+
+    // Update reserve piece indicator (shows if reserve piece is selected)
+    update_reserve_piece_indicator();
 
     // Show destination preview
     update_destination_preview();
@@ -481,6 +537,7 @@ static void update_move_selection(void) {
     // Update sprites if selection changed
     if (selection_changed) {
         position_selection_sprite();
+        update_reserve_piece_indicator();
         dest_blink_timer = 0;
         dest_blink_visible = 1;  // Reset blink to visible
     }
@@ -1104,4 +1161,8 @@ void cleanup_game(void) {
     move_sprite(OAM_DEST_TR, 0, 0);
     move_sprite(OAM_DEST_BL, 0, 0);
     move_sprite(OAM_DEST_BR, 0, 0);
+    move_sprite(OAM_RESERVE_TL, 0, 0);
+    move_sprite(OAM_RESERVE_TR, 0, 0);
+    move_sprite(OAM_RESERVE_BL, 0, 0);
+    move_sprite(OAM_RESERVE_BR, 0, 0);
 }

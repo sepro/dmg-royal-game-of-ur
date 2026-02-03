@@ -46,3 +46,6 @@ Desktop.ini
 *.tmp
 *.bak
 *.log
+
+# Exclude python files (AI test)
+python/

@@ -8,7 +8,7 @@
   * Revise opponent profiles
   * Design and add sgb border https://gbdev.io/guides/sgb_border.html
   * Better sprites for destination piece (once I understand how palette index works with sprites)
-  * Tile when moving piece on the board needs to be added
+  * Tile instead of sprite ? when moving piece on the board needs to be added
   
 
 ## SGB border

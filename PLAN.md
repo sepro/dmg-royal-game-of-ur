@@ -10,25 +10,26 @@ This plan breaks down the development into manageable phases, each building on t
 
 ### Tasks
 
-1. **Game state representation**
-   - Define structs for board state, piece positions
-   - Functions to copy/modify state for AI search
 
-2. **AI port from Python**
-   - Convert expectiminimax or evaluation function to C
-   - Implement move generation
-   - Implement position evaluation (material, board control, etc.)
+1. **AI port from Python**
+   - Convert specific AI approaches from python to C
+   - Each opponent will use a different AI
+     - THE MERCHANT should be similar to greedy_agent.py
+     - THE MUSICIAN should be similar to turn_economy_agent.py
+     - THE SCHOLAR should be similar to the adaptive_agent.py
+     - THE PRIESTESS should be similar to the phase_based_agent.py
+   - A full Python program is included in ./python
+   - Agent Code is in ./python/src/agents
 
-3. **Difficulty scaling**
-   - Easy: random valid move or 1-ply evaluation
-   - Medium: shallow search (2-3 ply)
-   - Hard: deeper search with full evaluation
 
-4. **AI turn execution**
+2. **Difficulty scaling**
+   - Easy: When multiple moves are possible, pick the one the AI favors 40% of the time
+   - MEDIUM: When multiple moves are possible, pick the one the AI favors 65% of the time
+   - HARD: Pick the move the AI favors
+
+3. **AI turn execution**
    - Calculate best move
-   - Show AI "thinking" indicator briefly
-   - Animate AI piece moving with clear visual feedback
-   - Brief pause so player can see what happened
+   - Show AI "thinking" indicator briefly (if needed)
 
 ### Assets Needed
 

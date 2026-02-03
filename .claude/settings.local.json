@@ -18,7 +18,8 @@
       "Bash(test:*)",
       "Bash($GBDK_HOME/bin/png2asset assets/images/raw/board.png -o assets/generated/board.c -map)",
       "Bash($GBDK_HOME/bin/png2asset:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(find:*)"
     ]
   }
 }

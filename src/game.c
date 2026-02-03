@@ -1170,4 +1170,8 @@ void cleanup_game(void) {
     // Ensure window is hidden and sprites are enabled for next screen
     HIDE_WIN;
     SHOW_SPRITES;
+
+    // Restore default sprite palette (0xFC = all indices black, index 0 white)
+    // Game screen uses 0xE0 which makes index 1 white, breaking arrow sprite
+    OBP0_REG = 0xFC;
 }

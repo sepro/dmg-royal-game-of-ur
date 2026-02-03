@@ -411,9 +411,20 @@ uint8_t find_random_valid_move(uint8_t player, uint8_t roll, uint8_t *out_piece_
 
 uint8_t get_valid_moves(uint8_t player, uint8_t roll, uint8_t *out_moves) {
     uint8_t num_valid = 0;
+    uint8_t reserve_added = 0;  // Track if we've already added a reserve piece
+    uint8_t *pieces = (player == PLAYER_HUMAN) ? human_pieces : cpu_pieces;
 
     for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
         if (is_valid_move(player, i, roll)) {
+            // If this is a reserve piece and we've already added one, skip it
+            // (all reserve pieces represent the same move)
+            if (pieces[i] == POS_RESERVE) {
+                if (reserve_added) {
+                    continue;  // Skip duplicate reserve move
+                }
+                reserve_added = 1;  // Mark that we've added a reserve piece
+            }
+
             out_moves[num_valid] = i;
             num_valid++;
         }

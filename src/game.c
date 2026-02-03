@@ -1166,4 +1166,8 @@ void cleanup_game(void) {
     move_sprite(OAM_RESERVE_TR, 0, 0);
     move_sprite(OAM_RESERVE_BL, 0, 0);
     move_sprite(OAM_RESERVE_BR, 0, 0);
+
+    // Ensure window is hidden and sprites are enabled for next screen
+    HIDE_WIN;
+    SHOW_SPRITES;
 }

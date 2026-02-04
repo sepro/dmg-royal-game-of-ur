@@ -52,22 +52,12 @@ Add two-player link cable support. Players connect via Game Boy link cable, get 
    - B button cancels, returns to title
    - On successful handshake → next phase
 
-2. **CONNECT_PHASE_CONNECTED** - Connection established
+
+2. **CONNECT_PHASE_SIDE_REVEAL** - Show assigned side
    ```
    ┌────────────────────┐
    │                    │
    │     CONNECTED!     │
-   │                    │
-   └────────────────────┘
-   ```
-   - Display for ~60 frames (1 second)
-   - Master/slave already determined during handshake
-   - Automatically proceeds to next phase
-
-3. **CONNECT_PHASE_SIDE_REVEAL** - Show assigned side
-   ```
-   ┌────────────────────┐
-   │                    │
    │    [COIN IMAGE]    │
    │                    │
    │   YOU ARE LIGHT    │
@@ -76,6 +66,7 @@ Add two-player link cable support. Players connect via Game Boy link cable, get 
    │                    │
    └────────────────────┘
    ```
+   - Master/slave already determined during handshake
    - Reuse coin tiles from coinflip screen (`light_coin_tiles[]` or `dark_coin_tiles[]`)
    - Master gets LIGHT, slave gets DARK
    - Display for ~120 frames (2 seconds) or until A pressed
@@ -98,7 +89,7 @@ Add two-player link cable support. Players connect via Game Boy link cable, get 
 2. Each player independently selects their profile picture
 3. Send selected profile index (0-3) to other player when A pressed
 4. Wait for opponent's selection (show "WAITING..." after own selection)
-5. Display both selections briefly ("YOU: [name]" / "OTHER: [name]")
+5. Display both selections briefly ("YOU: [name]" "VS" "OTHER: [name]")
 6. Transition to game state
 
 ### Phase 12D: Link Game Mode

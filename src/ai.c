@@ -1,13 +1,17 @@
 /**
  * ai.c
- * AI opponent logic for THE MERCHANT (greedy strategy)
- * Ported from Python greedy_agent.py
+ * AI opponent logic for multiple opponent types
  *
- * Evaluates board positions and selects the best move based on:
- * - Piece advancement
- * - Rosette control (safety and center rosette bonus)
- * - Capture opportunities
- * - Vulnerability to capture
+ * THE MERCHANT (greedy strategy):
+ * - Evaluates board positions based on advancement, rosettes, captures
+ * - Ported from Python greedy_agent.py
+ *
+ * THE MUSICIAN (turn economy strategy):
+ * - Minimizes turns to win, values extra turns highly
+ * - Ported from Python turn_agent.py
+ *
+ * THE SCHOLAR/PRIESTESS:
+ * - Random valid move selection
  */
 
 #include <gb/gb.h>
@@ -16,6 +20,7 @@
 #include "board_state.h"
 #include "game.h"
 #include "difficulty_select.h"
+#include "opponent_select.h"
 #include "random.h"
 
 // ============================================================================
@@ -231,6 +236,169 @@ static int16_t evaluate_move(uint8_t piece_idx, uint8_t roll) {
 }
 
 // ============================================================================
+// Turn Economy Functions (THE MUSICIAN)
+// ============================================================================
+
+/**
+ * Estimate turns needed to win for a set of pieces
+ * Returns value scaled by 10 to avoid floats
+ *
+ * @param pieces  Array of piece positions
+ * @return Estimated turns * 10
+ */
+static int16_t estimate_turns_to_win(uint8_t *pieces) {
+    int16_t total = 0;
+
+    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
+        uint8_t pos = pieces[i];
+
+        if (pos == POS_FINISHED) {
+            // Already finished: 0 turns
+            continue;
+        } else if (pos == POS_RESERVE) {
+            // In reserve: ~7.5 turns to enter and traverse
+            total += TURNS_PER_RESERVE;
+        } else {
+            // On board: distance to finish * turns per square
+            total += (int16_t)(POS_FINISHED - pos) * TURNS_PER_DISTANCE;
+        }
+    }
+
+    return total;
+}
+
+/**
+ * Evaluate a move using turn economy strategy
+ * Prioritizes moves that:
+ * - Grant extra turns (landing on rosettes)
+ * - Score pieces efficiently
+ * - Minimize our turns while maximizing opponent's turns
+ *
+ * @param piece_idx  Index of piece to move
+ * @param roll       Dice roll value
+ * @return Evaluation score (higher = better)
+ */
+static int16_t evaluate_turn_economy_move(uint8_t piece_idx, uint8_t roll) {
+    int16_t score = 0;
+
+    // Create temporary copies of piece arrays
+    uint8_t temp_cpu[PIECES_PER_PLAYER];
+    uint8_t temp_human[PIECES_PER_PLAYER];
+
+    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
+        temp_cpu[i] = cpu_pieces[i];
+        temp_human[i] = human_pieces[i];
+    }
+
+    // Calculate current turn estimates before the move
+    int16_t cpu_turns_before = estimate_turns_to_win(temp_cpu);
+    int16_t human_turns_before = estimate_turns_to_win(temp_human);
+
+    // Simulate the move
+    uint8_t current_pos = temp_cpu[piece_idx];
+    uint8_t new_pos;
+
+    if (current_pos == POS_RESERVE) {
+        new_pos = roll;
+    } else {
+        new_pos = current_pos + roll;
+    }
+
+    // Cap at finished
+    if (new_pos >= POS_FINISHED) {
+        new_pos = POS_FINISHED;
+    }
+
+    // Check for capture (in war zone, not on rosette)
+    if (is_in_war_zone(new_pos) && new_pos != 8) {
+        for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
+            if (temp_human[i] == new_pos) {
+                temp_human[i] = POS_RESERVE;
+                break;
+            }
+        }
+    }
+
+    // Apply the move
+    temp_cpu[piece_idx] = new_pos;
+
+    // Extra turn bonus for landing on rosette
+    if (is_rosette(new_pos)) {
+        score += TE_EXTRA_TURN_BONUS;
+    }
+
+    // Scoring bonus for finishing a piece
+    if (new_pos == POS_FINISHED) {
+        score += TE_SCORE_BONUS;
+    }
+
+    // Calculate turn estimates after the move
+    int16_t cpu_turns_after = estimate_turns_to_win(temp_cpu);
+    int16_t human_turns_after = estimate_turns_to_win(temp_human);
+
+    // CPU improvement: reduce our turns to win
+    // Divide by 10 to unscale the turn estimates
+    int16_t cpu_improvement = (cpu_turns_before - cpu_turns_after) * TE_EFFICIENCY_WEIGHT / 10;
+    score += cpu_improvement;
+
+    // Opponent delay: increase their turns (from captures)
+    int16_t opponent_delay = (human_turns_after - human_turns_before) * TE_OPPONENT_DELAY / 10;
+    score += opponent_delay;
+
+    return score;
+}
+
+// ============================================================================
+// Move Selection Helpers
+// ============================================================================
+
+/**
+ * Select a random move from valid moves
+ */
+static uint8_t select_random_move(uint8_t num_valid, uint8_t *valid_moves) {
+    uint8_t choice = get_random() % num_valid;
+    return valid_moves[choice];
+}
+
+/**
+ * Select best move using greedy evaluation (THE MERCHANT)
+ */
+static uint8_t select_greedy_move(uint8_t roll, uint8_t num_valid, uint8_t *valid_moves) {
+    int16_t best_score = -32000;
+    uint8_t best_move = valid_moves[0];
+
+    for (uint8_t i = 0; i < num_valid; i++) {
+        int16_t score = evaluate_move(valid_moves[i], roll);
+
+        if (score > best_score) {
+            best_score = score;
+            best_move = valid_moves[i];
+        }
+    }
+
+    return best_move;
+}
+
+/**
+ * Select best move using turn economy evaluation (THE MUSICIAN)
+ */
+static uint8_t select_turn_economy_move(uint8_t roll, uint8_t num_valid, uint8_t *valid_moves) {
+    int16_t best_score = -32000;
+    uint8_t best_move = valid_moves[0];
+
+    for (uint8_t i = 0; i < num_valid; i++) {
+        int16_t score = evaluate_turn_economy_move(valid_moves[i], roll);
+
+        if (score > best_score) {
+            best_score = score;
+            best_move = valid_moves[i];
+        }
+    }
+
+    return best_move;
+}
+
+// ============================================================================
 // Public Functions
 // ============================================================================
 
@@ -271,24 +439,33 @@ uint8_t ai_select_move(uint8_t roll, uint8_t *out_piece_idx) {
 
     if (chance_roll >= ai_threshold) {
         // Random move (for lower difficulties)
-        uint8_t choice = get_random() % num_valid;
-        *out_piece_idx = valid_moves[choice];
+        *out_piece_idx = select_random_move(num_valid, valid_moves);
         return 1;
     }
 
-    // AI evaluation: find the best move
-    int16_t best_score = -32000;  // Very low initial score
-    uint8_t best_move = valid_moves[0];
+    // AI evaluation: dispatch based on opponent type
+    switch (selected_opponent) {
+        case OPPONENT_SCHOLAR:
+        case OPPONENT_PRIESTESS:
+            // Random AI - simple random move selection
+            *out_piece_idx = select_random_move(num_valid, valid_moves);
+            break;
 
-    for (uint8_t i = 0; i < num_valid; i++) {
-        int16_t score = evaluate_move(valid_moves[i], roll);
+        case OPPONENT_MERCHANT:
+            // Greedy AI - evaluates board position
+            *out_piece_idx = select_greedy_move(roll, num_valid, valid_moves);
+            break;
 
-        if (score > best_score) {
-            best_score = score;
-            best_move = valid_moves[i];
-        }
+        case OPPONENT_MUSICIAN:
+            // Turn economy AI - minimizes turns to win
+            *out_piece_idx = select_turn_economy_move(roll, num_valid, valid_moves);
+            break;
+
+        default:
+            // Fallback to greedy
+            *out_piece_idx = select_greedy_move(roll, num_valid, valid_moves);
+            break;
     }
 
-    *out_piece_idx = best_move;
     return 1;
 }

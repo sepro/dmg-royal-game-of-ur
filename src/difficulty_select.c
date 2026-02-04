@@ -90,6 +90,9 @@ void init_difficulty_select(void) {
     // Clear input state
     input_reset();
 
+    // Set palette for white background with dark text
+    OBP0_REG = 0xFC;
+
     SHOW_BKG;
     SHOW_SPRITES;
     DISPLAY_ON;

@@ -134,6 +134,9 @@ void init_title(void) {
     // Clear input state
     input_reset();
 
+    // Set sprite palette for dark background with light text
+    OBP0_REG = 0xE0;
+
     // Enable display
     SHOW_BKG;
     SHOW_SPRITES;
@@ -190,7 +193,4 @@ void cleanup_title(void) {
 
     // Ensure display is on
     DISPLAY_ON;
-
-    // Clear sprite data if needed
-    // (for now, we'll keep sprites loaded as they may be reused)
 }

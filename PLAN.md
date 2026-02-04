@@ -32,25 +32,60 @@ Add two-player link cable support. Players connect via Game Boy link cable, get 
 
 **New state:** `STATE_LINK_CONNECT`
 
-**Screen flow:**
-1. Display "WAITING FOR CONNECTION..." with animated dots
-2. Both players press A to initiate handshake
-3. Master/slave determined by timing (first sender = master)
-4. Master assigned LIGHT pieces, slave assigned DARK pieces
-5. Exchange confirmation bytes
-6. Display "CONNECTED!" briefly, then transition to profile selection
+**Visual style:** Uses same decorative border as pause screen (`border_tiles[]`, `border_map[]`)
 
-**UI layout:**
-```
-    LINK CABLE MODE
+**Screen phases:**
 
-    WAITING FOR
-    CONNECTION...
+1. **CONNECT_PHASE_WAITING** - Waiting for connection
+   ```
+   ┌────────────────────┐
+   │                    │
+   │  WAITING FOR       │
+   │  CONNECTION...     │
+   │                    │
+   │  [B] CANCEL        │
+   │                    │
+   └────────────────────┘
+   ```
+   - Animated dots (...) cycle every 20 frames
+   - Continuously attempts serial handshake
+   - B button cancels, returns to title
+   - On successful handshake → next phase
 
-    PRESS A TO CONNECT
+2. **CONNECT_PHASE_CONNECTED** - Connection established
+   ```
+   ┌────────────────────┐
+   │                    │
+   │     CONNECTED!     │
+   │                    │
+   └────────────────────┘
+   ```
+   - Display for ~60 frames (1 second)
+   - Master/slave already determined during handshake
+   - Automatically proceeds to next phase
 
-    [Cancel: B]
-```
+3. **CONNECT_PHASE_SIDE_REVEAL** - Show assigned side
+   ```
+   ┌────────────────────┐
+   │                    │
+   │    [COIN IMAGE]    │
+   │                    │
+   │   YOU ARE LIGHT    │
+   │      - or -        │
+   │   YOU ARE DARK     │
+   │                    │
+   └────────────────────┘
+   ```
+   - Reuse coin tiles from coinflip screen (`light_coin_tiles[]` or `dark_coin_tiles[]`)
+   - Master gets LIGHT, slave gets DARK
+   - Display for ~120 frames (2 seconds) or until A pressed
+   - Transition to profile selection
+
+**Connection logic:**
+- Both Game Boys continuously send sync bytes when in waiting phase
+- First to receive opponent's sync while sending becomes slave
+- Master acknowledged by receiving ACK before sending own ACK
+- Deterministic: guaranteed one master, one slave
 
 ### Phase 12C: Link Profile Selection
 

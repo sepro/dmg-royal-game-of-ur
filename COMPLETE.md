@@ -62,6 +62,18 @@
 - Support for entering pieces from reserve with visual indicator
 - Handles entering board, normal movement, capturing, rosette rules, and bearing off
 
+## Phase 9: AI Opponent ✓
+- Converted specific AI approaches from python to C
+- Each opponent uses a different AI
+    - THE MERCHANT is be similar to greedy_agent.py
+    - THE MUSICIAN is be similar to turn_economy_agent.py
+    - THE SCHOLAR is be similar to the adaptive_agent.py
+    - THE PRIESTESS is be similar to the phase_based_agent.py
+- Three difficulty levels
+    - EASY: When multiple moves are possible, picks the one the AI favors 40% of the time
+    - MEDIUM: When multiple moves are possible, picks the one the AI favors 65% of the time
+    - HARD: Picks the move the AI favors
+
 ### Phase 10: Game Loop ✓
 - Turn management alternating between human and CPU players
 - Rosette bonus turns handled correctly (landing on rosette grants extra turn)
@@ -80,5 +92,3 @@
 - Border reuses tiles from pause screen and selection screens (7x7 frame)
 - A button returns to opponent selection for new game
 - Layout: result text at row 1 (offset right), portrait at rows 4-8 with border at rows 3-9
-
----

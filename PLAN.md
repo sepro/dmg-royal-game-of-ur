@@ -4,85 +4,35 @@
 
 This plan breaks down the development into manageable phases, each building on the previous one. Each phase results in a testable milestone. The plan assumes familiarity with GBDK-2020 and Game Boy hardware constraints (4 colors, 8x8 tiles, 40 sprites max, etc.).
 
-## Phase 9: AI Opponent (Basic)
-
-**Goal:** Port Python AI to C and integrate with game loop.
-
-### Tasks
+## Phase 12: Link Cable support
 
 
-1. **AI port from Python**
-   - Convert specific AI approaches from python to C
-   - Each opponent will use a different AI
-     - THE MERCHANT should be similar to greedy_agent.py
-     - THE MUSICIAN should be similar to turn_economy_agent.py
-     - THE SCHOLAR should be similar to the adaptive_agent.py
-     - THE PRIESTESS should be similar to the phase_based_agent.py
-   - A full Python program is included in ./python
-      - This also contains optimized weights for some of the agents
-   - Agent Code is in ./python/src/agents
 
 
-2. **Difficulty scaling**
-   - Easy: When multiple moves are possible, pick the one the AI favors 40% of the time
-   - MEDIUM: When multiple moves are possible, pick the one the AI favors 65% of the time
-   - HARD: Pick the move the AI favors
+## Phase 13: Add Sound
 
-3. **AI turn execution**
-   - Calculate best move
-   - Show AI "thinking" indicator briefly (if needed)
+Background music needs to be added.
 
-### Assets Needed
+Sound effects need to be added to dice rolls, selecting menu items (difficulty, opponent)
 
-| Asset | Format | Notes |
-|-------|--------|-------|
-| "Thinking" indicator | Sprite or tiles | Optional: animated dots or similar |
+A happy or sad chime should sound upon winning or losing.
 
-### Deliverable
+### Assets
 
-AI opponent makes legal, strategic moves. Difficulty affects play strength.
+- Sounds and background music made with hUGEtracker
 
----
 
-## Phase 12: Polish & Optimization
+## Phase 14: Happy - Sad profile animations
 
-**Goal:** Refine experience, optimize for hardware.
+We'll add some animations to the opponents profile, if they capture a piece or finish with a piece they should
+briefly look happy. If a piece of them is captured by the human player or the human finishes a piece they should briefly look sad. 
 
-### Tasks
+On the endgame screen, if the opponent has won their profile image should altenate between normal and happy. If they lost it should alternate between normal and sad
 
-1. **Screen transitions**
-   - Implement fade in/out or other transitions
-   - Ensure smooth flow between all screens
+### Assets
 
-2. **Sound effects** (if desired)
-   - Dice roll sound
-   - Piece move sound
-   - Capture sound
-   - Victory/defeat jingle
-
-3. **Performance optimization**
-   - Ensure AI doesn't cause visible lag
-   - Optimize tile/sprite updates to prevent tearing
-
-4. **Bug fixes**
-   - Playtest all paths thoroughly
-   - Edge cases in rules
-   - Memory issues
-
-5. **Link Cable placeholder**
-   - Show "Coming Soon" or similar when selected
-   - Leave hooks for future implementation
-
-### Assets Needed
-
-| Asset | Format | Notes |
-|-------|--------|-------|
-| Sound effects | .c arrays or GBT format | Optional but adds polish |
-| Additional transition tiles | 8x8 | For fade effects if using tile-based fade |
-
-### Deliverable
-
-Polished, bug-free single-player experience ready for release.
+- 4 opponent happy variants
+- 4 opponent sad variants
 
 ---
 

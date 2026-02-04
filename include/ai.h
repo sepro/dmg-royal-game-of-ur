@@ -4,7 +4,7 @@
  * - THE MERCHANT: Greedy strategy (ported from Python greedy_agent.py)
  * - THE MUSICIAN: Turn economy strategy (ported from Python turn_agent.py)
  * - THE PRIESTESS: Phase-based strategy (ported from Python phase_based_agent.py)
- * - THE SCHOLAR: Random moves
+ * - THE SCHOLAR: Adaptive strategy (ported from Python adaptive_agent.py)
  */
 
 #ifndef AI_H
@@ -15,7 +15,7 @@
 // ============================================================================
 // Opponent Type Constants (matches opponent selection order)
 // ============================================================================
-#define OPPONENT_SCHOLAR    0   // Random moves
+#define OPPONENT_SCHOLAR    0   // Adaptive strategy
 #define OPPONENT_MERCHANT   1   // Greedy AI
 #define OPPONENT_MUSICIAN   2   // Turn economy AI
 #define OPPONENT_PRIESTESS  3   // Phase-based AI
@@ -75,6 +75,41 @@
 #define PH_ENDGAME_ROSETTE_SAFETY   15
 #define PH_ENDGAME_VULNERABILITY   -25
 #define PH_ENDGAME_CAPTURE_THREAT   20
+
+// ============================================================================
+// Evaluation Weights for THE SCHOLAR (adaptive strategy)
+// Switches between profiles based on whether CPU is ahead or behind
+// ============================================================================
+#define ADAPT_THRESHOLD         50   // Score difference to trigger mode switch
+
+// Adaptation mode constants
+#define ADAPT_MODE_BALANCED    0
+#define ADAPT_MODE_DEFENSIVE   1
+#define ADAPT_MODE_AGGRESSIVE  2
+
+// BALANCED weights (used when game is close, within threshold)
+#define AD_BALANCED_ADVANCEMENT      12
+#define AD_BALANCED_SCORED          140
+#define AD_BALANCED_CENTER_ROSETTE   70
+#define AD_BALANCED_ROSETTE_SAFETY   25
+#define AD_BALANCED_VULNERABILITY   -35
+#define AD_BALANCED_CAPTURE_THREAT   30
+
+// DEFENSIVE weights (used when CPU is ahead - protect the lead)
+#define AD_DEFENSIVE_ADVANCEMENT      8
+#define AD_DEFENSIVE_SCORED         150
+#define AD_DEFENSIVE_CENTER_ROSETTE 100
+#define AD_DEFENSIVE_ROSETTE_SAFETY  35
+#define AD_DEFENSIVE_VULNERABILITY  -50
+#define AD_DEFENSIVE_CAPTURE_THREAT  20
+
+// AGGRESSIVE weights (used when CPU is behind - catch up)
+#define AD_AGGRESSIVE_ADVANCEMENT    15
+#define AD_AGGRESSIVE_SCORED        150
+#define AD_AGGRESSIVE_CENTER_ROSETTE 60
+#define AD_AGGRESSIVE_ROSETTE_SAFETY 15
+#define AD_AGGRESSIVE_VULNERABILITY -20
+#define AD_AGGRESSIVE_CAPTURE_THREAT 40
 
 // ============================================================================
 // Difficulty Thresholds (% chance to pick optimal move)

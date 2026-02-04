@@ -2,6 +2,13 @@
  * ai.c
  * AI opponent logic for multiple opponent types
  *
+ * THE SCHOLAR (adaptive strategy):
+ * - Evaluates current position to determine if winning or losing
+ * - When ahead: Uses defensive weights (protect the lead)
+ * - When behind: Uses aggressive weights (catch up)
+ * - When even: Uses balanced weights
+ * - Ported from Python adaptive_agent.py
+ *
  * THE MERCHANT (greedy strategy):
  * - Evaluates board positions based on advancement, rosettes, captures
  * - Ported from Python greedy_agent.py
@@ -16,9 +23,6 @@
  * - Midgame: Aggressive war zone control, prioritize captures
  * - Endgame: Race to finish, maximum advancement
  * - Ported from Python phase_based_agent.py
- *
- * THE SCHOLAR:
- * - Random valid move selection
  */
 
 #include <gb/gb.h>
@@ -300,6 +304,162 @@ static int16_t evaluate_phase_move(uint8_t piece_idx, uint8_t roll, uint8_t phas
     int16_t human_score = evaluate_player_phased(temp_human, temp_cpu, phase);
 
     return cpu_score - human_score;
+}
+
+// ============================================================================
+// Adaptive Evaluation Functions (THE SCHOLAR)
+// ============================================================================
+
+/**
+ * Evaluate a player's position using adaptive weights
+ *
+ * @param pieces     Array of piece positions to evaluate
+ * @param opponent   Array of opponent piece positions
+ * @param mode       ADAPT_MODE_BALANCED, DEFENSIVE, or AGGRESSIVE
+ * @return Position score (higher = better)
+ */
+static int16_t evaluate_player_adaptive(uint8_t *pieces, uint8_t *opponent, uint8_t mode) {
+    int16_t score = 0;
+    int16_t w_advancement, w_scored, w_center_rosette, w_rosette_safety;
+    int16_t w_vulnerability, w_capture_threat;
+
+    switch (mode) {
+        case ADAPT_MODE_DEFENSIVE:
+            w_advancement = AD_DEFENSIVE_ADVANCEMENT;
+            w_scored = AD_DEFENSIVE_SCORED;
+            w_center_rosette = AD_DEFENSIVE_CENTER_ROSETTE;
+            w_rosette_safety = AD_DEFENSIVE_ROSETTE_SAFETY;
+            w_vulnerability = AD_DEFENSIVE_VULNERABILITY;
+            w_capture_threat = AD_DEFENSIVE_CAPTURE_THREAT;
+            break;
+        case ADAPT_MODE_AGGRESSIVE:
+            w_advancement = AD_AGGRESSIVE_ADVANCEMENT;
+            w_scored = AD_AGGRESSIVE_SCORED;
+            w_center_rosette = AD_AGGRESSIVE_CENTER_ROSETTE;
+            w_rosette_safety = AD_AGGRESSIVE_ROSETTE_SAFETY;
+            w_vulnerability = AD_AGGRESSIVE_VULNERABILITY;
+            w_capture_threat = AD_AGGRESSIVE_CAPTURE_THREAT;
+            break;
+        case ADAPT_MODE_BALANCED:
+        default:
+            w_advancement = AD_BALANCED_ADVANCEMENT;
+            w_scored = AD_BALANCED_SCORED;
+            w_center_rosette = AD_BALANCED_CENTER_ROSETTE;
+            w_rosette_safety = AD_BALANCED_ROSETTE_SAFETY;
+            w_vulnerability = AD_BALANCED_VULNERABILITY;
+            w_capture_threat = AD_BALANCED_CAPTURE_THREAT;
+            break;
+    }
+
+    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
+        uint8_t pos = pieces[i];
+        if (pos == POS_FINISHED) {
+            score += w_scored;
+        } else if (pos != POS_RESERVE) {
+            score += (int16_t)pos * w_advancement;
+            if (is_rosette(pos)) {
+                score += w_rosette_safety;
+                if (pos == 8) {
+                    score += w_center_rosette;
+                }
+            }
+        }
+    }
+
+    int16_t vulnerability = calculate_vulnerability(pieces, opponent);
+    score += (vulnerability * w_vulnerability) / 16;
+
+    int16_t threats = calculate_capture_threats(pieces, opponent);
+    score += (threats * w_capture_threat) / 16;
+
+    return score;
+}
+
+/**
+ * Detect which adaptive mode to use based on current position
+ * Evaluates both players with balanced weights to determine advantage
+ *
+ * @return ADAPT_MODE_BALANCED, DEFENSIVE, or AGGRESSIVE
+ */
+static uint8_t detect_adaptive_mode(void) {
+    int16_t cpu_score = evaluate_player_adaptive(cpu_pieces, human_pieces, ADAPT_MODE_BALANCED);
+    int16_t human_score = evaluate_player_adaptive(human_pieces, cpu_pieces, ADAPT_MODE_BALANCED);
+    int16_t advantage = cpu_score - human_score;
+
+    if (advantage > ADAPT_THRESHOLD) {
+        return ADAPT_MODE_DEFENSIVE;   // Ahead - protect lead
+    } else if (advantage < -ADAPT_THRESHOLD) {
+        return ADAPT_MODE_AGGRESSIVE;  // Behind - catch up
+    } else {
+        return ADAPT_MODE_BALANCED;    // Close game
+    }
+}
+
+/**
+ * Simulate a move and evaluate using adaptive weights
+ *
+ * @param piece_idx  Index of piece to move
+ * @param roll       Dice roll value
+ * @param mode       Adaptive mode to use
+ * @return Evaluation score (higher = better for CPU)
+ */
+static int16_t evaluate_adaptive_move(uint8_t piece_idx, uint8_t roll, uint8_t mode) {
+    uint8_t temp_cpu[PIECES_PER_PLAYER];
+    uint8_t temp_human[PIECES_PER_PLAYER];
+
+    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
+        temp_cpu[i] = cpu_pieces[i];
+        temp_human[i] = human_pieces[i];
+    }
+
+    uint8_t current_pos = temp_cpu[piece_idx];
+    uint8_t new_pos;
+
+    if (current_pos == POS_RESERVE) {
+        new_pos = roll;
+    } else {
+        new_pos = current_pos + roll;
+    }
+
+    if (new_pos >= POS_FINISHED) {
+        new_pos = POS_FINISHED;
+    }
+
+    if (is_in_war_zone(new_pos) && new_pos != 8) {
+        for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
+            if (temp_human[i] == new_pos) {
+                temp_human[i] = POS_RESERVE;
+                break;
+            }
+        }
+    }
+
+    temp_cpu[piece_idx] = new_pos;
+
+    int16_t cpu_score = evaluate_player_adaptive(temp_cpu, temp_human, mode);
+    int16_t human_score = evaluate_player_adaptive(temp_human, temp_cpu, mode);
+
+    return cpu_score - human_score;
+}
+
+/**
+ * Select best move using adaptive evaluation (THE SCHOLAR)
+ * Detects game advantage, then evaluates moves with appropriate weights
+ */
+static uint8_t select_adaptive_move(uint8_t roll, uint8_t num_valid, uint8_t *valid_moves) {
+    uint8_t mode = detect_adaptive_mode();
+    int16_t best_score = -32000;
+    uint8_t best_move = valid_moves[0];
+
+    for (uint8_t i = 0; i < num_valid; i++) {
+        int16_t score = evaluate_adaptive_move(valid_moves[i], roll, mode);
+        if (score > best_score) {
+            best_score = score;
+            best_move = valid_moves[i];
+        }
+    }
+
+    return best_move;
 }
 
 // ============================================================================
@@ -633,8 +793,8 @@ uint8_t ai_select_move(uint8_t roll, uint8_t *out_piece_idx) {
     // AI evaluation: dispatch based on opponent type
     switch (selected_opponent) {
         case OPPONENT_SCHOLAR:
-            // Random AI - simple random move selection
-            *out_piece_idx = select_random_move(num_valid, valid_moves);
+            // Adaptive AI - switches between defensive/balanced/aggressive
+            *out_piece_idx = select_adaptive_move(roll, num_valid, valid_moves);
             break;
 
         case OPPONENT_PRIESTESS:

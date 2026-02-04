@@ -3,7 +3,8 @@
  * AI opponent logic for multiple opponent types
  * - THE MERCHANT: Greedy strategy (ported from Python greedy_agent.py)
  * - THE MUSICIAN: Turn economy strategy (ported from Python turn_agent.py)
- * - THE SCHOLAR/PRIESTESS: Random moves
+ * - THE PRIESTESS: Phase-based strategy (ported from Python phase_based_agent.py)
+ * - THE SCHOLAR: Random moves
  */
 
 #ifndef AI_H
@@ -17,7 +18,7 @@
 #define OPPONENT_SCHOLAR    0   // Random moves
 #define OPPONENT_MERCHANT   1   // Greedy AI
 #define OPPONENT_MUSICIAN   2   // Turn economy AI
-#define OPPONENT_PRIESTESS  3   // Random moves
+#define OPPONENT_PRIESTESS  3   // Phase-based AI
 
 // ============================================================================
 // Evaluation Weights for THE MERCHANT (greedy strategy)
@@ -40,6 +41,40 @@
 // Turn estimation constants (scaled by 10 to avoid floats)
 #define TURNS_PER_RESERVE        75  // 7.5 turns to enter + traverse on average
 #define TURNS_PER_DISTANCE        6  // 0.6 turns per remaining square
+
+// ============================================================================
+// Game Phase Constants for THE PRIESTESS (phase-based strategy)
+// ============================================================================
+#define PHASE_OPENING   0
+#define PHASE_MIDGAME   1
+#define PHASE_ENDGAME   2
+
+#define PHASE_OPENING_MAX   2   // 0-2 scored = opening
+#define PHASE_MIDGAME_MAX   5   // 3-5 scored = midgame, 6+ = endgame
+
+// OPENING: Safe positioning, get pieces moving
+#define PH_OPENING_ADVANCEMENT      12
+#define PH_OPENING_SCORED          150
+#define PH_OPENING_CENTER_ROSETTE   90
+#define PH_OPENING_ROSETTE_SAFETY   35
+#define PH_OPENING_VULNERABILITY   -20
+#define PH_OPENING_CAPTURE_THREAT   15
+
+// MIDGAME: Aggressive war zone control
+#define PH_MIDGAME_ADVANCEMENT      10
+#define PH_MIDGAME_SCORED          150
+#define PH_MIDGAME_CENTER_ROSETTE  100
+#define PH_MIDGAME_ROSETTE_SAFETY   25
+#define PH_MIDGAME_VULNERABILITY   -35
+#define PH_MIDGAME_CAPTURE_THREAT   40
+
+// ENDGAME: Race to finish
+#define PH_ENDGAME_ADVANCEMENT      18
+#define PH_ENDGAME_SCORED          180
+#define PH_ENDGAME_CENTER_ROSETTE   50
+#define PH_ENDGAME_ROSETTE_SAFETY   15
+#define PH_ENDGAME_VULNERABILITY   -25
+#define PH_ENDGAME_CAPTURE_THREAT   20
 
 // ============================================================================
 // Difficulty Thresholds (% chance to pick optimal move)

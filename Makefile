@@ -54,7 +54,7 @@ run: $(TARGET)
 # Header Dependencies
 # GBDK's lcc doesn't support automatic dependency generation (-MD -MP)
 # Manual dependencies ensure header changes trigger recompilation
-$(OBJDIR)/main.o: $(INCDIR)/game_types.h $(INCDIR)/title.h $(INCDIR)/opponent_select.h $(INCDIR)/difficulty_select.h $(INCDIR)/coinflip.h $(INCDIR)/game.h $(INCDIR)/endgame.h $(INCDIR)/font.h
+$(OBJDIR)/main.o: $(INCDIR)/game_types.h $(INCDIR)/title.h $(INCDIR)/opponent_select.h $(INCDIR)/difficulty_select.h $(INCDIR)/coinflip.h $(INCDIR)/game.h $(INCDIR)/endgame.h $(INCDIR)/link_connect.h $(INCDIR)/font.h
 $(OBJDIR)/title.o: $(INCDIR)/game_types.h $(INCDIR)/title.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/random.h
 $(OBJDIR)/opponent_select.o: $(INCDIR)/game_types.h $(INCDIR)/opponent_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h
 $(OBJDIR)/difficulty_select.o: $(INCDIR)/game_types.h $(INCDIR)/difficulty_select.h $(INCDIR)/opponent_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/portrait.h $(INCDIR)/screen_utils.h
@@ -70,3 +70,5 @@ $(OBJDIR)/ai.o: $(INCDIR)/ai.h $(INCDIR)/board_state.h $(INCDIR)/game.h $(INCDIR
 $(OBJDIR)/endgame.o: $(INCDIR)/game_types.h $(INCDIR)/endgame.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/vram_layout.h $(INCDIR)/portrait.h $(INCDIR)/screen_utils.h
 $(OBJDIR)/portrait.o: $(INCDIR)/portrait.h $(INCDIR)/opponent_data.h
 $(OBJDIR)/screen_utils.o: $(INCDIR)/screen_utils.h
+$(OBJDIR)/link.o: $(INCDIR)/link.h
+$(OBJDIR)/link_connect.o: $(INCDIR)/link_connect.h $(INCDIR)/link.h $(INCDIR)/game_types.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/coinflip.h $(INCDIR)/screen_utils.h

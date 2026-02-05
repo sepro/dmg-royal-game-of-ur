@@ -176,7 +176,7 @@ void update_title(void) {
         if (selected_option == MENU_START_GAME) {
             transition_start(STATE_OPPONENT_SELECT, TRANSITION_PHASE_COUNT_3);
         } else if (selected_option == MENU_LINK_CABLE) {
-            transition_start(STATE_TITLE, TRANSITION_PHASE_COUNT_1);
+            transition_start(STATE_LINK_CONNECT, TRANSITION_PHASE_COUNT_3);
         }
     }
 }

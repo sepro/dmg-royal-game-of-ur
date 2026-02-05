@@ -12,6 +12,7 @@
 #include "coinflip.h"
 #include "game.h"
 #include "endgame.h"
+#include "link_connect.h"
 #include "font.h"
 
 // Global game state
@@ -57,6 +58,9 @@ void main(void) {
                 case STATE_ENDGAME:
                     cleanup_endgame();
                     break;
+                case STATE_LINK_CONNECT:
+                    cleanup_link_connect();
+                    break;
                 default:
                     break;
             }
@@ -82,6 +86,9 @@ void main(void) {
                 case STATE_ENDGAME:
                     init_endgame();
                     break;
+                case STATE_LINK_CONNECT:
+                    init_link_connect();
+                    break;
                 default:
                     break;
             }
@@ -106,6 +113,9 @@ void main(void) {
                 break;
             case STATE_ENDGAME:
                 update_endgame();
+                break;
+            case STATE_LINK_CONNECT:
+                update_link_connect();
                 break;
             default:
                 break;

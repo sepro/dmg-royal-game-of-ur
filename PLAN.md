@@ -208,16 +208,6 @@ Passive player:
    - Select profiles, play game
    - Test disconnection by closing one instance
 
-#### SameBoy
-
-1. **Two instances:**
-   - First: File → Connect Link Cable → Listen
-   - Second: File → Connect Link Cable → Connect to localhost
-
-2. **Or use Buddy Mode:**
-   - File → Open Buddy ROM → Load same ROM
-   - Both Game Boys in split view
-
 ### Test Checklist
 
 - [ ] Connection establishes when both press A

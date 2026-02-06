@@ -102,6 +102,11 @@ static uint8_t dest_blink_timer;                 // Timer for destination blink
 static uint8_t dest_blink_visible;               // 1 = destination visible, 0 = hidden
 static uint8_t selection_sprites_loaded;         // 1 = sprites loaded into VRAM
 
+// Link cable receive timeout (~30 seconds at 60fps)
+// link_game_recv() is non-blocking; this counts frames without valid data
+#define LINK_RECV_TIMEOUT 1800
+static uint16_t link_recv_frames;
+
 // ============================================================================
 // Forward Declarations (for functions used before definition)
 // ============================================================================
@@ -925,6 +930,7 @@ static void update_dice_animation(void) {
 static void switch_turn(void) {
     current_turn = (current_turn == 0) ? 1 : 0;
     turn_count++;  // Increment turn counter
+    link_recv_frames = 0;  // Reset link receive timeout for new turn
     draw_turn_indicator();
 
     // Reset to wait for roll
@@ -1047,6 +1053,9 @@ void init_game(void) {
     selection_index = 0;
     selection_sprites_loaded = 0;
 
+    // Initialize link receive timeout
+    link_recv_frames = 0;
+
     // Draw UI elements
     draw_player_info();
     draw_turn_indicator();
@@ -1118,10 +1127,11 @@ void update_game(void) {
                     start_dice_roll();
                 }
             } else if (game_mode == GAME_MODE_LINK) {
-                // Link mode: receive dice from remote player
+                // Link mode: receive dice from remote player (non-blocking)
                 {
                     uint8_t recv;
                     if (link_game_recv(&recv)) {
+                        link_recv_frames = 0;
                         if (recv >= LINK_DICE_TAG && recv <= LINK_DICE_TAG + 4) {
                             set_dice_from_total(recv - LINK_DICE_TAG);
                             show_dice();
@@ -1132,7 +1142,10 @@ void update_game(void) {
                             handle_link_disconnect();
                         }
                     } else {
-                        handle_link_disconnect();
+                        link_recv_frames++;
+                        if (link_recv_frames >= LINK_RECV_TIMEOUT) {
+                            handle_link_disconnect();
+                        }
                     }
                 }
             } else {
@@ -1167,11 +1180,12 @@ void update_game(void) {
                     // Local player - start interactive move selection
                     start_move_selection();
                 } else if (game_mode == GAME_MODE_LINK) {
-                    // Link mode: receive move from remote player
+                    // Link mode: receive move from remote player (non-blocking)
                     {
                         uint8_t recv;
                         draw_prompt("WAITING...");
                         if (link_game_recv(&recv)) {
+                            link_recv_frames = 0;
                             if (recv == LINK_NO_MOVES) {
                                 draw_prompt("NO VALID MOVES");
                                 result_timer = NO_MOVES_PAUSE;
@@ -1196,7 +1210,10 @@ void update_game(void) {
                                 handle_link_disconnect();
                             }
                         } else {
-                            handle_link_disconnect();
+                            link_recv_frames++;
+                            if (link_recv_frames >= LINK_RECV_TIMEOUT) {
+                                handle_link_disconnect();
+                            }
                         }
                     }
                 } else {
@@ -1258,6 +1275,7 @@ void update_game(void) {
                 result_timer--;
             } else {
                 game_phase = PHASE_WAIT_ROLL;
+                link_recv_frames = 0;
                 hide_dice();
                 if (game_mode == GAME_MODE_LINK && current_turn == 1) {
                     draw_prompt("WAITING...");

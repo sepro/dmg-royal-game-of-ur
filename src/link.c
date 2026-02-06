@@ -214,17 +214,18 @@ uint8_t link_game_send(uint8_t data) {
 }
 
 /**
- * Receive a game data byte over the link cable
- * Master polls with idle bytes until a valid game byte arrives.
- * Slave blocks waiting for master's clock.
+ * Receive a game data byte over the link cable (non-blocking).
+ * Attempts one exchange per call. Returns 1 if valid game data received,
+ * 0 if nothing yet (caller should retry next frame).
+ * Filters out idle bytes (0x00) and hardware no-response (0xFF).
  */
 uint8_t link_game_recv(uint8_t *out) {
     uint8_t recv;
 
     if (link_role == LINK_ROLE_SLAVE) {
-        // Slave: block-wait for master to clock a byte
-        if (link_exchange_slave(LINK_IDLE_BYTE, &recv, LINK_GAME_TIMEOUT)) {
-            if (recv != LINK_IDLE_BYTE) {
+        // Slave: try one receive with short timeout
+        if (link_exchange_slave(LINK_IDLE_BYTE, &recv, LINK_TRANSFER_WAIT)) {
+            if (recv != LINK_IDLE_BYTE && recv != 0xFF) {
                 *out = recv;
                 return 1;
             }
@@ -232,18 +233,11 @@ uint8_t link_game_recv(uint8_t *out) {
         return 0;
     }
 
-    // Master: poll by clocking idle bytes, waiting for slave's response
-    {
-        uint8_t frames = 0;
-        while (frames < LINK_GAME_TIMEOUT) {
-            if (link_exchange(LINK_IDLE_BYTE, &recv)) {
-                if (recv != LINK_IDLE_BYTE) {
-                    *out = recv;
-                    return 1;
-                }
-            }
-            wait_vbl_done();
-            frames++;
+    // Master: try one poll, clock an idle byte
+    if (link_exchange(LINK_IDLE_BYTE, &recv)) {
+        if (recv != LINK_IDLE_BYTE && recv != 0xFF) {
+            *out = recv;
+            return 1;
         }
     }
     return 0;

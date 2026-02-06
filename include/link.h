@@ -29,7 +29,7 @@
 
 // Reliable transfer protocol
 #define LINK_READY_RECV   0xDD  // Receiver loads this to signal readiness
-#define LINK_SEND_RETRIES 60    // Max retry frames for master send (~1s)
+#define LINK_SEND_RETRIES 180   // Max retry frames for master send (~3s safety margin)
 
 // Connection status
 typedef enum {
@@ -113,6 +113,14 @@ uint8_t link_ready_sync(void);
  * Best-effort: if transfer fails (peer disconnected), resets anyway.
  */
 void link_cancel(void);
+
+/**
+ * Pump slave receive — call every frame during link gameplay.
+ * Keeps slave serial port armed to eliminate deaf windows.
+ * Buffers any received game data for the next link_game_recv() call.
+ * No-op if role is master.
+ */
+void link_pump_recv(void);
 
 /**
  * Send a game data byte over the link cable

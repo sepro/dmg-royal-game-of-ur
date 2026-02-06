@@ -46,6 +46,11 @@ LinkRole_t link_role = LINK_ROLE_UNDETERMINED;
 // Persistent armed state for non-blocking slave recv
 static uint8_t slave_recv_armed = 0;
 
+// Buffered receive: link_pump_recv() stores game data here so the slave
+// never has a "deaf window" between game phases.
+static uint8_t link_pending_byte;   // Buffered received game data
+static uint8_t link_has_pending;    // 1 = buffer has unread data
+
 // Internal state
 static uint8_t hs_state = HS_IDLE;
 static uint8_t hs_timer = 0;
@@ -69,6 +74,8 @@ void link_init(void) {
     hs_state = HS_IDLE;
     hs_timer = 0;
     slave_recv_armed = 0;
+    link_has_pending = 0;
+    link_pending_byte = 0;
 }
 
 /**
@@ -86,7 +93,20 @@ uint8_t link_exchange(uint8_t send_data, uint8_t* recv_data) {
     SB_REG = send_data;
     SC_REG = SC_START | SC_CLOCK_INT;
 
-    // Internal clock completes quickly; poll with frame timeout
+    // Busy-spin ~4096 iterations (~1ms at 4MHz) for internal clock completion.
+    // Internal clock transfers complete in ~1ms; this catches them without
+    // blocking an entire frame via wait_vbl_done().
+    {
+        uint16_t spin = 4096;
+        while (spin--) {
+            if (is_transfer_done()) {
+                if (recv_data) *recv_data = SB_REG;
+                return 1;
+            }
+        }
+    }
+
+    // Fall through to frame-based wait (safety net for slow completion)
     {
         uint8_t f = 0;
         while (f < LINK_TRANSFER_WAIT) {
@@ -215,6 +235,8 @@ uint8_t link_game_send(uint8_t data) {
 
     // Cancel any pending slave recv (we're switching to send mode)
     slave_recv_armed = 0;
+    link_has_pending = 0;
+    SC_REG = 0;  // Disarm SC before loading send data
 
     if (link_role == LINK_ROLE_MASTER) {
         // Master retry loop: slave may not be listening yet
@@ -252,6 +274,13 @@ uint8_t link_game_recv(uint8_t *out) {
     uint8_t recv;
 
     if (link_role == LINK_ROLE_SLAVE) {
+        // Check buffered data from link_pump_recv() first
+        if (link_has_pending) {
+            *out = link_pending_byte;
+            link_has_pending = 0;
+            return 1;
+        }
+
         if (slave_recv_armed) {
             // Already armed — check if transfer completed (non-blocking)
             if (is_transfer_done()) {
@@ -286,6 +315,49 @@ uint8_t link_game_recv(uint8_t *out) {
         }
     }
     return 0;
+}
+
+/**
+ * Pump slave receive — call every frame during link gameplay.
+ * Keeps the slave's serial port armed at all times so there are no
+ * "deaf windows" between game phases. If game data arrives it is
+ * buffered in link_pending_byte for the next link_game_recv() call.
+ *
+ * Safe to call when role is master (no-op) or when not in a game.
+ */
+void link_pump_recv(void) {
+    uint8_t recv;
+
+    // Only pump for slave role; master drives clock, no deaf window
+    if (link_role != LINK_ROLE_SLAVE) return;
+
+    // Don't overwrite an unread buffered byte
+    if (link_has_pending) return;
+
+    if (slave_recv_armed) {
+        // Check if a transfer completed
+        if (is_transfer_done()) {
+            recv = SB_REG;
+            slave_recv_armed = 0;
+
+            // Filter protocol/idle bytes — only buffer game data
+            if (recv != LINK_IDLE_BYTE && recv != 0xFF &&
+                recv != LINK_READY_RECV) {
+                link_pending_byte = recv;
+                link_has_pending = 1;
+            }
+
+            // Re-arm immediately
+            SB_REG = LINK_READY_RECV;
+            SC_REG = SC_START | SC_CLOCK_EXT;
+            slave_recv_armed = 1;
+        }
+    } else {
+        // Not armed — arm now
+        SB_REG = LINK_READY_RECV;
+        SC_REG = SC_START | SC_CLOCK_EXT;
+        slave_recv_armed = 1;
+    }
 }
 
 /**

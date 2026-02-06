@@ -102,9 +102,9 @@ static uint8_t dest_blink_timer;                 // Timer for destination blink
 static uint8_t dest_blink_visible;               // 1 = destination visible, 0 = hidden
 static uint8_t selection_sprites_loaded;         // 1 = sprites loaded into VRAM
 
-// Link cable receive timeout (~30 seconds at 60fps)
+// Link cable receive timeout (~10 seconds at 60fps)
 // link_game_recv() is non-blocking; this counts frames without valid data
-#define LINK_RECV_TIMEOUT 1800
+#define LINK_RECV_TIMEOUT 600
 static uint16_t link_recv_frames;
 
 // ============================================================================
@@ -1092,6 +1092,11 @@ void update_game(void) {
     // Update input state
     input_update();
 
+    // Pump slave serial receive every frame to eliminate deaf windows
+    if (game_mode == GAME_MODE_LINK) {
+        link_pump_recv();
+    }
+
     // Handle pause toggle with START button (disabled in link mode)
     if (input_pressed(J_START) && !pause_animating && game_mode != GAME_MODE_LINK) {
         if (is_paused) {
@@ -1236,6 +1241,26 @@ void update_game(void) {
                         game_phase = PHASE_CPU_THINK;
                     } else if (recv >= LINK_PIECE_TAG && recv <= LINK_PIECE_TAG + 6) {
                         uint8_t piece_idx = recv - LINK_PIECE_TAG;
+
+                        // Validate piece index and move legality
+                        if (piece_idx >= PIECES_PER_PLAYER) {
+                            handle_link_disconnect();
+                            break;
+                        }
+                        {
+                            uint8_t mv[PIECES_PER_PLAYER];
+                            uint8_t n = get_valid_moves(PLAYER_CPU, dice_total, mv);
+                            uint8_t found = 0;
+                            uint8_t vi;
+                            for (vi = 0; vi < n; vi++) {
+                                if (mv[vi] == piece_idx) { found = 1; break; }
+                            }
+                            if (!found) {
+                                handle_link_disconnect();
+                                break;
+                            }
+                        }
+
                         uint8_t extra_turn = execute_move(PLAYER_CPU, piece_idx, dice_total);
                         update_piece_counts();
                         update_reserve_display();

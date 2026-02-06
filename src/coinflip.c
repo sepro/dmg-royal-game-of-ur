@@ -358,6 +358,9 @@ void init_coinflip(void) {
     // Clear input state
     input_reset();
 
+    // Set background palette
+    BGP_REG = 0xE4;
+
     // Hide sprites (not used on this screen)
     HIDE_SPRITES;
     SHOW_BKG;

@@ -933,6 +933,8 @@ void init_game(void) {
     set_sprite_data(SPRITE_DICE_WHITE, 1, dice_white_tiles);
     set_sprite_data(SPRITE_DICE_BLACK, 1, dice_black_tiles);
 
+    // Set palettes
+    BGP_REG = 0xE4;   // Standard background palette
     // Set sprite palette OBP0: index 1=white, index 2=dark gray, index 3=black
     // Value: (3 << 6) | (2 << 4) | (0 << 2) | 0 = 0xE0
     OBP0_REG = 0xE0;

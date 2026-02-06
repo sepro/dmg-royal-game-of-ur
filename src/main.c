@@ -23,6 +23,14 @@ ScreenState_t next_state = STATE_TITLE;
  * Main entry point
  */
 void main(void) {
+    // Ensure display is off before any VRAM writes
+    // (TGB Dual and other emulators may not guarantee safe VRAM access at boot)
+    DISPLAY_OFF;
+
+    // Set background palette explicitly (boot ROM normally sets this to 0xFC,
+    // but some emulators like TGB Dual may not emulate the boot ROM correctly)
+    BGP_REG = 0xE4;
+
     // Load font tiles once at boot (shared across all screens)
     load_font_inverted();
 

@@ -200,6 +200,9 @@ void init_opponent_select(void) {
     // Clear input state
     input_reset();
 
+    // Set background palette
+    BGP_REG = 0xE4;
+
     // Enable display
     SHOW_BKG;
     DISPLAY_ON;

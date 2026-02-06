@@ -134,8 +134,9 @@ void init_title(void) {
     // Clear input state
     input_reset();
 
-    // Set sprite palette for dark background with light text
-    OBP0_REG = 0xE0;
+    // Set palettes
+    BGP_REG = 0xE4;   // Standard background palette
+    OBP0_REG = 0xE0;  // Sprite palette for dark background with light text
 
     // Enable display
     SHOW_BKG;

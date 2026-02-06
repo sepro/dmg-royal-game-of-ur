@@ -80,6 +80,9 @@ void init_endgame(void) {
     // Reset input
     input_reset();
 
+    // Set background palette
+    BGP_REG = 0xE4;
+
     SHOW_BKG;
     DISPLAY_ON;
 }

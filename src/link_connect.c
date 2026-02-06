@@ -121,6 +121,9 @@ void init_link_connect(void) {
     // Clear input state
     input_reset();
 
+    // Set background palette
+    BGP_REG = 0xE4;
+
     // Hide sprites
     HIDE_SPRITES;
     SHOW_BKG;

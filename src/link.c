@@ -203,40 +203,72 @@ void link_cancel(void) {
 
 /**
  * Send a game data byte over the link cable
- * Master clocks the transfer, slave waits for master's clock.
+ * Master: retry loop until slave signals readiness (LINK_READY_RECV).
+ * Slave: single exchange with long timeout (master controls clock).
+ * Both sides do best-effort ACK after successful data delivery.
  */
 uint8_t link_game_send(uint8_t data) {
+    uint8_t recv;
+
     if (link_role == LINK_ROLE_MASTER) {
-        return link_exchange(data, (void *)0);
-    } else {
-        return link_exchange_slave(data, (void *)0, LINK_GAME_TIMEOUT);
+        // Master retry loop: slave may not be listening yet
+        uint8_t retries = 0;
+        while (retries < LINK_SEND_RETRIES) {
+            if (link_exchange(data, &recv)) {
+                if (recv == LINK_READY_RECV) {
+                    // Slave was listening, data delivered
+                    // Best-effort ACK exchange
+                    link_exchange(LINK_ACK_GAME, (void *)0);
+                    return 1;
+                }
+            }
+            // Slave not ready (got 0xFF or other), wait a frame and retry
+            wait_vbl_done();
+            retries++;
+        }
+        return 0;  // Exhausted retries
     }
+
+    // Slave: single exchange, master controls clock timing
+    if (link_exchange_slave(data, &recv, LINK_GAME_TIMEOUT)) {
+        // Best-effort ACK exchange
+        link_exchange_slave(LINK_ACK_GAME, (void *)0, LINK_ACK_TIMEOUT);
+        return 1;
+    }
+    return 0;
 }
 
 /**
  * Receive a game data byte over the link cable (non-blocking).
  * Attempts one exchange per call. Returns 1 if valid game data received,
  * 0 if nothing yet (caller should retry next frame).
- * Filters out idle bytes (0x00) and hardware no-response (0xFF).
+ * Loads LINK_READY_RECV to signal readiness to the sender.
+ * Filters out idle, hardware, and protocol bytes.
  */
 uint8_t link_game_recv(uint8_t *out) {
     uint8_t recv;
 
     if (link_role == LINK_ROLE_SLAVE) {
-        // Slave: try one receive with short timeout
-        if (link_exchange_slave(LINK_IDLE_BYTE, &recv, LINK_TRANSFER_WAIT)) {
-            if (recv != LINK_IDLE_BYTE && recv != 0xFF) {
+        // Slave: load READY_RECV so master's retry sees it
+        if (link_exchange_slave(LINK_READY_RECV, &recv, LINK_TRANSFER_WAIT)) {
+            if (recv != LINK_IDLE_BYTE && recv != 0xFF &&
+                recv != LINK_READY_RECV && recv != LINK_ACK_GAME) {
                 *out = recv;
+                // Best-effort ACK
+                link_exchange_slave(LINK_ACK_GAME, (void *)0, LINK_ACK_TIMEOUT);
                 return 1;
             }
         }
         return 0;
     }
 
-    // Master: try one poll, clock an idle byte
-    if (link_exchange(LINK_IDLE_BYTE, &recv)) {
-        if (recv != LINK_IDLE_BYTE && recv != 0xFF) {
+    // Master: load READY_RECV to signal readiness to slave sender
+    if (link_exchange(LINK_READY_RECV, &recv)) {
+        if (recv != LINK_IDLE_BYTE && recv != 0xFF &&
+            recv != LINK_READY_RECV && recv != LINK_ACK_GAME) {
             *out = recv;
+            // Best-effort ACK
+            link_exchange(LINK_ACK_GAME, (void *)0);
             return 1;
         }
     }

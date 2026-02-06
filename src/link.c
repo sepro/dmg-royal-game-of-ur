@@ -202,6 +202,54 @@ void link_cancel(void) {
 }
 
 /**
+ * Send a game data byte over the link cable
+ * Master clocks the transfer, slave waits for master's clock.
+ */
+uint8_t link_game_send(uint8_t data) {
+    if (link_role == LINK_ROLE_MASTER) {
+        return link_exchange(data, (void *)0);
+    } else {
+        return link_exchange_slave(data, (void *)0, LINK_GAME_TIMEOUT);
+    }
+}
+
+/**
+ * Receive a game data byte over the link cable
+ * Master polls with idle bytes until a valid game byte arrives.
+ * Slave blocks waiting for master's clock.
+ */
+uint8_t link_game_recv(uint8_t *out) {
+    uint8_t recv;
+
+    if (link_role == LINK_ROLE_SLAVE) {
+        // Slave: block-wait for master to clock a byte
+        if (link_exchange_slave(LINK_IDLE_BYTE, &recv, LINK_GAME_TIMEOUT)) {
+            if (recv != LINK_IDLE_BYTE) {
+                *out = recv;
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    // Master: poll by clocking idle bytes, waiting for slave's response
+    {
+        uint8_t frames = 0;
+        while (frames < LINK_GAME_TIMEOUT) {
+            if (link_exchange(LINK_IDLE_BYTE, &recv)) {
+                if (recv != LINK_IDLE_BYTE) {
+                    *out = recv;
+                    return 1;
+                }
+            }
+            wait_vbl_done();
+            frames++;
+        }
+    }
+    return 0;
+}
+
+/**
  * Non-blocking connection step (call once per frame from update loop)
  *
  * Protocol:

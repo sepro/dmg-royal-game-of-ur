@@ -7,6 +7,7 @@
 #define GAME_H
 
 #include <stdint.h>
+#include "game_types.h"
 #include "vram_layout.h"
 
 // Board layout constants (tile coordinates)
@@ -230,5 +231,10 @@ void cleanup_game(void);
  * 1 = human won, 0 = human lost
  */
 extern uint8_t human_won;
+
+/**
+ * Current game mode (single player or link cable)
+ */
+extern GameMode_t game_mode;
 
 #endif // GAME_H

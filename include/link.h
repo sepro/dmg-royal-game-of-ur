@@ -19,6 +19,14 @@
 #define LINK_PROFILE_TAG  0x80   // Profile bytes sent as 0x80|index
 #define LINK_PROFILE_MASK 0x03   // Extract profile index from tagged byte
 
+// Game protocol tags (distinct from all other protocol bytes)
+#define LINK_DICE_TAG    0x10  // 0x10-0x14 = dice roll (value 0-4)
+#define LINK_PIECE_TAG   0x20  // 0x20-0x26 = piece index (0-6)
+#define LINK_NO_MOVES    0xF0  // No valid moves this turn
+#define LINK_IDLE_BYTE   0x00  // Idle/no-data marker
+
+#define LINK_GAME_TIMEOUT  255 // Max frames for game exchange (~4.25s)
+
 // Connection status
 typedef enum {
     LINK_DISCONNECTED = 0,
@@ -101,5 +109,21 @@ uint8_t link_ready_sync(void);
  * Best-effort: if transfer fails (peer disconnected), resets anyway.
  */
 void link_cancel(void);
+
+/**
+ * Send a game data byte over the link cable
+ * Master uses internal clock, slave uses external clock.
+ * @param data Game data byte to send
+ * @return 1 on success, 0 on timeout
+ */
+uint8_t link_game_send(uint8_t data);
+
+/**
+ * Receive a game data byte over the link cable
+ * Blocks until a non-idle byte arrives or timeout.
+ * @param out Pointer to store received byte
+ * @return 1 on success, 0 on timeout
+ */
+uint8_t link_game_recv(uint8_t *out);
 
 #endif // LINK_H

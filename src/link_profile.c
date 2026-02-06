@@ -16,6 +16,8 @@
 #include "transition.h"
 #include "portrait.h"
 #include "screen_utils.h"
+#include "coinflip.h"
+#include "game.h"
 
 // External references to generated profile assets
 extern const uint8_t profile_01_tiles[];
@@ -418,14 +420,18 @@ static void update_syncing(void) {
 }
 
 /**
- * Update VS reveal phase - wait for A press or timeout
+ * Update VS reveal phase - wait for A press or timeout, then start link game
  */
 static void update_vs_reveal(void) {
     phase_timer++;
 
     if (input_pressed(J_A) || phase_timer >= LPROFILE_VS_DURATION) {
-        // Phase 12D not yet implemented; return to title
-        transition_start(STATE_TITLE, TRANSITION_PHASE_COUNT_3);
+        // Set variables that init_game() reads from coinflip screen
+        selected_side = (link_role == LINK_ROLE_MASTER) ? SIDE_LIGHT : SIDE_DARK;
+        starting_player = (link_role == LINK_ROLE_MASTER) ? 0 : 1;
+        selected_opponent = link_remote_profile;
+        game_mode = GAME_MODE_LINK;
+        transition_start(STATE_GAME, TRANSITION_PHASE_COUNT_3);
     }
 }
 

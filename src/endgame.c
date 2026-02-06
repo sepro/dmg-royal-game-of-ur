@@ -8,6 +8,8 @@
 #include "input.h"
 #include "portrait.h"
 #include "screen_utils.h"
+#include "game.h"
+#include "link.h"
 
 // Portrait assets handled by portrait.c
 
@@ -71,6 +73,10 @@ void init_endgame(void) {
         const char *result_text = "YOU LOST !";
         uint8_t x = (20 - strlen(result_text)) / 2 + 1;  // Centered + 1 offset
         draw_text_inverted(x, ENDGAME_RESULT_Y, result_text);
+        if (game_mode == GAME_MODE_LINK) {
+            draw_centered_text(ENDGAME_YOU_BEAT_Y, "DEFEATED BY");
+            draw_centered_text(ENDGAME_NAME_Y, opponent_names[selected_opponent]);
+        }
     }
 
     // Draw instructions
@@ -90,9 +96,16 @@ void init_endgame(void) {
 void update_endgame(void) {
     input_update();
 
-    // A button returns to opponent selection
     if (input_pressed(J_A)) {
-        next_state = STATE_OPPONENT_SELECT;
+        if (game_mode == GAME_MODE_LINK) {
+            // Link mode: reset and return to title
+            game_mode = GAME_MODE_SINGLE;
+            link_reset();
+            next_state = STATE_TITLE;
+        } else {
+            // Single player: return to opponent selection
+            next_state = STATE_OPPONENT_SELECT;
+        }
     }
 }
 

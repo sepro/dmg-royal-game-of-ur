@@ -17,6 +17,8 @@
 #include "random.h"
 #include "portrait.h"
 #include "ai.h"
+#include "link.h"
+#include "link_profile.h"
 
 // External references to generated board asset
 extern const uint8_t board_tiles[];
@@ -54,6 +56,9 @@ extern uint8_t starting_player;
 
 // Win/lose state (exported for endgame screen)
 uint8_t human_won = 0;
+
+// Game mode (single player or link cable)
+GameMode_t game_mode = GAME_MODE_SINGLE;
 
 // Player state (exported for board_state.c)
 uint8_t human_color;      // SIDE_LIGHT or SIDE_DARK
@@ -105,6 +110,33 @@ static void update_piece_counts(void);
 static uint8_t check_win_condition(void);
 static void update_reserve_display(void);
 static void draw_prompt(const char *text);
+static void update_dice_sprites(void);
+
+/**
+ * Handle link cable disconnection during game
+ * Shows message and returns to title screen
+ */
+static void handle_link_disconnect(void) {
+    draw_prompt("LINK LOST");
+    for (uint8_t i = 0; i < 120; i++) {
+        wait_vbl_done();
+    }
+    link_reset();
+    game_mode = GAME_MODE_SINGLE;
+    next_state = STATE_TITLE;
+}
+
+/**
+ * Set dice display from a received total value
+ * Fills dice_values from left (e.g., total=3 -> [1,1,1,0])
+ */
+static void set_dice_from_total(uint8_t total) {
+    for (uint8_t i = 0; i < NUM_DICE; i++) {
+        dice_values[i] = (i < total) ? 1 : 0;
+    }
+    dice_total = total;
+    update_dice_sprites();
+}
 
 // ============================================================================
 // UI Drawing Functions
@@ -146,8 +178,12 @@ static void draw_digit(uint8_t x, uint8_t y, uint8_t digit) {
  * Draw player info row: "CPU" or "YOU" + piece sprite + "R:N F:N"
  */
 static void draw_player_info(void) {
-    // Draw CPU info (row 11)
-    draw_text_inverted(UI_CPU_LABEL_X, UI_CPU_LABEL_Y, "CPU");
+    // Draw CPU/OPP info (row 11)
+    if (game_mode == GAME_MODE_LINK) {
+        draw_text_inverted(UI_CPU_LABEL_X, UI_CPU_LABEL_Y, "OPP");
+    } else {
+        draw_text_inverted(UI_CPU_LABEL_X, UI_CPU_LABEL_Y, "CPU");
+    }
     // Leave space for piece sprite at tile 5
     draw_text_inverted(UI_CPU_RESERVE_X, UI_CPU_RESERVE_Y, "R:");
     draw_digit(UI_CPU_RESERVE_X + 2, UI_CPU_RESERVE_Y, cpu_reserve);
@@ -181,6 +217,8 @@ static void draw_turn_indicator(void) {
 
     if (current_turn == 0) {
         draw_text_inverted(UI_TURN_X, UI_TURN_Y, "YOUR TURN");
+    } else if (game_mode == GAME_MODE_LINK) {
+        draw_text_inverted(UI_TURN_X, UI_TURN_Y, "OTHER TURN");
     } else {
         draw_text_inverted(UI_TURN_X, UI_TURN_Y, "CPU TURN");
     }
@@ -477,6 +515,13 @@ static void start_move_selection(void) {
     num_valid_moves = get_valid_moves(PLAYER_HUMAN, dice_total, valid_moves);
 
     if (num_valid_moves == 0) {
+        // In link mode, send no-moves signal
+        if (game_mode == GAME_MODE_LINK) {
+            if (!link_game_send(LINK_NO_MOVES)) {
+                handle_link_disconnect();
+                return;
+            }
+        }
         // No valid moves - show message and prepare to switch turn
         draw_prompt("NO VALID MOVES");
         result_timer = NO_MOVES_PAUSE;
@@ -549,6 +594,14 @@ static void update_move_selection(void) {
     // Handle A button - confirm selection
     if (input_pressed(J_A)) {
         uint8_t piece_idx = valid_moves[selection_index];
+
+        // In link mode, send the move to remote player
+        if (game_mode == GAME_MODE_LINK) {
+            if (!link_game_send(LINK_PIECE_TAG + piece_idx)) {
+                handle_link_disconnect();
+                return;
+            }
+        }
 
         // Hide selection sprites
         hide_selection_sprites();
@@ -852,6 +905,14 @@ static void update_dice_animation(void) {
         finalize_dice_roll();
         draw_roll_result();
 
+        // In link mode, send dice result to remote player
+        if (game_mode == GAME_MODE_LINK) {
+            if (!link_game_send(LINK_DICE_TAG + dice_total)) {
+                handle_link_disconnect();
+                return;
+            }
+        }
+
         // Transition to result display phase
         game_phase = PHASE_SHOW_RESULT;
         result_timer = RESULT_PAUSE_FRAMES;
@@ -869,7 +930,11 @@ static void switch_turn(void) {
     // Reset to wait for roll
     game_phase = PHASE_WAIT_ROLL;
     hide_dice();
-    draw_prompt("PRESS A TO ROLL");
+    if (game_mode == GAME_MODE_LINK && current_turn == 1) {
+        draw_prompt("WAITING...");
+    } else {
+        draw_prompt("PRESS A TO ROLL");
+    }
 }
 
 /**
@@ -985,7 +1050,11 @@ void init_game(void) {
     // Draw UI elements
     draw_player_info();
     draw_turn_indicator();
-    draw_prompt("PRESS A TO ROLL");
+    if (game_mode == GAME_MODE_LINK && current_turn == 1) {
+        draw_prompt("WAITING...");
+    } else {
+        draw_prompt("PRESS A TO ROLL");
+    }
 
     // Draw initial board state (Phase 8b)
     update_board_display();
@@ -1014,8 +1083,8 @@ void update_game(void) {
     // Update input state
     input_update();
 
-    // Handle pause toggle with START button
-    if (input_pressed(J_START) && !pause_animating) {
+    // Handle pause toggle with START button (disabled in link mode)
+    if (input_pressed(J_START) && !pause_animating && game_mode != GAME_MODE_LINK) {
         if (is_paused) {
             // Unpause
             is_paused = 0;
@@ -1043,16 +1112,31 @@ void update_game(void) {
     // Game phase state machine
     switch (game_phase) {
         case PHASE_WAIT_ROLL:
-            // Human turn: wait for A press
-            // CPU turn: auto-roll after brief delay
             if (current_turn == 0) {
-                // Human player
+                // Local player - wait for A press
                 if (input_pressed(J_A)) {
                     start_dice_roll();
                 }
+            } else if (game_mode == GAME_MODE_LINK) {
+                // Link mode: receive dice from remote player
+                {
+                    uint8_t recv;
+                    if (link_game_recv(&recv)) {
+                        if (recv >= LINK_DICE_TAG && recv <= LINK_DICE_TAG + 4) {
+                            set_dice_from_total(recv - LINK_DICE_TAG);
+                            show_dice();
+                            draw_roll_result();
+                            result_timer = RESULT_PAUSE_FRAMES;
+                            game_phase = PHASE_SHOW_RESULT;
+                        } else {
+                            handle_link_disconnect();
+                        }
+                    } else {
+                        handle_link_disconnect();
+                    }
+                }
             } else {
-                // CPU player - auto-roll
-                // Use frame counter to add slight delay
+                // CPU player - auto-roll after brief delay
                 if ((frame_counter & 0x1F) == 0) {
                     start_dice_roll();
                 }
@@ -1069,12 +1153,52 @@ void update_game(void) {
             } else {
                 // Check for zero roll (no moves possible)
                 if (dice_total == 0) {
+                    // In link mode, local player sends no-moves signal
+                    if (current_turn == 0 && game_mode == GAME_MODE_LINK) {
+                        if (!link_game_send(LINK_NO_MOVES)) {
+                            handle_link_disconnect();
+                            return;
+                        }
+                    }
                     draw_prompt("NO MOVES");
                     result_timer = RESULT_PAUSE_FRAMES;
                     game_phase = PHASE_CPU_THINK;  // Use as wait state before switch
                 } else if (current_turn == 0) {
-                    // Human player - start interactive move selection
+                    // Local player - start interactive move selection
                     start_move_selection();
+                } else if (game_mode == GAME_MODE_LINK) {
+                    // Link mode: receive move from remote player
+                    {
+                        uint8_t recv;
+                        draw_prompt("WAITING...");
+                        if (link_game_recv(&recv)) {
+                            if (recv == LINK_NO_MOVES) {
+                                draw_prompt("NO VALID MOVES");
+                                result_timer = NO_MOVES_PAUSE;
+                                game_phase = PHASE_CPU_THINK;
+                            } else if (recv >= LINK_PIECE_TAG && recv <= LINK_PIECE_TAG + 6) {
+                                uint8_t piece_idx = recv - LINK_PIECE_TAG;
+                                uint8_t extra_turn = execute_move(PLAYER_CPU, piece_idx, dice_total);
+                                update_piece_counts();
+                                update_reserve_display();
+                                update_dirty_squares();
+                                if (check_win_condition()) {
+                                    human_won = 0;
+                                    next_state = STATE_ENDGAME;
+                                } else if (extra_turn) {
+                                    draw_prompt("ROSETTE! GO AGAIN");
+                                    result_timer = RESULT_PAUSE_FRAMES;
+                                    game_phase = PHASE_ROSETTE_BONUS;
+                                } else {
+                                    switch_turn();
+                                }
+                            } else {
+                                handle_link_disconnect();
+                            }
+                        } else {
+                            handle_link_disconnect();
+                        }
+                    }
                 } else {
                     // CPU player - go to CPU move selection
                     game_phase = PHASE_SELECT_MOVE;
@@ -1135,7 +1259,11 @@ void update_game(void) {
             } else {
                 game_phase = PHASE_WAIT_ROLL;
                 hide_dice();
-                draw_prompt("PRESS A TO ROLL");
+                if (game_mode == GAME_MODE_LINK && current_turn == 1) {
+                    draw_prompt("WAITING...");
+                } else {
+                    draw_prompt("PRESS A TO ROLL");
+                }
             }
             break;
 

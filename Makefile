@@ -64,12 +64,12 @@ $(OBJDIR)/font.o: $(INCDIR)/font.h
 $(OBJDIR)/input.o: $(INCDIR)/input.h
 $(OBJDIR)/opponent_data.o: $(INCDIR)/opponent_data.h
 $(OBJDIR)/random.o: $(INCDIR)/random.h
-$(OBJDIR)/game.o: $(INCDIR)/game_types.h $(INCDIR)/game.h $(INCDIR)/coinflip.h $(INCDIR)/difficulty_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/board_state.h $(INCDIR)/vram_layout.h $(INCDIR)/random.h $(INCDIR)/portrait.h $(INCDIR)/ai.h
+$(OBJDIR)/game.o: $(INCDIR)/game_types.h $(INCDIR)/game.h $(INCDIR)/coinflip.h $(INCDIR)/difficulty_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/board_state.h $(INCDIR)/vram_layout.h $(INCDIR)/random.h $(INCDIR)/portrait.h $(INCDIR)/ai.h $(INCDIR)/link.h $(INCDIR)/link_profile.h
 $(OBJDIR)/board_state.o: $(INCDIR)/board_state.h $(INCDIR)/coinflip.h $(INCDIR)/vram_layout.h $(INCDIR)/game.h
 $(OBJDIR)/ai.o: $(INCDIR)/ai.h $(INCDIR)/board_state.h $(INCDIR)/game.h $(INCDIR)/difficulty_select.h $(INCDIR)/opponent_select.h $(INCDIR)/random.h
-$(OBJDIR)/endgame.o: $(INCDIR)/game_types.h $(INCDIR)/endgame.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/vram_layout.h $(INCDIR)/portrait.h $(INCDIR)/screen_utils.h
+$(OBJDIR)/endgame.o: $(INCDIR)/game_types.h $(INCDIR)/endgame.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/vram_layout.h $(INCDIR)/portrait.h $(INCDIR)/screen_utils.h $(INCDIR)/game.h $(INCDIR)/link.h
 $(OBJDIR)/portrait.o: $(INCDIR)/portrait.h $(INCDIR)/opponent_data.h
 $(OBJDIR)/screen_utils.o: $(INCDIR)/screen_utils.h
 $(OBJDIR)/link.o: $(INCDIR)/link.h
 $(OBJDIR)/link_connect.o: $(INCDIR)/link_connect.h $(INCDIR)/link.h $(INCDIR)/game_types.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/coinflip.h $(INCDIR)/screen_utils.h
-$(OBJDIR)/link_profile.o: $(INCDIR)/link_profile.h $(INCDIR)/game_types.h $(INCDIR)/link.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/portrait.h $(INCDIR)/screen_utils.h
+$(OBJDIR)/link_profile.o: $(INCDIR)/link_profile.h $(INCDIR)/game_types.h $(INCDIR)/link.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/portrait.h $(INCDIR)/screen_utils.h $(INCDIR)/coinflip.h $(INCDIR)/game.h

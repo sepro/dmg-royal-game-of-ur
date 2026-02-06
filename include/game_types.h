@@ -29,6 +29,12 @@ typedef enum {
     MENU_OPTION_COUNT = 2
 } MenuOption_t;
 
+// Game mode (single player vs link cable multiplayer)
+typedef enum {
+    GAME_MODE_SINGLE = 0,
+    GAME_MODE_LINK = 1
+} GameMode_t;
+
 // Constants
 #define SCREEN_WIDTH 160
 #define SCREEN_HEIGHT 144

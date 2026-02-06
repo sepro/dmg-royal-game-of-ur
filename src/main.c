@@ -13,6 +13,7 @@
 #include "game.h"
 #include "endgame.h"
 #include "link_connect.h"
+#include "link_profile.h"
 #include "font.h"
 
 // Global game state
@@ -69,6 +70,9 @@ void main(void) {
                 case STATE_LINK_CONNECT:
                     cleanup_link_connect();
                     break;
+                case STATE_LINK_PROFILE_SELECT:
+                    cleanup_link_profile();
+                    break;
                 default:
                     break;
             }
@@ -97,6 +101,9 @@ void main(void) {
                 case STATE_LINK_CONNECT:
                     init_link_connect();
                     break;
+                case STATE_LINK_PROFILE_SELECT:
+                    init_link_profile();
+                    break;
                 default:
                     break;
             }
@@ -124,6 +131,9 @@ void main(void) {
                 break;
             case STATE_LINK_CONNECT:
                 update_link_connect();
+                break;
+            case STATE_LINK_PROFILE_SELECT:
+                update_link_profile();
                 break;
             default:
                 break;

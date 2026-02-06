@@ -21,7 +21,8 @@
       "Bash(tree:*)",
       "Bash(find:*)",
       "Bash(objdump:*)",
-      "Bash(xxd:*)"
+      "Bash(xxd:*)",
+      "WebSearch"
     ]
   }
 }

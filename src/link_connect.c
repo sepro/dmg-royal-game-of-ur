@@ -195,9 +195,7 @@ void update_link_connect(void) {
 
             // Allow early skip with A, or wait for timer
             if (input_pressed(J_A) || phase_timer >= CONNECT_REVEAL_DURATION) {
-                // For now, go back to title
-                // Future: transition to STATE_LINK_PROFILE_SELECT or game
-                transition_start(STATE_TITLE, TRANSITION_PHASE_COUNT_3);
+                transition_start(STATE_LINK_PROFILE_SELECT, TRANSITION_PHASE_COUNT_3);
             }
             break;
 

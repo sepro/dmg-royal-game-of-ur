@@ -71,6 +71,16 @@ uint8_t link_receive(uint8_t* out_data, uint8_t timeout_frames);
 uint8_t link_exchange(uint8_t send_data, uint8_t* recv_data);
 
 /**
+ * Exchange a byte as slave (external clock) with custom send data
+ * Like link_receive() but loads send_data instead of 0xFF
+ * @param send_data Byte to send back to master
+ * @param recv_data Pointer to store received byte
+ * @param timeout_frames Frames to wait before timeout
+ * @return 1 if exchange completed, 0 if timeout
+ */
+uint8_t link_exchange_slave(uint8_t send_data, uint8_t* recv_data, uint8_t timeout_frames);
+
+/**
  * Reset link state to disconnected
  */
 void link_reset(void);

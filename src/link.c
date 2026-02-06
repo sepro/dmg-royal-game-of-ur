@@ -135,6 +135,32 @@ uint8_t link_receive(uint8_t* out_data, uint8_t timeout_frames) {
 }
 
 /**
+ * Exchange a byte as slave (external clock) with custom send data
+ * Identical to link_receive() but loads send_data instead of 0xFF
+ */
+uint8_t link_exchange_slave(uint8_t send_data, uint8_t* recv_data, uint8_t timeout_frames) {
+    SB_REG = send_data;
+    SC_REG = SC_START | SC_CLOCK_EXT;
+
+    {
+        uint8_t f = 0;
+        while (f < timeout_frames) {
+            if (is_transfer_done()) {
+                if (recv_data) {
+                    *recv_data = SB_REG;
+                }
+                return 1;
+            }
+            wait_vbl_done();
+            f++;
+        }
+    }
+
+    SC_REG = 0;
+    return 0;
+}
+
+/**
  * Non-blocking connection step (call once per frame from update loop)
  *
  * Protocol:

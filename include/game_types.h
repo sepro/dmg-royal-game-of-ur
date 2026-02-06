@@ -18,7 +18,8 @@ typedef enum {
     STATE_COINFLIP,
     STATE_GAME,
     STATE_ENDGAME,
-    STATE_LINK_CONNECT
+    STATE_LINK_CONNECT,
+    STATE_LINK_PROFILE_SELECT
 } ScreenState_t;
 
 // Title screen menu options

@@ -1165,14 +1165,9 @@ void update_game(void) {
                 result_timer--;
             } else {
                 // Check for zero roll (no moves possible)
+                // Both sides know dice_total from the dice exchange,
+                // so no LINK_NO_MOVES signal is needed for zero rolls.
                 if (dice_total == 0) {
-                    // In link mode, local player sends no-moves signal
-                    if (current_turn == 0 && game_mode == GAME_MODE_LINK) {
-                        if (!link_game_send(LINK_NO_MOVES)) {
-                            handle_link_disconnect();
-                            return;
-                        }
-                    }
                     draw_prompt("NO MOVES");
                     result_timer = RESULT_PAUSE_FRAMES;
                     game_phase = PHASE_CPU_THINK;  // Use as wait state before switch
@@ -1180,42 +1175,10 @@ void update_game(void) {
                     // Local player - start interactive move selection
                     start_move_selection();
                 } else if (game_mode == GAME_MODE_LINK) {
-                    // Link mode: receive move from remote player (non-blocking)
-                    {
-                        uint8_t recv;
-                        draw_prompt("WAITING...");
-                        if (link_game_recv(&recv)) {
-                            link_recv_frames = 0;
-                            if (recv == LINK_NO_MOVES) {
-                                draw_prompt("NO VALID MOVES");
-                                result_timer = NO_MOVES_PAUSE;
-                                game_phase = PHASE_CPU_THINK;
-                            } else if (recv >= LINK_PIECE_TAG && recv <= LINK_PIECE_TAG + 6) {
-                                uint8_t piece_idx = recv - LINK_PIECE_TAG;
-                                uint8_t extra_turn = execute_move(PLAYER_CPU, piece_idx, dice_total);
-                                update_piece_counts();
-                                update_reserve_display();
-                                update_dirty_squares();
-                                if (check_win_condition()) {
-                                    human_won = 0;
-                                    next_state = STATE_ENDGAME;
-                                } else if (extra_turn) {
-                                    draw_prompt("ROSETTE! GO AGAIN");
-                                    result_timer = RESULT_PAUSE_FRAMES;
-                                    game_phase = PHASE_ROSETTE_BONUS;
-                                } else {
-                                    switch_turn();
-                                }
-                            } else {
-                                handle_link_disconnect();
-                            }
-                        } else {
-                            link_recv_frames++;
-                            if (link_recv_frames >= LINK_RECV_TIMEOUT) {
-                                handle_link_disconnect();
-                            }
-                        }
-                    }
+                    // Link mode: transition to dedicated recv phase
+                    draw_prompt("WAITING...");
+                    link_recv_frames = 0;
+                    game_phase = PHASE_LINK_RECV_MOVE;
                 } else {
                     // CPU player - go to CPU move selection
                     game_phase = PHASE_SELECT_MOVE;
@@ -1255,6 +1218,45 @@ void update_game(void) {
                         draw_prompt("NO VALID MOVES");
                         result_timer = NO_MOVES_PAUSE;
                         game_phase = PHASE_CPU_THINK;  // Use as wait state
+                    }
+                }
+            }
+            break;
+
+        case PHASE_LINK_RECV_MOVE:
+            // Dedicated phase for receiving remote player's move via link
+            // "WAITING..." was drawn once on entry (in PHASE_SHOW_RESULT transition)
+            {
+                uint8_t recv;
+                if (link_game_recv(&recv)) {
+                    link_recv_frames = 0;
+                    if (recv == LINK_NO_MOVES) {
+                        draw_prompt("NO VALID MOVES");
+                        result_timer = NO_MOVES_PAUSE;
+                        game_phase = PHASE_CPU_THINK;
+                    } else if (recv >= LINK_PIECE_TAG && recv <= LINK_PIECE_TAG + 6) {
+                        uint8_t piece_idx = recv - LINK_PIECE_TAG;
+                        uint8_t extra_turn = execute_move(PLAYER_CPU, piece_idx, dice_total);
+                        update_piece_counts();
+                        update_reserve_display();
+                        update_dirty_squares();
+                        if (check_win_condition()) {
+                            human_won = 0;
+                            next_state = STATE_ENDGAME;
+                        } else if (extra_turn) {
+                            draw_prompt("ROSETTE! GO AGAIN");
+                            result_timer = RESULT_PAUSE_FRAMES;
+                            game_phase = PHASE_ROSETTE_BONUS;
+                        } else {
+                            switch_turn();
+                        }
+                    } else {
+                        handle_link_disconnect();
+                    }
+                } else {
+                    link_recv_frames++;
+                    if (link_recv_frames >= LINK_RECV_TIMEOUT) {
+                        handle_link_disconnect();
                     }
                 }
             }

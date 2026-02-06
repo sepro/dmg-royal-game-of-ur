@@ -39,6 +39,7 @@
 #define PHASE_CPU_THINK     4   // CPU calculating move
 #define PHASE_ANIMATE_MOVE  5   // Piece movement animation (Phase 8)
 #define PHASE_ROSETTE_BONUS 6   // Extra roll after landing on rosette
+#define PHASE_LINK_RECV_MOVE 7  // Waiting for remote player's move via link
 
 // ============================================================================
 // Sprite Tile Allocation (0-255 in sprite VRAM)

@@ -27,11 +27,9 @@
 
 #define LINK_GAME_TIMEOUT  255 // Max frames for game exchange (~4.25s)
 
-// ACK-based reliable transfer protocol
+// Reliable transfer protocol
 #define LINK_READY_RECV   0xDD  // Receiver loads this to signal readiness
-#define LINK_ACK_GAME     0xEE  // Post-data acknowledgment byte
 #define LINK_SEND_RETRIES 60    // Max retry frames for master send (~1s)
-#define LINK_ACK_TIMEOUT  4     // Frames to wait for ACK exchange
 
 // Connection status
 typedef enum {

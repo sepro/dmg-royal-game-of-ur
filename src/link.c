@@ -43,6 +43,9 @@
 LinkStatus_t link_status = LINK_DISCONNECTED;
 LinkRole_t link_role = LINK_ROLE_UNDETERMINED;
 
+// Persistent armed state for non-blocking slave recv
+static uint8_t slave_recv_armed = 0;
+
 // Internal state
 static uint8_t hs_state = HS_IDLE;
 static uint8_t hs_timer = 0;
@@ -65,6 +68,7 @@ void link_init(void) {
     link_role = LINK_ROLE_UNDETERMINED;
     hs_state = HS_IDLE;
     hs_timer = 0;
+    slave_recv_armed = 0;
 }
 
 /**
@@ -205,10 +209,12 @@ void link_cancel(void) {
  * Send a game data byte over the link cable
  * Master: retry loop until slave signals readiness (LINK_READY_RECV).
  * Slave: single exchange with long timeout (master controls clock).
- * Both sides do best-effort ACK after successful data delivery.
  */
 uint8_t link_game_send(uint8_t data) {
     uint8_t recv;
+
+    // Cancel any pending slave recv (we're switching to send mode)
+    slave_recv_armed = 0;
 
     if (link_role == LINK_ROLE_MASTER) {
         // Master retry loop: slave may not be listening yet
@@ -217,8 +223,6 @@ uint8_t link_game_send(uint8_t data) {
             if (link_exchange(data, &recv)) {
                 if (recv == LINK_READY_RECV) {
                     // Slave was listening, data delivered
-                    // Best-effort ACK exchange
-                    link_exchange(LINK_ACK_GAME, (void *)0);
                     return 1;
                 }
             }
@@ -230,45 +234,54 @@ uint8_t link_game_send(uint8_t data) {
     }
 
     // Slave: single exchange, master controls clock timing
-    if (link_exchange_slave(data, &recv, LINK_GAME_TIMEOUT)) {
-        // Best-effort ACK exchange
-        link_exchange_slave(LINK_ACK_GAME, (void *)0, LINK_ACK_TIMEOUT);
-        return 1;
-    }
-    return 0;
+    return link_exchange_slave(data, (void *)0, LINK_GAME_TIMEOUT);
 }
 
 /**
  * Receive a game data byte over the link cable (non-blocking).
- * Attempts one exchange per call. Returns 1 if valid game data received,
- * 0 if nothing yet (caller should retry next frame).
- * Loads LINK_READY_RECV to signal readiness to the sender.
- * Filters out idle, hardware, and protocol bytes.
+ * Returns 1 if valid game data received, 0 if nothing yet.
+ *
+ * Slave: uses persistent armed state — arms SC once and checks each
+ * frame without blocking. Eliminates deaf windows between calls.
+ * Master: single exchange per call (internal clock, instant).
+ *
+ * Both sides load LINK_READY_RECV so the sender's retry can confirm delivery.
+ * Filters out idle (0x00), hardware (0xFF), and protocol (READY_RECV) bytes.
  */
 uint8_t link_game_recv(uint8_t *out) {
     uint8_t recv;
 
     if (link_role == LINK_ROLE_SLAVE) {
-        // Slave: load READY_RECV so master's retry sees it
-        if (link_exchange_slave(LINK_READY_RECV, &recv, LINK_TRANSFER_WAIT)) {
-            if (recv != LINK_IDLE_BYTE && recv != 0xFF &&
-                recv != LINK_READY_RECV && recv != LINK_ACK_GAME) {
-                *out = recv;
-                // Best-effort ACK
-                link_exchange_slave(LINK_ACK_GAME, (void *)0, LINK_ACK_TIMEOUT);
-                return 1;
+        if (slave_recv_armed) {
+            // Already armed — check if transfer completed (non-blocking)
+            if (is_transfer_done()) {
+                recv = SB_REG;
+                slave_recv_armed = 0;
+                if (recv != LINK_IDLE_BYTE && recv != 0xFF &&
+                    recv != LINK_READY_RECV) {
+                    *out = recv;
+                    return 1;
+                }
+                // Got a protocol/idle byte — re-arm immediately
+                SB_REG = LINK_READY_RECV;
+                SC_REG = SC_START | SC_CLOCK_EXT;
+                slave_recv_armed = 1;
             }
+            // Transfer still pending — return immediately, no blocking
+        } else {
+            // Not armed — arm now for external clock
+            SB_REG = LINK_READY_RECV;
+            SC_REG = SC_START | SC_CLOCK_EXT;
+            slave_recv_armed = 1;
         }
         return 0;
     }
 
-    // Master: load READY_RECV to signal readiness to slave sender
+    // Master: instant exchange (internal clock, completes in <1ms)
     if (link_exchange(LINK_READY_RECV, &recv)) {
         if (recv != LINK_IDLE_BYTE && recv != 0xFF &&
-            recv != LINK_READY_RECV && recv != LINK_ACK_GAME) {
+            recv != LINK_READY_RECV) {
             *out = recv;
-            // Best-effort ACK
-            link_exchange(LINK_ACK_GAME, (void *)0);
             return 1;
         }
     }

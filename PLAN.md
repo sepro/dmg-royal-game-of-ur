@@ -8,7 +8,7 @@ This plan breaks down the development into manageable phases, each building on t
 
 Add two-player link cable support. Players connect via Game Boy link cable, get assigned colors (light/dark), select profile pictures visible to the opponent, then play against each other.
 
-### Phase 12A: Serial Communication Foundation
+### Phase 12A: Serial Communication Foundation - COMPLETED
 
 **New files:** `src/link.c`, `include/link.h`
 
@@ -26,7 +26,7 @@ Add two-player link cable support. Players connect via Game Boy link cable, get 
 #define LINK_TIMEOUT      60    // Frames (~1 second)
 ```
 
-### Phase 12B: Connection Screen
+### Phase 12B: Connection Screen - COMPLETED
 
 **New files:** `src/link_connect.c`, `include/link_connect.h`
 
@@ -78,7 +78,7 @@ Add two-player link cable support. Players connect via Game Boy link cable, get 
 - Master acknowledged by receiving ACK before sending own ACK
 - Deterministic: guaranteed one master, one slave
 
-### Phase 12C: Link Profile Selection
+### Phase 12C: Link Profile Selection - COMPLETED
 
 **New files:** `src/link_profile.c`, `include/link_profile.h`
 

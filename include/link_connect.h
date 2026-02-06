@@ -12,10 +12,12 @@
 // Connection phases
 #define CONNECT_PHASE_WAITING     0
 #define CONNECT_PHASE_SIDE_REVEAL 1
+#define CONNECT_PHASE_SYNCING     2
 
 // Timing (frames)
 #define CONNECT_DOT_CYCLE       20    // Frames per dot animation step
 #define CONNECT_REVEAL_DURATION 120   // Frames to show side before transition
+#define CONNECT_SYNC_TIMEOUT   180   // Max frames to wait for peer sync (~3s)
 
 // Screen layout (tile coordinates)
 #define CONNECT_TITLE_X    2

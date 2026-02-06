@@ -161,6 +161,47 @@ uint8_t link_exchange_slave(uint8_t send_data, uint8_t* recv_data, uint8_t timeo
 }
 
 /**
+ * Non-blocking ready sync for screen transitions
+ * Master sends LINK_READY_BYTE with internal clock,
+ * slave sends with external clock (4-frame timeout).
+ * @return 0=still waiting, 1=both sides ready, 2=peer cancelled
+ */
+uint8_t link_ready_sync(void) {
+    uint8_t recv = 0;
+    uint8_t ok;
+
+    if (link_role == LINK_ROLE_MASTER) {
+        ok = link_exchange(LINK_READY_BYTE, &recv);
+    } else {
+        ok = link_exchange_slave(LINK_READY_BYTE, &recv, LINK_TRANSFER_WAIT);
+    }
+
+    if (ok) {
+        if (recv == LINK_CANCEL_BYTE) {
+            return 2;
+        }
+        if (recv == LINK_READY_BYTE) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * Send cancel notification to peer, then reset link
+ */
+void link_cancel(void) {
+    uint8_t dummy;
+    if (link_role == LINK_ROLE_MASTER) {
+        link_exchange(LINK_CANCEL_BYTE, &dummy);
+    } else {
+        link_exchange_slave(LINK_CANCEL_BYTE, &dummy, LINK_TRANSFER_WAIT);
+    }
+    link_reset();
+}
+
+/**
  * Non-blocking connection step (call once per frame from update loop)
  *
  * Protocol:

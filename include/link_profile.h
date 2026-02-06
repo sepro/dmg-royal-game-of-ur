@@ -13,7 +13,8 @@
 // Internal phases
 #define LPROFILE_PHASE_SELECTING  0
 #define LPROFILE_PHASE_WAITING    1
-#define LPROFILE_PHASE_VS_REVEAL  2
+#define LPROFILE_PHASE_SYNCING    2
+#define LPROFILE_PHASE_VS_REVEAL  3
 
 // Number of profile choices
 #define LPROFILE_COUNT 4
@@ -68,6 +69,7 @@
 // Timing
 #define LPROFILE_DOT_CYCLE       20   // Frames per dot animation step
 #define LPROFILE_VS_DURATION     180  // ~3 seconds at 60fps
+#define LPROFILE_SYNC_TIMEOUT    180  // Max frames to wait for peer sync (~3s)
 
 // Exported globals for Phase 12D
 extern uint8_t link_local_profile;

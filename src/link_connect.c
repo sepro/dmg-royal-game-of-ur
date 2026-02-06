@@ -185,7 +185,7 @@ void update_link_connect(void) {
 
             // Cancel with B
             if (input_pressed(J_B)) {
-                link_reset();
+                link_cancel();
                 transition_start(STATE_TITLE, TRANSITION_PHASE_COUNT_3);
             }
             break;
@@ -195,9 +195,44 @@ void update_link_connect(void) {
 
             // Allow early skip with A, or wait for timer
             if (input_pressed(J_A) || phase_timer >= CONNECT_REVEAL_DURATION) {
-                transition_start(STATE_LINK_PROFILE_SELECT, TRANSITION_PHASE_COUNT_3);
+                // Enter syncing phase instead of transitioning directly
+                connect_phase = CONNECT_PHASE_SYNCING;
+                phase_timer = 0;
+
+                // Show syncing status
+                clear_text_row_inverted(CONNECT_STATUS_X, CONNECT_STATUS_Y, 16);
+                draw_text_inverted(CONNECT_STATUS_X, CONNECT_STATUS_Y, "SYNCING...");
+            }
+
+            // Cancel with B during side reveal
+            if (input_pressed(J_B)) {
+                link_cancel();
+                transition_start(STATE_TITLE, TRANSITION_PHASE_COUNT_3);
             }
             break;
+
+        case CONNECT_PHASE_SYNCING: {
+            uint8_t sync_result;
+            phase_timer++;
+
+            sync_result = link_ready_sync();
+
+            if (sync_result == 1) {
+                // Both sides ready, transition to profile select
+                transition_start(STATE_LINK_PROFILE_SELECT, TRANSITION_PHASE_COUNT_3);
+            } else if (sync_result == 2 || phase_timer >= CONNECT_SYNC_TIMEOUT) {
+                // Peer cancelled or timeout — go back to title
+                link_cancel();
+                transition_start(STATE_TITLE, TRANSITION_PHASE_COUNT_3);
+            }
+
+            // Cancel with B during sync
+            if (input_pressed(J_B)) {
+                link_cancel();
+                transition_start(STATE_TITLE, TRANSITION_PHASE_COUNT_3);
+            }
+            break;
+        }
 
         default:
             connect_phase = CONNECT_PHASE_WAITING;

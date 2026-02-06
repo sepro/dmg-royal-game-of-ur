@@ -14,6 +14,10 @@
 #define LINK_ACK_BYTE     0x55   // Handshake acknowledgment
 #define LINK_TIMEOUT      60     // Frames (~1 second)
 #define LINK_TRANSFER_WAIT 4     // Frames per byte transfer
+#define LINK_READY_BYTE   0xBB   // Screen-transition ready sync
+#define LINK_CANCEL_BYTE  0xCC   // Peer cancellation notification
+#define LINK_PROFILE_TAG  0x80   // Profile bytes sent as 0x80|index
+#define LINK_PROFILE_MASK 0x03   // Extract profile index from tagged byte
 
 // Connection status
 typedef enum {
@@ -84,5 +88,18 @@ uint8_t link_exchange_slave(uint8_t send_data, uint8_t* recv_data, uint8_t timeo
  * Reset link state to disconnected
  */
 void link_reset(void);
+
+/**
+ * Non-blocking ready sync for screen transitions
+ * Both devices call this each frame when ready to advance.
+ * @return 0=still waiting, 1=both sides ready, 2=peer cancelled
+ */
+uint8_t link_ready_sync(void);
+
+/**
+ * Send cancel notification to peer, then reset link
+ * Best-effort: if transfer fails (peer disconnected), resets anyway.
+ */
+void link_cancel(void);
 
 #endif // LINK_H

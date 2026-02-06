@@ -44,6 +44,7 @@ static uint8_t phase = LPROFILE_PHASE_SELECTING;
 static uint8_t phase_timer = 0;
 static uint8_t dot_count = 0;
 static uint8_t remote_confirmed = 0;
+static uint8_t peer_cancelled = 0;
 
 // Portrait tile offsets (calculated during init)
 static uint8_t profile_offsets[LPROFILE_COUNT];
@@ -146,21 +147,35 @@ static inline uint8_t grid_row(uint8_t idx) {
 
 /**
  * Try to exchange profiles over link cable
+ * Sends tagged profile byte (0x80|index) so stale values can't pass validation.
  * @return 1 if exchange complete (both sides confirmed), 0 if still waiting
  */
 static uint8_t try_exchange_profiles(void) {
     uint8_t recv;
     uint8_t ok;
+    uint8_t tagged_profile;
 
-    if (link_role == LINK_ROLE_MASTER) {
-        ok = link_exchange(link_local_profile, &recv);
-    } else {
-        ok = link_exchange_slave(link_local_profile, &recv, 4);
+    if (remote_confirmed) {
+        return 1;
     }
 
-    if (ok && recv <= 0x03) {
-        link_remote_profile = recv;
-        remote_confirmed = 1;
+    tagged_profile = LINK_PROFILE_TAG | link_local_profile;
+
+    if (link_role == LINK_ROLE_MASTER) {
+        ok = link_exchange(tagged_profile, &recv);
+    } else {
+        ok = link_exchange_slave(tagged_profile, &recv, LINK_TRANSFER_WAIT);
+    }
+
+    if (ok) {
+        if (recv == LINK_CANCEL_BYTE) {
+            peer_cancelled = 1;
+            return 0;
+        }
+        if (recv >= LINK_PROFILE_TAG && recv <= (LINK_PROFILE_TAG | LINK_PROFILE_MASK)) {
+            link_remote_profile = recv & LINK_PROFILE_MASK;
+            remote_confirmed = 1;
+        }
     }
 
     return remote_confirmed;
@@ -256,6 +271,7 @@ void init_link_profile(void) {
     phase_timer = 0;
     dot_count = 0;
     remote_confirmed = 0;
+    peer_cancelled = 0;
 
     // Draw initial border and description
     draw_border(current_selection);
@@ -318,7 +334,7 @@ static void update_selecting(void) {
 
     // B: cancel back to title
     if (input_pressed(J_B)) {
-        link_reset();
+        link_cancel();
         transition_start(STATE_TITLE, TRANSITION_PHASE_COUNT_3);
     }
 }
@@ -349,16 +365,54 @@ static void update_waiting(void) {
         draw_waiting_dots();
     }
 
+    // Check if peer cancelled
+    if (peer_cancelled) {
+        link_cancel();
+        transition_start(STATE_TITLE, TRANSITION_PHASE_COUNT_3);
+        return;
+    }
+
     // Try to exchange profiles
     if (try_exchange_profiles()) {
-        phase = LPROFILE_PHASE_VS_REVEAL;
+        // Enter syncing phase before VS reveal
+        phase = LPROFILE_PHASE_SYNCING;
         phase_timer = 0;
-        show_vs_reveal();
+
+        // Show syncing status
+        clear_text_row_inverted(LPROFILE_DESC_X, LPROFILE_DESC_Y + 1, LPROFILE_DESC_WIDTH);
+        draw_text_inverted(LPROFILE_DESC_X, LPROFILE_DESC_Y + 1, "SYNCING...");
     }
 
     // B: cancel back to title
     if (input_pressed(J_B)) {
-        link_reset();
+        link_cancel();
+        transition_start(STATE_TITLE, TRANSITION_PHASE_COUNT_3);
+    }
+}
+
+/**
+ * Update syncing phase - wait for both sides to be ready before VS reveal
+ */
+static void update_syncing(void) {
+    uint8_t sync_result;
+    phase_timer++;
+
+    sync_result = link_ready_sync();
+
+    if (sync_result == 1) {
+        // Both sides ready, show VS reveal
+        phase = LPROFILE_PHASE_VS_REVEAL;
+        phase_timer = 0;
+        show_vs_reveal();
+    } else if (sync_result == 2 || phase_timer >= LPROFILE_SYNC_TIMEOUT) {
+        // Peer cancelled or timeout
+        link_cancel();
+        transition_start(STATE_TITLE, TRANSITION_PHASE_COUNT_3);
+    }
+
+    // Cancel with B during sync
+    if (input_pressed(J_B)) {
+        link_cancel();
         transition_start(STATE_TITLE, TRANSITION_PHASE_COUNT_3);
     }
 }
@@ -392,6 +446,9 @@ void update_link_profile(void) {
             break;
         case LPROFILE_PHASE_WAITING:
             update_waiting();
+            break;
+        case LPROFILE_PHASE_SYNCING:
+            update_syncing();
             break;
         case LPROFILE_PHASE_VS_REVEAL:
             update_vs_reveal();

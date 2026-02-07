@@ -71,8 +71,8 @@ static void show_side_reveal(void) {
     // Clear screen
     fill_screen_with_tile(CONNECT_WHITE_TILE);
 
-    // Draw "CONNECTED!" title
-    draw_text_inverted(CONNECT_TITLE_X, CONNECT_TITLE_Y, "CONNECTED!");
+    // Draw "CONNECTED!" title (one line higher than default)
+    draw_text_inverted(CONNECT_TITLE_X, CONNECT_REVEAL_Y, "CONNECTED!");
 
     // Draw coin based on role (master=light, slave=dark)
     if (link_role == LINK_ROLE_MASTER) {
@@ -199,9 +199,8 @@ void update_link_connect(void) {
                 connect_phase = CONNECT_PHASE_SYNCING;
                 phase_timer = 0;
 
-                // Show syncing status
-                clear_text_row_inverted(CONNECT_STATUS_X, CONNECT_STATUS_Y, 16);
-                draw_text_inverted(CONNECT_STATUS_X, CONNECT_STATUS_Y, "SYNCING...");
+                // Show syncing status (bottom-right corner)
+                draw_text_inverted(CONNECT_SYNC_X, CONNECT_SYNC_Y, "SYNCING...");
             }
 
             // Cancel with B during side reveal

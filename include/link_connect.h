@@ -29,6 +29,13 @@
 #define CONNECT_SIDE_X     3
 #define CONNECT_SIDE_Y     12
 
+// "CONNECTED!" title position (one line above default title)
+#define CONNECT_REVEAL_Y   3
+
+// "SYNCING..." position (bottom-right corner)
+#define CONNECT_SYNC_X     10
+#define CONNECT_SYNC_Y     16
+
 // VRAM tile allocation (screen-isolated, same as coinflip)
 #define CONNECT_WHITE_TILE        0
 #define CONNECT_LIGHT_TILE_START  1

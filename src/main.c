@@ -6,15 +6,15 @@
 #include <gb/gb.h>
 #include <stdint.h>
 #include "game_types.h"
-#include "title.h"
-#include "opponent_select.h"
-#include "difficulty_select.h"
-#include "coinflip.h"
-#include "game.h"
-#include "endgame.h"
-#include "link_connect.h"
-#include "link_profile.h"
-#include "font.h"
+#include "screens/title.h"
+#include "screens/opponent_select.h"
+#include "screens/difficulty_select.h"
+#include "screens/coinflip.h"
+#include "screens/game.h"
+#include "screens/endgame.h"
+#include "link/link_connect.h"
+#include "link/link_profile.h"
+#include "util/font.h"
 
 // Global game state
 ScreenState_t current_state = STATE_TITLE;

@@ -6,10 +6,8 @@ GBDK_HOME = /home/gbdev/gbdk
 LCC = $(GBDK_HOME)/bin/lcc
 
 # Project paths
-SRCDIR = src
 OBJDIR = build
 INCDIR = include
-ASSETDIR = assets/generated
 
 # Compiler flags
 CFLAGS = -Wa-l -Wl-m -Wl-j -I$(INCDIR)
@@ -17,10 +15,24 @@ CFLAGS = -Wa-l -Wl-m -Wl-j -I$(INCDIR)
 # ROM name
 TARGET = royal-ur.gb
 
-# Source files
-SOURCES = $(wildcard $(SRCDIR)/*.c)
-ASSETS = $(wildcard $(ASSETDIR)/*.c)
-OBJECTS = $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o) $(ASSETS:$(ASSETDIR)/%.c=$(OBJDIR)/%.o)
+# Source files (organized by subfolder)
+SOURCES = src/main.c \
+          $(wildcard src/screens/*.c) \
+          $(wildcard src/link/*.c) \
+          $(wildcard src/logic/*.c) \
+          $(wildcard src/util/*.c)
+
+# Asset files (organized by subfolder)
+ASSETS = $(wildcard assets/generated/title/*.c) \
+         $(wildcard assets/generated/ui/*.c) \
+         $(wildcard assets/generated/portraits/*.c) \
+         $(wildcard assets/generated/coins/*.c) \
+         $(wildcard assets/generated/board/*.c) \
+         $(wildcard assets/generated/pieces/*.c) \
+         $(wildcard assets/generated/dice/*.c)
+
+# All .o files go flat into build/ using notdir
+OBJECTS = $(patsubst %.c,$(OBJDIR)/%.o,$(notdir $(SOURCES) $(ASSETS)))
 
 # Default target
 all: $(TARGET)
@@ -29,13 +41,52 @@ all: $(TARGET)
 $(TARGET): $(OBJECTS)
 	$(LCC) $(CFLAGS) -o $@ $^
 
-# Compile source files
-$(OBJDIR)/%.o: $(SRCDIR)/%.c
+# Pattern rules - one per source subdirectory
+$(OBJDIR)/%.o: src/%.c
 	@mkdir -p $(OBJDIR)
 	$(LCC) $(CFLAGS) -c -o $@ $<
 
-# Compile asset files
-$(OBJDIR)/%.o: $(ASSETDIR)/%.c
+$(OBJDIR)/%.o: src/screens/%.c
+	@mkdir -p $(OBJDIR)
+	$(LCC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: src/link/%.c
+	@mkdir -p $(OBJDIR)
+	$(LCC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: src/logic/%.c
+	@mkdir -p $(OBJDIR)
+	$(LCC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: src/util/%.c
+	@mkdir -p $(OBJDIR)
+	$(LCC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: assets/generated/title/%.c
+	@mkdir -p $(OBJDIR)
+	$(LCC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: assets/generated/ui/%.c
+	@mkdir -p $(OBJDIR)
+	$(LCC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: assets/generated/portraits/%.c
+	@mkdir -p $(OBJDIR)
+	$(LCC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: assets/generated/coins/%.c
+	@mkdir -p $(OBJDIR)
+	$(LCC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: assets/generated/board/%.c
+	@mkdir -p $(OBJDIR)
+	$(LCC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: assets/generated/pieces/%.c
+	@mkdir -p $(OBJDIR)
+	$(LCC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: assets/generated/dice/%.c
 	@mkdir -p $(OBJDIR)
 	$(LCC) $(CFLAGS) -c -o $@ $<
 
@@ -54,22 +105,22 @@ run: $(TARGET)
 # Header Dependencies
 # GBDK's lcc doesn't support automatic dependency generation (-MD -MP)
 # Manual dependencies ensure header changes trigger recompilation
-$(OBJDIR)/main.o: $(INCDIR)/game_types.h $(INCDIR)/title.h $(INCDIR)/opponent_select.h $(INCDIR)/difficulty_select.h $(INCDIR)/coinflip.h $(INCDIR)/game.h $(INCDIR)/endgame.h $(INCDIR)/link_connect.h $(INCDIR)/link_profile.h $(INCDIR)/font.h
-$(OBJDIR)/title.o: $(INCDIR)/game_types.h $(INCDIR)/title.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/random.h
-$(OBJDIR)/opponent_select.o: $(INCDIR)/game_types.h $(INCDIR)/opponent_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h
-$(OBJDIR)/difficulty_select.o: $(INCDIR)/game_types.h $(INCDIR)/difficulty_select.h $(INCDIR)/opponent_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/portrait.h $(INCDIR)/screen_utils.h
-$(OBJDIR)/coinflip.o: $(INCDIR)/game_types.h $(INCDIR)/coinflip.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/random.h $(INCDIR)/screen_utils.h
-$(OBJDIR)/transition.o: $(INCDIR)/game_types.h $(INCDIR)/transition.h
-$(OBJDIR)/font.o: $(INCDIR)/font.h
-$(OBJDIR)/input.o: $(INCDIR)/input.h
-$(OBJDIR)/opponent_data.o: $(INCDIR)/opponent_data.h
-$(OBJDIR)/random.o: $(INCDIR)/random.h
-$(OBJDIR)/game.o: $(INCDIR)/game_types.h $(INCDIR)/game.h $(INCDIR)/coinflip.h $(INCDIR)/difficulty_select.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/board_state.h $(INCDIR)/vram_layout.h $(INCDIR)/random.h $(INCDIR)/portrait.h $(INCDIR)/ai.h $(INCDIR)/link.h $(INCDIR)/link_profile.h
-$(OBJDIR)/board_state.o: $(INCDIR)/board_state.h $(INCDIR)/coinflip.h $(INCDIR)/vram_layout.h $(INCDIR)/game.h
-$(OBJDIR)/ai.o: $(INCDIR)/ai.h $(INCDIR)/board_state.h $(INCDIR)/game.h $(INCDIR)/difficulty_select.h $(INCDIR)/opponent_select.h $(INCDIR)/random.h
-$(OBJDIR)/endgame.o: $(INCDIR)/game_types.h $(INCDIR)/endgame.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/vram_layout.h $(INCDIR)/portrait.h $(INCDIR)/screen_utils.h $(INCDIR)/game.h $(INCDIR)/link.h
-$(OBJDIR)/portrait.o: $(INCDIR)/portrait.h $(INCDIR)/opponent_data.h
-$(OBJDIR)/screen_utils.o: $(INCDIR)/screen_utils.h
-$(OBJDIR)/link.o: $(INCDIR)/link.h
-$(OBJDIR)/link_connect.o: $(INCDIR)/link_connect.h $(INCDIR)/link.h $(INCDIR)/game_types.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/coinflip.h $(INCDIR)/screen_utils.h
-$(OBJDIR)/link_profile.o: $(INCDIR)/link_profile.h $(INCDIR)/game_types.h $(INCDIR)/link.h $(INCDIR)/opponent_data.h $(INCDIR)/font.h $(INCDIR)/input.h $(INCDIR)/transition.h $(INCDIR)/portrait.h $(INCDIR)/screen_utils.h $(INCDIR)/coinflip.h $(INCDIR)/game.h
+$(OBJDIR)/main.o: $(INCDIR)/game_types.h $(INCDIR)/screens/title.h $(INCDIR)/screens/opponent_select.h $(INCDIR)/screens/difficulty_select.h $(INCDIR)/screens/coinflip.h $(INCDIR)/screens/game.h $(INCDIR)/screens/endgame.h $(INCDIR)/link/link_connect.h $(INCDIR)/link/link_profile.h $(INCDIR)/util/font.h
+$(OBJDIR)/title.o: $(INCDIR)/game_types.h $(INCDIR)/screens/title.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/random.h
+$(OBJDIR)/opponent_select.o: $(INCDIR)/game_types.h $(INCDIR)/screens/opponent_select.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h
+$(OBJDIR)/difficulty_select.o: $(INCDIR)/game_types.h $(INCDIR)/screens/difficulty_select.h $(INCDIR)/screens/opponent_select.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/portrait.h $(INCDIR)/util/screen_utils.h
+$(OBJDIR)/coinflip.o: $(INCDIR)/game_types.h $(INCDIR)/screens/coinflip.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/random.h $(INCDIR)/util/screen_utils.h
+$(OBJDIR)/transition.o: $(INCDIR)/game_types.h $(INCDIR)/util/transition.h
+$(OBJDIR)/font.o: $(INCDIR)/util/font.h
+$(OBJDIR)/input.o: $(INCDIR)/util/input.h
+$(OBJDIR)/opponent_data.o: $(INCDIR)/util/opponent_data.h
+$(OBJDIR)/random.o: $(INCDIR)/util/random.h
+$(OBJDIR)/game.o: $(INCDIR)/game_types.h $(INCDIR)/screens/game.h $(INCDIR)/screens/coinflip.h $(INCDIR)/screens/difficulty_select.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/logic/board_state.h $(INCDIR)/vram_layout.h $(INCDIR)/util/random.h $(INCDIR)/util/portrait.h $(INCDIR)/logic/ai.h $(INCDIR)/link/link.h $(INCDIR)/link/link_profile.h
+$(OBJDIR)/board_state.o: $(INCDIR)/logic/board_state.h $(INCDIR)/screens/coinflip.h $(INCDIR)/vram_layout.h $(INCDIR)/screens/game.h
+$(OBJDIR)/ai.o: $(INCDIR)/logic/ai.h $(INCDIR)/logic/board_state.h $(INCDIR)/screens/game.h $(INCDIR)/screens/difficulty_select.h $(INCDIR)/screens/opponent_select.h $(INCDIR)/util/random.h
+$(OBJDIR)/endgame.o: $(INCDIR)/game_types.h $(INCDIR)/screens/endgame.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/vram_layout.h $(INCDIR)/util/portrait.h $(INCDIR)/util/screen_utils.h $(INCDIR)/screens/game.h $(INCDIR)/link/link.h
+$(OBJDIR)/portrait.o: $(INCDIR)/util/portrait.h $(INCDIR)/util/opponent_data.h
+$(OBJDIR)/screen_utils.o: $(INCDIR)/util/screen_utils.h
+$(OBJDIR)/link.o: $(INCDIR)/link/link.h
+$(OBJDIR)/link_connect.o: $(INCDIR)/link/link_connect.h $(INCDIR)/link/link.h $(INCDIR)/game_types.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/screens/coinflip.h $(INCDIR)/util/screen_utils.h
+$(OBJDIR)/link_profile.o: $(INCDIR)/link/link_profile.h $(INCDIR)/game_types.h $(INCDIR)/link/link.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/portrait.h $(INCDIR)/util/screen_utils.h $(INCDIR)/screens/coinflip.h $(INCDIR)/screens/game.h

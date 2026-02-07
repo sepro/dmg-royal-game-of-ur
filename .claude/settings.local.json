@@ -22,7 +22,9 @@
       "Bash(find:*)",
       "Bash(objdump:*)",
       "Bash(xxd:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git mv:*)",
+      "Bash(git stash:*)"
     ]
   }
 }

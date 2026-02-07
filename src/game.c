@@ -1095,6 +1095,15 @@ void update_game(void) {
     // Pump slave serial receive every frame to eliminate deaf windows
     if (game_mode == GAME_MODE_LINK) {
         link_pump_recv();
+
+        // Master keepalive: when it's our turn the remote is idle-waiting
+        // for our data.  Clock periodic idle exchanges so they know we're
+        // still connected and don't time out.
+        if (current_turn == 0 && link_role == LINK_ROLE_MASTER) {
+            if ((frame_counter & 0x0F) == 0) {
+                link_keepalive();
+            }
+        }
     }
 
     // Handle pause toggle with START button (disabled in link mode)
@@ -1147,9 +1156,16 @@ void update_game(void) {
                             handle_link_disconnect();
                         }
                     } else {
-                        link_recv_frames++;
-                        if (link_recv_frames >= LINK_RECV_TIMEOUT) {
-                            handle_link_disconnect();
+                        // Link exchange returned no game data — check if
+                        // the link is still alive (got a protocol response)
+                        if (link_alive_flag) {
+                            link_alive_flag = 0;
+                            link_recv_frames = 0;
+                        } else {
+                            link_recv_frames++;
+                            if (link_recv_frames >= LINK_RECV_TIMEOUT) {
+                                handle_link_disconnect();
+                            }
                         }
                     }
                 }
@@ -1279,9 +1295,14 @@ void update_game(void) {
                         handle_link_disconnect();
                     }
                 } else {
-                    link_recv_frames++;
-                    if (link_recv_frames >= LINK_RECV_TIMEOUT) {
-                        handle_link_disconnect();
+                    if (link_alive_flag) {
+                        link_alive_flag = 0;
+                        link_recv_frames = 0;
+                    } else {
+                        link_recv_frames++;
+                        if (link_recv_frames >= LINK_RECV_TIMEOUT) {
+                            handle_link_disconnect();
+                        }
                     }
                 }
             }

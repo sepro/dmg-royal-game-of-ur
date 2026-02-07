@@ -49,6 +49,7 @@ typedef enum {
 // Exported state
 extern LinkStatus_t link_status;
 extern LinkRole_t link_role;
+extern uint8_t link_alive_flag;  // Set when an exchange proves the link is alive
 
 /**
  * Initialize link cable hardware
@@ -121,6 +122,13 @@ void link_cancel(void);
  * No-op if role is master.
  */
 void link_pump_recv(void);
+
+/**
+ * Master keepalive — clock an idle exchange so the slave knows
+ * the link is still active.  Sets link_alive_flag if the slave
+ * responds with LINK_READY_RECV.  No-op if role is slave.
+ */
+void link_keepalive(void);
 
 /**
  * Send a game data byte over the link cable

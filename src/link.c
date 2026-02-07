@@ -42,6 +42,7 @@
 // Global state
 LinkStatus_t link_status = LINK_DISCONNECTED;
 LinkRole_t link_role = LINK_ROLE_UNDETERMINED;
+uint8_t link_alive_flag = 0;
 
 // Persistent armed state for non-blocking slave recv
 static uint8_t slave_recv_armed = 0;
@@ -76,6 +77,7 @@ void link_init(void) {
     slave_recv_armed = 0;
     link_has_pending = 0;
     link_pending_byte = 0;
+    link_alive_flag = 0;
 }
 
 /**
@@ -286,6 +288,7 @@ uint8_t link_game_recv(uint8_t *out) {
             if (is_transfer_done()) {
                 recv = SB_REG;
                 slave_recv_armed = 0;
+                link_alive_flag = 1;  // Completed transfer = master alive
                 if (recv != LINK_IDLE_BYTE && recv != 0xFF &&
                     recv != LINK_READY_RECV) {
                     *out = recv;
@@ -308,6 +311,10 @@ uint8_t link_game_recv(uint8_t *out) {
 
     // Master: instant exchange (internal clock, completes in <1ms)
     if (link_exchange(LINK_READY_RECV, &recv)) {
+        // LINK_READY_RECV back means slave is actively responding
+        if (recv == LINK_READY_RECV) {
+            link_alive_flag = 1;
+        }
         if (recv != LINK_IDLE_BYTE && recv != 0xFF &&
             recv != LINK_READY_RECV) {
             *out = recv;
@@ -339,6 +346,7 @@ void link_pump_recv(void) {
         if (is_transfer_done()) {
             recv = SB_REG;
             slave_recv_armed = 0;
+            link_alive_flag = 1;  // Completed transfer = master alive
 
             // Filter protocol/idle bytes — only buffer game data
             if (recv != LINK_IDLE_BYTE && recv != 0xFF &&
@@ -357,6 +365,24 @@ void link_pump_recv(void) {
         SB_REG = LINK_READY_RECV;
         SC_REG = SC_START | SC_CLOCK_EXT;
         slave_recv_armed = 1;
+    }
+}
+
+/**
+ * Master keepalive — clock an idle exchange to prove the link is alive.
+ * The slave's pump will see the completed transfer and set link_alive_flag.
+ * If the slave responds with LINK_READY_RECV we also set our own flag.
+ * No-op when called as slave (slave cannot initiate transfers).
+ */
+void link_keepalive(void) {
+    uint8_t recv;
+
+    if (link_role != LINK_ROLE_MASTER) return;
+
+    if (link_exchange(LINK_IDLE_BYTE, &recv)) {
+        if (recv == LINK_READY_RECV) {
+            link_alive_flag = 1;
+        }
     }
 }
 

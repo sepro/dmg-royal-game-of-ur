@@ -334,12 +334,13 @@ uint8_t is_valid_move(uint8_t player, uint8_t piece_idx, uint8_t roll) {
     return 1;
 }
 
-uint8_t execute_move(uint8_t player, uint8_t piece_idx, uint8_t roll) {
+uint8_t execute_move(uint8_t player, uint8_t piece_idx, uint8_t roll, uint8_t *out_captured) {
     uint8_t *pieces = (player == PLAYER_HUMAN) ? human_pieces : cpu_pieces;
     uint8_t *opponent = (player == PLAYER_HUMAN) ? cpu_pieces : human_pieces;
     uint8_t opponent_id = (player == PLAYER_HUMAN) ? PLAYER_CPU : PLAYER_HUMAN;
     uint8_t current_pos = pieces[piece_idx];
     uint8_t new_pos;
+    uint8_t captured = 0;
 
     // Mark source square dirty (if on board)
     if (current_pos >= 1 && current_pos <= 14) {
@@ -365,9 +366,15 @@ uint8_t execute_move(uint8_t player, uint8_t piece_idx, uint8_t roll) {
                 // Capture! Send opponent piece back to reserve
                 // Note: The captured square will be marked dirty below as destination
                 opponent[i] = POS_RESERVE;
+                captured = 1;
                 break;
             }
         }
+    }
+
+    // Report capture if caller provided output pointer
+    if (out_captured != (void *)0) {
+        *out_captured = captured;
     }
 
     // Mark destination square dirty (if on board)

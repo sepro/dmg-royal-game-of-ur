@@ -29,6 +29,10 @@ On the endgame screen, if the opponent has won their profile image should altena
 - 4 opponent happy variants
 - 4 opponent sad variants 
 
+### STATUS
+
+Sad portraits integrated in game (animation on captured piece) and endgame
+
 ---
 
 ## Asset Summary
@@ -39,7 +43,6 @@ On the endgame screen, if the opponent has won their profile image should altena
 - Light piece
 - Dark piece
 - Dice × 2 states (0 and 1)
-- Hand pointer
 - Destination highlight (or use BG tiles)
 - Selection border (could be BG tiles instead)
 

@@ -122,10 +122,18 @@
 /* ----------------------------------------------------------------------------
  * Pause Screen Border (Tiles 221-245)
  * Shared with game screen, loaded only when pause is active
+ * Also shared with capture animation sad portraits (221-241, max 21 tiles)
+ * During pause: border tiles overwrite sad portrait tiles
+ * On unpause: sad portrait tiles are reloaded if animation was active
  * ---------------------------------------------------------------------------- */
 #define VRAM_PAUSE_BORDER_START 221
 #define VRAM_PAUSE_BORDER_END 245
 #define VRAM_PAUSE_BORDER_COUNT 25
+
+// Capture animation sad portraits (shared with pause border space)
+#define VRAM_SAD_PORTRAIT_START 221
+#define VRAM_SAD_PORTRAIT_END 241
+#define VRAM_SAD_PORTRAIT_MAX 21  // Maximum tiles for 5x5 portrait (some use fewer)
 
 /* ----------------------------------------------------------------------------
  * Background Tile Budget Summary

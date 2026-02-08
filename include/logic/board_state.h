@@ -101,12 +101,13 @@ uint8_t is_rosette(uint8_t pos);
 
 /**
  * Execute a move for a player's piece
- * @param player     PLAYER_HUMAN or PLAYER_CPU
- * @param piece_idx  Index of piece to move (0-6)
- * @param roll       Dice roll result (1-4)
+ * @param player       PLAYER_HUMAN or PLAYER_CPU
+ * @param piece_idx    Index of piece to move (0-6)
+ * @param roll         Dice roll result (1-4)
+ * @param out_captured Pointer to store 1 if piece was captured, 0 otherwise (optional, can be null)
  * @return 1 if landed on rosette (extra turn), 0 otherwise
  */
-uint8_t execute_move(uint8_t player, uint8_t piece_idx, uint8_t roll);
+uint8_t execute_move(uint8_t player, uint8_t piece_idx, uint8_t roll, uint8_t *out_captured);
 
 /**
  * Find a random valid move for a player

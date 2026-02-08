@@ -92,3 +92,16 @@
 - Border reuses tiles from pause screen and selection screens (7x7 frame)
 - A button returns to opponent selection for new game
 - Layout: result text at row 1 (offset right), portrait at rows 4-8 with border at rows 3-9
+
+### Phase 12: Link Cable Two-Player Support ✓
+- Serial communication driver with master/slave role negotiation
+- Connection screen with waiting phase and side assignment reveal (master=LIGHT, slave=DARK)
+- Link profile selection screen where both players choose their portraits independently
+- Link game mode with synchronized move exchange protocol
+- Reliable byte-tagged protocol (dice rolls, piece moves, acknowledgments)
+- Real-time turn synchronization: active player sends dice result and move, passive player receives and mirrors
+- Both Game Boys maintain mirrored board state with local player always on bottom
+- "OTHER" label replaces "CPU" in link mode with opponent's chosen portrait displayed
+- Disconnection detection with timeout handling and graceful return to title
+- Game end synchronization with win/lose signals exchanged between players
+- Fully functional two-player gameplay over link cable tested in Emulicious emulator

@@ -27,7 +27,7 @@ On the endgame screen, if the opponent has won their profile image should altena
 ### Assets
 
 - 4 opponent happy variants
-- 4 opponent sad variants
+- 4 opponent sad variants 
 
 ---
 

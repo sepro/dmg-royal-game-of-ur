@@ -58,7 +58,12 @@ typedef enum ScreenState_t { ... } ScreenState_t;
 ```
 
 ### File Organization
-- One module per logical unit (see PLAN.md file structure)
+- Source and headers are organized into subfolders mirroring each other:
+  - `src/screens/` / `include/screens/` — State machine screens (title, game, endgame, etc.)
+  - `src/link/` / `include/link/` — Link cable multiplayer
+  - `src/logic/` / `include/logic/` — Core game mechanics (board_state, ai)
+  - `src/util/` / `include/util/` — Shared infrastructure (font, input, transition, etc.)
+  - `src/main.c`, `include/game_types.h`, `include/vram_layout.h` stay at root
 - Header files contain declarations, `.c` files contain implementations
 - Keep functions short and focused (under 50 lines when possible)
 
@@ -103,15 +108,22 @@ assets/
 ├── sprites/         # Source PNGs for sprite graphics
 ├── maps/            # Tilemap data (if hand-authored)
 └── generated/       # Output from png2asset (DO NOT EDIT)
+    ├── title/       # Title screen tiles
+    ├── ui/          # Arrow, blink, selection border
+    ├── portraits/   # Profile portraits (01-04)
+    ├── coins/       # Light/dark coin tiles
+    ├── board/       # Board border, tiles, pieces overlay
+    ├── pieces/      # Game piece sprites (white/black, dest)
+    └── dice/        # Dice sprites (white/black)
 ```
 
 ### Converting Graphics
 ```bash
 # Example: Convert title screen
-png2asset assets/tiles/title.png -o assets/generated/title.c -map -tiles_only
+png2asset assets/tiles/title.png -o assets/generated/title/title.c -map -tiles_only
 
 # Example: Convert sprite sheet
-png2asset assets/sprites/pieces.png -o assets/generated/pieces.c -sw 8 -sh 8
+png2asset assets/sprites/pieces.png -o assets/generated/pieces/pieces.c -sw 8 -sh 8
 ```
 
 Document exact `png2asset` commands used in comments at the top of generated files or in a separate `assets/README.md`.

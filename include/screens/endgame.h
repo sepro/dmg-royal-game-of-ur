@@ -15,6 +15,10 @@
 #define ENDGAME_BORDER_WIDTH 7
 #define ENDGAME_BORDER_HEIGHT 7
 
+// Sad portrait animation
+#define ENDGAME_SAD_TILE_START 26   // After max normal portrait (25 tiles)
+#define ENDGAME_ANIM_INTERVAL 40    // ~0.67s per expression at 60fps
+
 // Text positions (y coordinates)
 #define ENDGAME_RESULT_Y 1      // "YOU WON !" or "YOU LOST !" (moved up 2 lines from 3)
 #define ENDGAME_YOU_BEAT_Y 11   // "YOU BEAT"

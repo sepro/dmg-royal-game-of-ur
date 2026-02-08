@@ -18,4 +18,16 @@
  */
 void draw_portrait(uint8_t opponent_idx, uint8_t tile_base, uint8_t x, uint8_t y);
 
+/**
+ * Draw sad opponent portrait (loads tiles + tilemap)
+ */
+void draw_portrait_sad(uint8_t opponent_idx, uint8_t tile_base, uint8_t x, uint8_t y);
+
+/**
+ * Redraw portrait tilemap only (fast path for animation toggling)
+ *
+ * @param use_sad 0 = normal map, 1 = sad map
+ */
+void redraw_portrait_map(uint8_t opponent_idx, uint8_t tile_base, uint8_t x, uint8_t y, uint8_t use_sad);
+
 #endif // PORTRAIT_H

@@ -24,7 +24,9 @@
       "Bash(xxd:*)",
       "WebSearch",
       "Bash(git mv:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(file:*)",
+      "Bash(git log:*)"
     ]
   }
 }

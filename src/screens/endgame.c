@@ -26,6 +26,11 @@ static const uint8_t white_tile[16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
+// Sad portrait animation state
+static uint8_t anim_counter;
+static uint8_t anim_is_sad;
+static uint8_t anim_active;
+
 // Draw centered text (centers horizontally)
 static void draw_centered_text(uint8_t y, const char *text) {
     uint8_t len = strlen(text);
@@ -58,6 +63,18 @@ void init_endgame(void) {
 
     // Draw opponent portrait
     draw_opponent_portrait();
+
+    // Load sad portrait tiles for win animation in single player
+    anim_active = 0;
+    anim_counter = 0;
+    anim_is_sad = 0;
+    if (human_won && game_mode == GAME_MODE_SINGLE) {
+        draw_portrait_sad(selected_opponent, ENDGAME_SAD_TILE_START,
+                          ENDGAME_PORTRAIT_X, ENDGAME_PORTRAIT_Y);
+        // Redraw normal map over it (sad tiles are loaded but normal map shown first)
+        draw_opponent_portrait();
+        anim_active = 1;
+    }
 
     // Draw border around portrait
     draw_border();
@@ -95,6 +112,19 @@ void init_endgame(void) {
 
 void update_endgame(void) {
     input_update();
+
+    // Animate sad portrait
+    if (anim_active) {
+        anim_counter++;
+        if (anim_counter >= ENDGAME_ANIM_INTERVAL) {
+            anim_counter = 0;
+            anim_is_sad = !anim_is_sad;
+            redraw_portrait_map(selected_opponent,
+                                anim_is_sad ? ENDGAME_SAD_TILE_START : ENDGAME_PORTRAIT_TILE_START,
+                                ENDGAME_PORTRAIT_X, ENDGAME_PORTRAIT_Y,
+                                anim_is_sad);
+        }
+    }
 
     if (input_pressed(J_A)) {
         if (game_mode == GAME_MODE_LINK) {

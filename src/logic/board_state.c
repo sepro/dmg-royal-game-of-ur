@@ -103,7 +103,7 @@ static uint8_t get_square_index(uint8_t player, uint8_t pos) {
  * board_tiles_pieces.png layout (48x96 pixels = 6x12 tiles of 8x8 each):
  * - 3 columns: empty (0), white piece (1), black piece (2)
  * - 6 rows: rosette (0), type A (1), B (2), C (3), D (4), E (5)
- * - Each 16x16 square uses 4 tiles: [0]top-left, [1]top-right, [2]bottom-left, [3]bottom-right
+ * - Each 16x16 square uses 4 tiles: [0]top-left, [+1]top-right, [+2]bottom-left, [+3]bottom-right
  * - Source tiles are numbered 0-71 (6 wide × 12 tall)
  * - After loading to VRAM at VRAM_PIECE_TILES_START, add that offset to use them
  */

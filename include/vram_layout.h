@@ -251,16 +251,6 @@
  * 4. Verify compile-time assertions still pass
  * 5. Test visual output to ensure no corruption
  *
- * Future Phase Planning:
- * ---------------------
- * - Phase 5 (coin flip) uses screen-isolated tiles 0-75
- * - Phase 6 (game board) has 59 tiles at 197-255
- * - If game board needs more tiles, consider:
- *   * Reusing font tiles for UI text (already available)
- *   * Using sprites for pieces instead of background tiles
- *   * Palette-based variation instead of unique tiles
- *   * Symmetry: flip tiles in code rather than storing both versions
- *
  * Performance Considerations:
  * --------------------------
  * - Always wait for VBlank before VRAM writes (see vblank_wait() in CLAUDE.md)

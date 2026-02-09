@@ -107,43 +107,19 @@ static uint8_t get_square_index(uint8_t player, uint8_t pos) {
  * - Source tiles are numbered 0-71 (6 wide × 12 tall)
  * - After loading to VRAM at VRAM_PIECE_TILES_START, add that offset to use them
  */
-static const uint8_t piece_tiles[6][3][4] = {
+static const uint8_t piece_tiles[6][3] = {
     // SQUARE_TYPE_ROSETTE (row 0)
-    {
-        {  0,  2,  1,  3 },  // PIECE_NONE
-        {  4,  6,  5,  7 },  // PIECE_WHITE
-        {  8,  10, 9, 11 },  // PIECE_BLACK
-    },
+    { 0,4,8},
     // SQUARE_TYPE_A (row 1)
-    {
-        { 12, 14, 13, 15 },  // PIECE_NONE
-        { 16, 18, 17, 19 },  // PIECE_WHITE
-        { 20, 22, 21, 23 },  // PIECE_BLACK
-    },
+    {12,16,20},
     // SQUARE_TYPE_B (row 2)
-    {
-        { 24, 26, 25, 27 },  // PIECE_NONE
-        { 28, 30, 29, 31 },  // PIECE_WHITE
-        { 32, 34, 33, 35 },  // PIECE_BLACK
-    },
+    {24, 28, 32},
     // SQUARE_TYPE_C (row 3)
-    {
-        { 36, 38, 37, 39 },  // PIECE_NONE
-        { 40, 42, 41, 43 },  // PIECE_WHITE
-        { 44, 46, 45, 47 },  // PIECE_BLACK
-    },
+    {36, 40, 44},
     // SQUARE_TYPE_D (row 4)
-    {
-        { 48, 50, 49, 51 },  // PIECE_NONE
-        { 52, 54, 53, 55 },  // PIECE_WHITE
-        { 56, 58, 57, 59 },  // PIECE_BLACK
-    },
+    {48, 52, 56},
     // SQUARE_TYPE_E (row 5)
-    {
-        { 60, 62, 61, 63 },  // PIECE_NONE
-        { 64, 66, 65, 67 },  // PIECE_WHITE
-        { 68, 70, 69, 71 },  // PIECE_BLACK
-    },
+    {60, 64, 68}
 };
 
 // ============================================================================
@@ -155,14 +131,14 @@ static const uint8_t piece_tiles[6][3][4] = {
  */
 static void draw_board_square(uint8_t tile_x, uint8_t tile_y,
                               uint8_t square_type, uint8_t piece_state) {
-    const uint8_t *tiles = piece_tiles[square_type][piece_state];
+    const uint8_t tile = piece_tiles[square_type][piece_state];
 
     // Draw 2x2 tile block using explicit tile indices from lookup table
     // Tiles are source indices (0-71), add VRAM_PIECE_TILES_START for VRAM position
-    set_bkg_tile_xy(tile_x,     tile_y,     VRAM_PIECE_TILES_START + tiles[0]);
-    set_bkg_tile_xy(tile_x + 1, tile_y,     VRAM_PIECE_TILES_START + tiles[1]);
-    set_bkg_tile_xy(tile_x,     tile_y + 1, VRAM_PIECE_TILES_START + tiles[2]);
-    set_bkg_tile_xy(tile_x + 1, tile_y + 1, VRAM_PIECE_TILES_START + tiles[3]);
+    set_bkg_tile_xy(tile_x,     tile_y,     VRAM_PIECE_TILES_START + tile);
+    set_bkg_tile_xy(tile_x,     tile_y + 1, VRAM_PIECE_TILES_START + tile + 1);
+    set_bkg_tile_xy(tile_x + 1, tile_y,     VRAM_PIECE_TILES_START + tile + 2);
+    set_bkg_tile_xy(tile_x + 1, tile_y + 1, VRAM_PIECE_TILES_START + tile + 3);
 }
 
 /**

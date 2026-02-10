@@ -58,13 +58,12 @@
 
 // VRAM allocation (screen-isolated, reloaded on entry)
 #define LPROFILE_BLANK_TILE         0
-#define LPROFILE_PORTRAIT_START     1    // All 4 profiles loaded contiguously
-#define LPROFILE_BORDER_START       87   // Border tiles for selection phase
+#define LPROFILE_PORTRAIT_START     1    // Merged tileset (117 tiles, 1-117)
+#define LPROFILE_BORDER_START       118  // Border tiles for selection phase (25 tiles, 118-139 fits before font at 140)
 
-// VS phase VRAM (reloaded)
-#define LPROFILE_VS_YOU_TILE_START    1
-#define LPROFILE_VS_OTHER_TILE_START  26
-#define LPROFILE_VS_BORDER_START      51
+// VS phase VRAM (reloaded, shares tileset with selection phase)
+#define LPROFILE_VS_YOU_TILE_START  1    // Same as LPROFILE_PORTRAIT_START (shared tileset)
+#define LPROFILE_VS_BORDER_START    118  // Border tiles (25 tiles, 118-139)
 
 // Timing
 #define LPROFILE_DOT_CYCLE       20   // Frames per dot animation step

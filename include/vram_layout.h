@@ -41,27 +41,27 @@
 #define VRAM_TITLE_COUNT 139
 
 /* ----------------------------------------------------------------------------
- * Opponent Select Screen (Tiles 1-111)
+ * Opponent Select Screen (Tiles 1-139)
  * Screen-isolated: Overlaps with title screen range
  * ---------------------------------------------------------------------------- */
-// Opponent portraits: 4 characters with variable sizes
-// Profile sizes: 25, 21, 20, 20 tiles = 86 tiles total
+// Merged portrait tileset: all 4 characters x 3 expressions, deduplicated
 #define VRAM_OPPONENT_PORTRAITS_START 1
-#define VRAM_OPPONENT_PORTRAITS_END 86
-#define VRAM_OPPONENT_PORTRAITS_COUNT 86
+#define VRAM_OPPONENT_PORTRAITS_END 117
+#define VRAM_OPPONENT_PORTRAITS_COUNT 117
 
 // Selection border: 25 unique border tiles for 7x7 frame (from border.png)
-#define VRAM_BORDER_START 87
-#define VRAM_BORDER_END 111
+#define VRAM_BORDER_START 118
+#define VRAM_BORDER_END 139
 #define VRAM_BORDER_COUNT 25
 
 /* ----------------------------------------------------------------------------
- * Difficulty Select Screen (Tiles 1-24)
+ * Difficulty Select Screen (Tiles 1-117)
  * Screen-isolated: Overlaps with title/opponent screen ranges
+ * Uses merged portrait tileset (loads all 117 tiles for one portrait)
  * ---------------------------------------------------------------------------- */
 #define VRAM_DIFF_PORTRAIT_START 1
-#define VRAM_DIFF_PORTRAIT_END 24
-#define VRAM_DIFF_PORTRAIT_COUNT 25  // Selected opponent's portrait (5x5 tiles)
+#define VRAM_DIFF_PORTRAIT_END 117
+#define VRAM_DIFF_PORTRAIT_COUNT 117  // Full merged tileset
 
 /* ----------------------------------------------------------------------------
  * Coin Flip Screen (Tiles 0-75) - Screen-isolated
@@ -86,61 +86,53 @@
 #define VRAM_COINFLIP_BORDER_COUNT 25
 
 /* ----------------------------------------------------------------------------
- * Font System (Tiles 140-219) - SHARED across all screens
+ * Font System (Tiles 141-221) - SHARED across all screens
  * These tiles persist across screen transitions and are never reloaded
  * ---------------------------------------------------------------------------- */
 // Regular font: 26 letters + space + blank + 10 numbers (0-9) + colon = 40 tiles
-#define VRAM_FONT_START 140
-#define VRAM_FONT_END 179
+#define VRAM_FONT_START 141
+#define VRAM_FONT_END 180
 #define VRAM_FONT_COUNT 40
 
 // Inverted font: Generated at runtime via XOR (black text on white bg)
 // Contains: 26 letters + space + blank + white + 10 numbers + colon = 41 tiles
-#define VRAM_FONT_INVERTED_START 180
-#define VRAM_FONT_INVERTED_END 220
+#define VRAM_FONT_INVERTED_START 181
+#define VRAM_FONT_INVERTED_END 221
 #define VRAM_FONT_INVERTED_COUNT 41
 
 /* ----------------------------------------------------------------------------
  * Phase 6: Game Board (Tiles 0-37) - SCREEN ISOLATED
  * Game board is screen-isolated and uses tiles 0-37
- * Board tiles do not overlap with font system (starts at 140)
- * Tiles 217-255 remain available for future use
+ * Portrait (38-68), pieces (69-140), font (141+) follow in game screen
  * ---------------------------------------------------------------------------- */
 #define VRAM_GAMEBOARD_START 0
 #define VRAM_GAMEBOARD_END 37
 #define VRAM_GAMEBOARD_COUNT 38
 
 /* ----------------------------------------------------------------------------
- * Phase 8b: Piece Tiles (Tiles 64-135) - SCREEN ISOLATED
+ * Phase 8b: Piece Tiles (Tiles 69-140) - SCREEN ISOLATED
  * 6 square types x 3 piece states x 4 tiles per 16x16 square = 72 tiles
  * Used to overlay pieces on board squares during gameplay
+ * Starts at 69 to leave room for per-char portrait tiles (38-68, max 31)
  * ---------------------------------------------------------------------------- */
-#define VRAM_PIECE_TILES_START    64
+#define VRAM_PIECE_TILES_START    69
 #define VRAM_PIECE_TILES_COUNT    72   // 6 types x 3 states x 4 tiles
-#define VRAM_PIECE_TILES_END      135
+#define VRAM_PIECE_TILES_END      140
 
 /* ----------------------------------------------------------------------------
- * Pause Screen Border (Tiles 221-245)
- * Shared with game screen, loaded only when pause is active
- * Also shared with capture animation sad portraits (221-241, max 21 tiles)
- * During pause: border tiles overwrite sad portrait tiles
- * On unpause: sad portrait tiles are reloaded if animation was active
+ * Pause Screen Border (Tiles 222-246)
+ * Loaded only when pause is active, game screen only
  * ---------------------------------------------------------------------------- */
-#define VRAM_PAUSE_BORDER_START 221
-#define VRAM_PAUSE_BORDER_END 245
+#define VRAM_PAUSE_BORDER_START 222
+#define VRAM_PAUSE_BORDER_END 246
 #define VRAM_PAUSE_BORDER_COUNT 25
-
-// Capture animation sad portraits (shared with pause border space)
-#define VRAM_SAD_PORTRAIT_START 221
-#define VRAM_SAD_PORTRAIT_END 241
-#define VRAM_SAD_PORTRAIT_MAX 21  // Maximum tiles for 5x5 portrait (some use fewer)
 
 /* ----------------------------------------------------------------------------
  * Background Tile Budget Summary
  * ---------------------------------------------------------------------------- */
 #define VRAM_BG_TOTAL 256
-#define VRAM_BG_USED 246   // Peak usage: font + inverted font + pause border
-#define VRAM_BG_AVAILABLE 10  // Tiles 246-255 available for future use
+#define VRAM_BG_USED 247   // Peak usage: font (141-221) + pause border (222-246)
+#define VRAM_BG_AVAILABLE 9  // Tiles 247-255 available for future use
 
 /* ============================================================================
  * SPRITE TILES (256 total, 0-255, separate address space)
@@ -225,6 +217,11 @@
 // Verify piece tiles don't overlap with font
 #if VRAM_PIECE_TILES_END >= VRAM_FONT_START
 #error "VRAM conflict: Piece tiles overlap with font tiles"
+#endif
+
+// Verify pause border doesn't overflow VRAM
+#if VRAM_PAUSE_BORDER_END > 255
+#error "VRAM overflow: Pause border exceeds 256 tile limit"
 #endif
 
 // Verify sprite allocations

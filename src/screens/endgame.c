@@ -11,8 +11,6 @@
 #include "screens/game.h"
 #include "link/link.h"
 
-// Portrait assets handled by portrait.c
-
 extern const uint8_t border_tiles[];
 extern const unsigned char border_map[];
 
@@ -26,10 +24,11 @@ static const uint8_t white_tile[16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-// Sad portrait animation state
+// Portrait animation state
 static uint8_t anim_counter;
-static uint8_t anim_is_sad;
+static uint8_t anim_showing_expr;  // 0 = normal, 1 = expression
 static uint8_t anim_active;
+static uint8_t anim_target_expr;   // PORTRAIT_EXPR_SAD or PORTRAIT_EXPR_HAPPY
 
 // Draw centered text (centers horizontally)
 static void draw_centered_text(uint8_t y, const char *text) {
@@ -40,12 +39,14 @@ static void draw_centered_text(uint8_t y, const char *text) {
 
 // Draw opponent portrait
 static void draw_opponent_portrait(void) {
-    draw_portrait(selected_opponent, ENDGAME_PORTRAIT_TILE_START, ENDGAME_PORTRAIT_X, ENDGAME_PORTRAIT_Y);
+    draw_portrait_expr(selected_opponent, PORTRAIT_EXPR_NORMAL,
+                       ENDGAME_PORTRAIT_TILE_START,
+                       ENDGAME_PORTRAIT_X, ENDGAME_PORTRAIT_Y, 0);
 }
 
 // Draw border around portrait
 static void draw_border(void) {
-    uint8_t x = ENDGAME_PORTRAIT_X - 1;  // Border is 1 tile outside portrait
+    uint8_t x = ENDGAME_PORTRAIT_X - 1;
     uint8_t y = ENDGAME_PORTRAIT_Y - 1;
     draw_border_frame(x, y, ENDGAME_BORDER_WIDTH, ENDGAME_BORDER_HEIGHT,
                       ENDGAME_BORDER_TILE_START, border_map);
@@ -61,19 +62,26 @@ void init_endgame(void) {
     // Load border tiles
     set_bkg_data(ENDGAME_BORDER_TILE_START, 25, border_tiles);
 
-    // Draw opponent portrait
+    // Load full merged portrait tileset (endgame has ample VRAM)
+    load_portrait_tiles(ENDGAME_PORTRAIT_TILE_START);
+
+    // Draw normal portrait
     draw_opponent_portrait();
 
-    // Load sad portrait tiles for win animation in single player
+    // Setup animation in single player mode
     anim_active = 0;
     anim_counter = 0;
-    anim_is_sad = 0;
-    if (human_won && game_mode == GAME_MODE_SINGLE) {
-        draw_portrait_sad(selected_opponent, ENDGAME_SAD_TILE_START,
-                          ENDGAME_PORTRAIT_X, ENDGAME_PORTRAIT_Y);
-        // Redraw normal map over it (sad tiles are loaded but normal map shown first)
-        draw_opponent_portrait();
-        anim_active = 1;
+    anim_showing_expr = 0;
+    if (game_mode == GAME_MODE_SINGLE) {
+        if (human_won) {
+            // Human wins: opponent toggles sad
+            anim_target_expr = PORTRAIT_EXPR_SAD;
+            anim_active = 1;
+        } else {
+            // CPU wins: opponent toggles happy
+            anim_target_expr = PORTRAIT_EXPR_HAPPY;
+            anim_active = 1;
+        }
     }
 
     // Draw border around portrait
@@ -82,13 +90,13 @@ void init_endgame(void) {
     // Draw result text (offset 1 character to the right)
     if (human_won) {
         const char *result_text = "YOU WON !";
-        uint8_t x = (20 - strlen(result_text)) / 2 + 1;  // Centered + 1 offset
+        uint8_t x = (20 - strlen(result_text)) / 2 + 1;
         draw_text_inverted(x, ENDGAME_RESULT_Y, result_text);
         draw_centered_text(ENDGAME_YOU_BEAT_Y, "YOU BEAT");
         draw_centered_text(ENDGAME_NAME_Y, opponent_names[selected_opponent]);
     } else {
         const char *result_text = "YOU LOST !";
-        uint8_t x = (20 - strlen(result_text)) / 2 + 1;  // Centered + 1 offset
+        uint8_t x = (20 - strlen(result_text)) / 2 + 1;
         draw_text_inverted(x, ENDGAME_RESULT_Y, result_text);
         if (game_mode == GAME_MODE_LINK) {
             draw_centered_text(ENDGAME_YOU_BEAT_Y, "DEFEATED BY");
@@ -113,16 +121,16 @@ void init_endgame(void) {
 void update_endgame(void) {
     input_update();
 
-    // Animate sad portrait
+    // Animate portrait expression
     if (anim_active) {
         anim_counter++;
         if (anim_counter >= ENDGAME_ANIM_INTERVAL) {
             anim_counter = 0;
-            anim_is_sad = !anim_is_sad;
-            redraw_portrait_map(selected_opponent,
-                                anim_is_sad ? ENDGAME_SAD_TILE_START : ENDGAME_PORTRAIT_TILE_START,
-                                ENDGAME_PORTRAIT_X, ENDGAME_PORTRAIT_Y,
-                                anim_is_sad);
+            anim_showing_expr = !anim_showing_expr;
+            uint8_t expr = anim_showing_expr ? anim_target_expr : PORTRAIT_EXPR_NORMAL;
+            draw_portrait_expr(selected_opponent, expr,
+                               ENDGAME_PORTRAIT_TILE_START,
+                               ENDGAME_PORTRAIT_X, ENDGAME_PORTRAIT_Y, 0);
         }
     }
 

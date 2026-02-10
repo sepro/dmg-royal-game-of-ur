@@ -35,8 +35,6 @@ extern const uint8_t selection_border_tiles[];
 extern const uint8_t dest_piece_white_tiles[];
 extern const uint8_t dest_piece_black_tiles[];
 
-// External reference to opponent data (from opponent_data.h and opponent_select.h)
-// profile_tile_counts, opponent_names, selected_opponent declared in included headers
 // Portrait assets handled by portrait.c
 
 // External reference to border assets
@@ -107,17 +105,16 @@ static uint8_t selection_sprites_loaded;         // 1 = sprites loaded into VRAM
 #define LINK_RECV_TIMEOUT 600
 static uint16_t link_recv_frames;
 
-// Capture animation state
-static uint8_t capture_anim_active;    // 1 = animating, 0 = not
-static uint8_t capture_anim_counter;   // Frame counter (0-39)
-static uint8_t capture_anim_is_sad;    // Current expression (0=normal, 1=sad)
-static uint8_t capture_anim_toggles;   // Number of toggles completed
-static uint8_t capture_anim_paused;    // 1 = was active when paused, needs tile reload
+// Portrait expression animation state
+static uint8_t portrait_anim_active;     // 1 = animating, 0 = not
+static uint8_t portrait_anim_counter;    // Frame counter
+static uint8_t portrait_anim_expr;       // Current expression being shown
+static uint8_t portrait_anim_toggles;    // Number of toggles completed
+static uint8_t portrait_anim_target_expr; // Target expression (sad or happy)
 
-// Capture animation constants
-#define CAPTURE_ANIM_INTERVAL 20     // Frames per toggle (~0.33s at 60fps, 2x speed)
-#define CAPTURE_ANIM_TOGGLES 6       // Total toggles (3 complete cycles)
-#define CAPTURE_SAD_TILE_BASE 221    // VRAM tile base for sad portrait
+// Portrait animation constants
+#define PORTRAIT_ANIM_INTERVAL 20     // Frames per toggle (~0.33s at 60fps)
+#define PORTRAIT_ANIM_TOGGLES 6       // Total toggles (3 complete cycles)
 
 // ============================================================================
 // Forward Declarations (for functions used before definition)
@@ -128,9 +125,9 @@ static uint8_t check_win_condition(void);
 static void update_reserve_display(void);
 static void draw_prompt(const char *text);
 static void update_dice_sprites(void);
-static void start_capture_animation(void);
-static void update_capture_animation(void);
-static void stop_capture_animation(void);
+static void start_portrait_animation(uint8_t expression);
+static void update_portrait_animation(void);
+static void stop_portrait_animation(void);
 
 /**
  * Handle link cable disconnection during game
@@ -179,9 +176,12 @@ static void fill_ui_area(void) {
 
 /**
  * Draw the selected opponent's portrait on the right side of UI
+ * Uses per-character tile loading (game screen has limited VRAM)
  */
 static void draw_opponent_portrait(void) {
-    draw_portrait(selected_opponent, GAME_PORTRAIT_TILE_START, GAME_PORTRAIT_X, GAME_PORTRAIT_Y);
+    load_portrait_tiles_for_char(selected_opponent, GAME_PORTRAIT_TILE_START);
+    draw_portrait_expr(selected_opponent, PORTRAIT_EXPR_NORMAL,
+                       GAME_PORTRAIT_TILE_START, GAME_PORTRAIT_X, GAME_PORTRAIT_Y, 1);
 }
 
 /**
@@ -633,9 +633,9 @@ static void update_move_selection(void) {
         update_reserve_display();
         update_dirty_squares();  // Only redraw affected squares
 
-        // Start capture animation if opponent's piece was captured
-        if (captured && !capture_anim_active) {
-            start_capture_animation();
+        // Start sad portrait animation if opponent's piece was captured
+        if (captured && !portrait_anim_active) {
+            start_portrait_animation(PORTRAIT_EXPR_SAD);
         }
 
         // Check win condition
@@ -808,9 +808,6 @@ static void start_pause(void) {
     is_paused = 1;
     pause_animating = 1;
 
-    // Save capture animation state (pause border will overwrite sad tiles)
-    capture_anim_paused = capture_anim_active;
-
     // Hide sprites so they don't render on top of window
     HIDE_SPRITES;
 
@@ -860,36 +857,12 @@ static uint8_t update_pause_animation(void) {
                 window_y = PAUSE_WIN_Y_HIDDEN;
                 HIDE_WIN;
                 SHOW_SPRITES;  // Restore sprites when fully unpaused
-
-                // Restore capture animation tiles if it was active when paused
-                if (capture_anim_paused) {
-                    draw_portrait_sad(selected_opponent, CAPTURE_SAD_TILE_BASE,
-                                      GAME_PORTRAIT_X, GAME_PORTRAIT_Y);
-                    // Redraw current expression
-                    uint8_t tile_base = capture_anim_is_sad ? CAPTURE_SAD_TILE_BASE : GAME_PORTRAIT_TILE_START;
-                    redraw_portrait_map(selected_opponent, tile_base,
-                                        GAME_PORTRAIT_X, GAME_PORTRAIT_Y, capture_anim_is_sad);
-                    capture_anim_paused = 0;
-                }
-
                 pause_animating = 0;  // Animation complete
             }
             move_win(PAUSE_WIN_X, window_y);
         } else {
             HIDE_WIN;
             SHOW_SPRITES;  // Restore sprites when fully unpaused
-
-            // Restore capture animation tiles if it was active when paused
-            if (capture_anim_paused) {
-                draw_portrait_sad(selected_opponent, CAPTURE_SAD_TILE_BASE,
-                                  GAME_PORTRAIT_X, GAME_PORTRAIT_Y);
-                // Redraw current expression
-                uint8_t tile_base = capture_anim_is_sad ? CAPTURE_SAD_TILE_BASE : GAME_PORTRAIT_TILE_START;
-                redraw_portrait_map(selected_opponent, tile_base,
-                                    GAME_PORTRAIT_X, GAME_PORTRAIT_Y, capture_anim_is_sad);
-                capture_anim_paused = 0;
-            }
-
             pause_animating = 0;
         }
     }
@@ -902,68 +875,71 @@ static uint8_t update_pause_animation(void) {
 // ============================================================================
 
 /**
- * Start capture animation - opponent's piece was captured
+ * Start portrait expression animation (sad when human captures, happy when CPU captures/finishes)
+ * All expression tiles are already loaded via load_portrait_tiles_for_char, so
+ * toggling expressions is just a map redraw - no tile loading needed.
  */
-static void start_capture_animation(void) {
-    capture_anim_active = 1;
-    capture_anim_counter = 0;
-    capture_anim_is_sad = 1;  // Start with sad expression for immediate feedback
-    capture_anim_toggles = 0;
+static void start_portrait_animation(uint8_t expression) {
+    portrait_anim_active = 1;
+    portrait_anim_counter = 0;
+    portrait_anim_target_expr = expression;
+    portrait_anim_expr = expression;  // Start showing target expression immediately
+    portrait_anim_toggles = 0;
 
-    // Load sad portrait tiles at VRAM base 221
-    draw_portrait_sad(selected_opponent, CAPTURE_SAD_TILE_BASE,
-                      GAME_PORTRAIT_X, GAME_PORTRAIT_Y);
-
-    // Immediately redraw sad portrait map (animation starts with sad)
-    redraw_portrait_map(selected_opponent, CAPTURE_SAD_TILE_BASE,
-                        GAME_PORTRAIT_X, GAME_PORTRAIT_Y, 1);
+    // Immediately show the target expression
+    draw_portrait_expr(selected_opponent, expression,
+                       GAME_PORTRAIT_TILE_START, GAME_PORTRAIT_X, GAME_PORTRAIT_Y, 1);
 }
 
 /**
- * Update capture animation - toggle between normal and sad portrait
- * Called every frame when capture_anim_active is set
+ * Update portrait animation - toggle between normal and target expression
+ * Called every frame when portrait_anim_active is set
  */
-static void update_capture_animation(void) {
-    if (!capture_anim_active) return;
+static void update_portrait_animation(void) {
+    if (!portrait_anim_active) return;
 
-    capture_anim_counter++;
+    portrait_anim_counter++;
 
-    // Toggle every CAPTURE_ANIM_INTERVAL frames
-    if (capture_anim_counter >= CAPTURE_ANIM_INTERVAL) {
-        capture_anim_counter = 0;
-        capture_anim_toggles++;
+    if (portrait_anim_counter >= PORTRAIT_ANIM_INTERVAL) {
+        portrait_anim_counter = 0;
+        portrait_anim_toggles++;
 
         // Check if animation is complete
-        if (capture_anim_toggles >= CAPTURE_ANIM_TOGGLES) {
+        if (portrait_anim_toggles >= PORTRAIT_ANIM_TOGGLES) {
             // Ensure normal portrait is showing
-            if (capture_anim_is_sad) {
-                redraw_portrait_map(selected_opponent, GAME_PORTRAIT_TILE_START,
-                                    GAME_PORTRAIT_X, GAME_PORTRAIT_Y, 0);
+            if (portrait_anim_expr != PORTRAIT_EXPR_NORMAL) {
+                draw_portrait_expr(selected_opponent, PORTRAIT_EXPR_NORMAL,
+                                   GAME_PORTRAIT_TILE_START,
+                                   GAME_PORTRAIT_X, GAME_PORTRAIT_Y, 1);
             }
-            capture_anim_active = 0;
+            portrait_anim_active = 0;
             return;
         }
 
-        // Toggle expression
-        capture_anim_is_sad = !capture_anim_is_sad;
-        uint8_t tile_base = capture_anim_is_sad ? CAPTURE_SAD_TILE_BASE : GAME_PORTRAIT_TILE_START;
-        redraw_portrait_map(selected_opponent, tile_base,
-                            GAME_PORTRAIT_X, GAME_PORTRAIT_Y, capture_anim_is_sad);
+        // Toggle between normal and target expression
+        if (portrait_anim_expr == PORTRAIT_EXPR_NORMAL) {
+            portrait_anim_expr = portrait_anim_target_expr;
+        } else {
+            portrait_anim_expr = PORTRAIT_EXPR_NORMAL;
+        }
+        draw_portrait_expr(selected_opponent, portrait_anim_expr,
+                           GAME_PORTRAIT_TILE_START,
+                           GAME_PORTRAIT_X, GAME_PORTRAIT_Y, 1);
     }
 }
 
 /**
- * Stop capture animation and ensure normal portrait is showing
+ * Stop portrait animation and ensure normal portrait is showing
  */
-static void stop_capture_animation(void) {
-    if (!capture_anim_active) return;
+static void stop_portrait_animation(void) {
+    if (!portrait_anim_active) return;
 
-    // Ensure normal portrait is showing
-    if (capture_anim_is_sad) {
-        redraw_portrait_map(selected_opponent, GAME_PORTRAIT_TILE_START,
-                            GAME_PORTRAIT_X, GAME_PORTRAIT_Y, 0);
+    if (portrait_anim_expr != PORTRAIT_EXPR_NORMAL) {
+        draw_portrait_expr(selected_opponent, PORTRAIT_EXPR_NORMAL,
+                           GAME_PORTRAIT_TILE_START,
+                           GAME_PORTRAIT_X, GAME_PORTRAIT_Y, 1);
     }
-    capture_anim_active = 0;
+    portrait_anim_active = 0;
 }
 
 // ============================================================================
@@ -1173,12 +1149,12 @@ void init_game(void) {
     // Initialize link receive timeout
     link_recv_frames = 0;
 
-    // Initialize capture animation state
-    capture_anim_active = 0;
-    capture_anim_counter = 0;
-    capture_anim_is_sad = 0;
-    capture_anim_toggles = 0;
-    capture_anim_paused = 0;
+    // Initialize portrait animation state
+    portrait_anim_active = 0;
+    portrait_anim_counter = 0;
+    portrait_anim_expr = PORTRAIT_EXPR_NORMAL;
+    portrait_anim_toggles = 0;
+    portrait_anim_target_expr = PORTRAIT_EXPR_NORMAL;
 
     // Draw UI elements
     draw_player_info();
@@ -1256,8 +1232,8 @@ void update_game(void) {
     // Increment elapsed time (only when not paused)
     elapsed_frames++;
 
-    // Update capture animation if active
-    update_capture_animation();
+    // Update portrait expression animation if active
+    update_portrait_animation();
 
     // Game phase state machine
     switch (game_phase) {
@@ -1412,9 +1388,9 @@ void update_game(void) {
                         update_reserve_display();
                         update_dirty_squares();
 
-                        // Start capture animation if remote player's piece was captured
-                        if (captured && !capture_anim_active) {
-                            start_capture_animation();
+                        // Start sad portrait animation if our piece was captured by remote
+                        if (captured && !portrait_anim_active) {
+                            start_portrait_animation(PORTRAIT_EXPR_SAD);
                         }
 
                         if (check_win_condition()) {
@@ -1478,8 +1454,8 @@ void update_game(void) {
  * Cleanup game screen
  */
 void cleanup_game(void) {
-    // Stop capture animation if active
-    stop_capture_animation();
+    // Stop portrait animation if active
+    stop_portrait_animation();
 
     // Clear all game sprites by moving them off-screen
     // This prevents them from appearing on subsequent screens

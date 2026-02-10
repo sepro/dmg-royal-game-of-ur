@@ -1,157 +1,98 @@
 /**
  * portrait.c
- * Shared opponent portrait drawing functionality
+ * Shared opponent portrait drawing using merged tileset
+ * All 4 characters x 3 expressions share deduplicated tiles
  */
 
 #include <gb/gb.h>
 #include <stdint.h>
 #include "util/portrait.h"
-#include "util/opponent_data.h"
 
-// External references to generated profile assets
-extern const uint8_t profile_01_tiles[];
-extern const unsigned char profile_01_map[];
-extern const uint8_t profile_02_tiles[];
-extern const unsigned char profile_02_map[];
-extern const uint8_t profile_03_tiles[];
-extern const unsigned char profile_03_map[];
-extern const uint8_t profile_04_tiles[];
-extern const unsigned char profile_04_map[];
+// External references to merged profile asset
+extern const uint8_t profiles_merged_tiles[];
+extern const unsigned char profiles_merged_map[];
 
-// Sad profile assets
-extern const uint8_t profile_01_sad_tiles[];
-extern const unsigned char profile_01_sad_map[];
-extern const uint8_t profile_02_sad_tiles[];
-extern const unsigned char profile_02_sad_map[];
-extern const uint8_t profile_03_sad_tiles[];
-extern const unsigned char profile_03_sad_map[];
-extern const uint8_t profile_04_sad_tiles[];
-extern const unsigned char profile_04_sad_map[];
-
-// Portrait dimensions (all portraits are 5x5 tiles)
-#define PORTRAIT_WIDTH 5
-#define PORTRAIT_HEIGHT 5
+// Remap table for per-character tile loading
+// Maps global tile index -> local index (0xFF = not loaded)
+static uint8_t tile_remap[PORTRAIT_TILE_COUNT];
 
 /**
- * Draw opponent portrait at specified position
+ * Get pointer to start of sub-map for a character + expression
+ * Returns offset into profiles_merged_map for the first row
+ */
+static uint16_t get_submap_offset(uint8_t char_idx, uint8_t expression) {
+    return (uint16_t)(char_idx * PORTRAIT_SUB_HEIGHT) * PORTRAIT_MAP_WIDTH
+         + (uint16_t)(expression * PORTRAIT_SUB_WIDTH);
+}
+
+/**
+ * Load full merged tileset into VRAM
+ */
+void load_portrait_tiles(uint8_t tile_base) {
+    set_bkg_data(tile_base, PORTRAIT_TILE_COUNT, profiles_merged_tiles);
+}
+
+/**
+ * Load only tiles needed by one character (all 3 expressions)
+ * Builds remap table and loads individual tiles
+ */
+uint8_t load_portrait_tiles_for_char(uint8_t char_idx, uint8_t tile_base) {
+    uint8_t loaded = 0;
+    uint8_t i, row, col, expr;
+    uint8_t tile_idx;
+
+    // Clear remap table
+    for (i = 0; i < PORTRAIT_TILE_COUNT; i++) {
+        tile_remap[i] = 0xFF;
+    }
+
+    // Scan all 3 expression sub-maps for this character
+    for (expr = 0; expr < 3; expr++) {
+        uint16_t offset = get_submap_offset(char_idx, expr);
+        for (row = 0; row < PORTRAIT_SUB_HEIGHT; row++) {
+            for (col = 0; col < PORTRAIT_SUB_WIDTH; col++) {
+                tile_idx = profiles_merged_map[offset + (uint16_t)row * PORTRAIT_MAP_WIDTH + col];
+                if (tile_idx < PORTRAIT_TILE_COUNT && tile_remap[tile_idx] == 0xFF) {
+                    // New tile - load it and assign a local index
+                    tile_remap[tile_idx] = loaded;
+                    set_bkg_data(tile_base + loaded, 1,
+                                 &profiles_merged_tiles[(uint16_t)tile_idx * 16]);
+                    loaded++;
+                }
+            }
+        }
+    }
+
+    return loaded;
+}
+
+/**
+ * Draw a portrait expression from the merged tilemap
+ */
+void draw_portrait_expr(uint8_t char_idx, uint8_t expression,
+                        uint8_t tile_base, uint8_t x, uint8_t y,
+                        uint8_t use_remap) {
+    uint16_t offset = get_submap_offset(char_idx, expression);
+    uint8_t row_buf[PORTRAIT_SUB_WIDTH];
+    uint8_t row, col;
+
+    for (row = 0; row < PORTRAIT_SUB_HEIGHT; row++) {
+        for (col = 0; col < PORTRAIT_SUB_WIDTH; col++) {
+            uint8_t tile_idx = profiles_merged_map[offset + (uint16_t)row * PORTRAIT_MAP_WIDTH + col];
+            if (use_remap) {
+                row_buf[col] = tile_base + tile_remap[tile_idx];
+            } else {
+                row_buf[col] = tile_base + tile_idx;
+            }
+        }
+        set_bkg_tiles(x, y + row, PORTRAIT_SUB_WIDTH, 1, row_buf);
+    }
+}
+
+/**
+ * Convenience: load full tileset + draw normal expression
  */
 void draw_portrait(uint8_t opponent_idx, uint8_t tile_base, uint8_t x, uint8_t y) {
-    const uint8_t *tiles;
-    const unsigned char *map;
-    uint8_t tile_count;
-
-    // Select the correct profile based on opponent_idx
-    switch (opponent_idx) {
-        case 0:
-            tiles = profile_01_tiles;
-            map = profile_01_map;
-            tile_count = profile_tile_counts[0];
-            break;
-        case 1:
-            tiles = profile_02_tiles;
-            map = profile_02_map;
-            tile_count = profile_tile_counts[1];
-            break;
-        case 2:
-            tiles = profile_03_tiles;
-            map = profile_03_map;
-            tile_count = profile_tile_counts[2];
-            break;
-        case 3:
-            tiles = profile_04_tiles;
-            map = profile_04_map;
-            tile_count = profile_tile_counts[3];
-            break;
-        default:
-            return;
-    }
-
-    // Load portrait tiles at specified VRAM location
-    set_bkg_data(tile_base, tile_count, tiles);
-
-    // Draw 5x5 portrait using tilemap
-    uint8_t row_buf[PORTRAIT_WIDTH];
-    for (uint8_t row = 0; row < PORTRAIT_HEIGHT; row++) {
-        for (uint8_t col = 0; col < PORTRAIT_WIDTH; col++) {
-            row_buf[col] = tile_base + map[row * PORTRAIT_WIDTH + col];
-        }
-        set_bkg_tiles(x, y + row, PORTRAIT_WIDTH, 1, row_buf);
-    }
-}
-
-/**
- * Draw sad opponent portrait (loads tiles + tilemap)
- */
-void draw_portrait_sad(uint8_t opponent_idx, uint8_t tile_base, uint8_t x, uint8_t y) {
-    const uint8_t *tiles;
-    const unsigned char *map;
-    uint8_t tile_count;
-
-    switch (opponent_idx) {
-        case 0:
-            tiles = profile_01_sad_tiles;
-            map = profile_01_sad_map;
-            tile_count = profile_sad_tile_counts[0];
-            break;
-        case 1:
-            tiles = profile_02_sad_tiles;
-            map = profile_02_sad_map;
-            tile_count = profile_sad_tile_counts[1];
-            break;
-        case 2:
-            tiles = profile_03_sad_tiles;
-            map = profile_03_sad_map;
-            tile_count = profile_sad_tile_counts[2];
-            break;
-        case 3:
-            tiles = profile_04_sad_tiles;
-            map = profile_04_sad_map;
-            tile_count = profile_sad_tile_counts[3];
-            break;
-        default:
-            return;
-    }
-
-    set_bkg_data(tile_base, tile_count, tiles);
-
-    uint8_t row_buf[PORTRAIT_WIDTH];
-    for (uint8_t row = 0; row < PORTRAIT_HEIGHT; row++) {
-        for (uint8_t col = 0; col < PORTRAIT_WIDTH; col++) {
-            row_buf[col] = tile_base + map[row * PORTRAIT_WIDTH + col];
-        }
-        set_bkg_tiles(x, y + row, PORTRAIT_WIDTH, 1, row_buf);
-    }
-}
-
-/**
- * Redraw portrait tilemap only (no tile data load) - fast path for animation
- */
-void redraw_portrait_map(uint8_t opponent_idx, uint8_t tile_base, uint8_t x, uint8_t y, uint8_t use_sad) {
-    const unsigned char *map;
-
-    if (use_sad) {
-        switch (opponent_idx) {
-            case 0: map = profile_01_sad_map; break;
-            case 1: map = profile_02_sad_map; break;
-            case 2: map = profile_03_sad_map; break;
-            case 3: map = profile_04_sad_map; break;
-            default: return;
-        }
-    } else {
-        switch (opponent_idx) {
-            case 0: map = profile_01_map; break;
-            case 1: map = profile_02_map; break;
-            case 2: map = profile_03_map; break;
-            case 3: map = profile_04_map; break;
-            default: return;
-        }
-    }
-
-    uint8_t row_buf[PORTRAIT_WIDTH];
-    for (uint8_t row = 0; row < PORTRAIT_HEIGHT; row++) {
-        for (uint8_t col = 0; col < PORTRAIT_WIDTH; col++) {
-            row_buf[col] = tile_base + map[row * PORTRAIT_WIDTH + col];
-        }
-        set_bkg_tiles(x, y + row, PORTRAIT_WIDTH, 1, row_buf);
-    }
+    load_portrait_tiles(tile_base);
+    draw_portrait_expr(opponent_idx, PORTRAIT_EXPR_NORMAL, tile_base, x, y, 0);
 }

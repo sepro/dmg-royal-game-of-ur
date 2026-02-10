@@ -144,9 +144,9 @@
 #define PAUSE_WIN_Y_VISIBLE     0   // Target Y when paused (full screen)
 #define PAUSE_ANIM_SPEED        8   // Pixels per frame for slide animation
 
-// Border tile allocation (use available VRAM 221-245)
-#define PAUSE_BORDER_TILE_START 221
-#define PAUSE_BORDER_COUNT      25
+// Border tile allocation (use available VRAM 222-246)
+#define PAUSE_BORDER_TILE_START VRAM_PAUSE_BORDER_START
+#define PAUSE_BORDER_COUNT      VRAM_PAUSE_BORDER_COUNT
 
 // Border drawing constants
 #define BORDER_WIDTH            7
@@ -203,7 +203,6 @@
 // Opponent Portrait (5x5 tiles on right side of UI)
 // ============================================================================
 #define GAME_PORTRAIT_TILE_START  38  // After board tiles (0-37)
-#define GAME_PORTRAIT_TILE_MAX    25  // 5x5 = 25 tiles maximum
 #define GAME_PORTRAIT_X           14  // Tile X position (right side)
 #define GAME_PORTRAIT_Y           10  // Tile Y position (one row above CPU info)
 #define GAME_PORTRAIT_WIDTH       5

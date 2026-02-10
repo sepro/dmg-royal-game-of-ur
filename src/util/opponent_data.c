@@ -5,10 +5,6 @@
 
 #include "util/opponent_data.h"
 
-const uint8_t profile_tile_counts[OPPONENT_COUNT] = {25, 21, 20, 20};
-
-const uint8_t profile_sad_tile_counts[OPPONENT_COUNT] = {19, 21, 20, 20};
-
 const char *opponent_names[OPPONENT_COUNT] = {
     "THE SCHOLAR",
     "THE MERCHANT",

@@ -19,16 +19,6 @@
 #include "screens/coinflip.h"
 #include "screens/game.h"
 
-// External references to generated profile assets
-extern const uint8_t profile_01_tiles[];
-extern const unsigned char profile_01_map[];
-extern const uint8_t profile_02_tiles[];
-extern const unsigned char profile_02_map[];
-extern const uint8_t profile_03_tiles[];
-extern const unsigned char profile_03_map[];
-extern const uint8_t profile_04_tiles[];
-extern const unsigned char profile_04_map[];
-
 // External reference to border tiles and map
 extern const uint8_t border_tiles[];
 extern const unsigned char border_map[];
@@ -47,9 +37,6 @@ static uint8_t phase_timer = 0;
 static uint8_t dot_count = 0;
 static uint8_t remote_confirmed = 0;
 static uint8_t peer_cancelled = 0;
-
-// Portrait tile offsets (calculated during init)
-static uint8_t profile_offsets[LPROFILE_COUNT];
 
 // Portrait positions
 static const uint8_t portrait_x[LPROFILE_COUNT] = {
@@ -80,28 +67,11 @@ static void clear_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
 }
 
 /**
- * Draw a portrait in the 4-portrait grid using pre-loaded contiguous tiles
+ * Draw a portrait in the 4-portrait grid using merged tileset
  */
-static void draw_portrait_local(uint8_t idx, uint8_t tile_base) {
-    uint8_t x = portrait_x[idx];
-    uint8_t y = portrait_y[idx];
-    const unsigned char *map;
-
-    switch (idx) {
-        case 0: map = profile_01_map; break;
-        case 1: map = profile_02_map; break;
-        case 2: map = profile_03_map; break;
-        case 3: map = profile_04_map; break;
-        default: return;
-    }
-
-    uint8_t row_buf[LPROFILE_PORTRAIT_WIDTH];
-    for (uint8_t row = 0; row < LPROFILE_PORTRAIT_HEIGHT; row++) {
-        for (uint8_t col = 0; col < LPROFILE_PORTRAIT_WIDTH; col++) {
-            row_buf[col] = tile_base + map[row * LPROFILE_PORTRAIT_WIDTH + col];
-        }
-        set_bkg_tiles(x, y + row, LPROFILE_PORTRAIT_WIDTH, 1, row_buf);
-    }
+static void draw_portrait_at(uint8_t idx) {
+    draw_portrait_expr(idx, PORTRAIT_EXPR_NORMAL, LPROFILE_PORTRAIT_START,
+                       portrait_x[idx], portrait_y[idx], 0);
 }
 
 /**
@@ -192,13 +162,17 @@ static void show_vs_reveal(void) {
     // Clear screen
     fill_screen_with_tile(LPROFILE_BLANK_TILE);
 
-    // Load and draw both portraits using shared draw_portrait()
-    draw_portrait(link_local_profile, LPROFILE_VS_YOU_TILE_START,
-                  LPROFILE_VS_YOU_X, LPROFILE_VS_YOU_Y);
-    draw_portrait(link_remote_profile, LPROFILE_VS_OTHER_TILE_START,
-                  LPROFILE_VS_OTHER_X, LPROFILE_VS_OTHER_Y);
+    // Load merged tileset once, draw both portraits from it
+    load_portrait_tiles(LPROFILE_VS_YOU_TILE_START);
+    draw_portrait_expr(link_local_profile, PORTRAIT_EXPR_NORMAL,
+                       LPROFILE_VS_YOU_TILE_START,
+                       LPROFILE_VS_YOU_X, LPROFILE_VS_YOU_Y, 0);
+    draw_portrait_expr(link_remote_profile, PORTRAIT_EXPR_NORMAL,
+                       LPROFILE_VS_YOU_TILE_START,
+                       LPROFILE_VS_OTHER_X, LPROFILE_VS_OTHER_Y, 0);
 
     // Load border tiles and draw borders around both portraits
+    // Border starts after portrait tiles (117 + 1 = tile 118)
     set_bkg_data(LPROFILE_VS_BORDER_START, 25, border_tiles);
     draw_border_frame(LPROFILE_VS_YOU_BRD_X, LPROFILE_VS_YOU_BRD_Y,
                       LPROFILE_BORDER_WIDTH, LPROFILE_BORDER_HEIGHT,
@@ -240,32 +214,17 @@ void init_link_profile(void) {
     // Clear screen
     clear_rect(0, 0, 20, 18);
 
-    // Load all 4 profile tiles contiguously
-    uint8_t tile_offset = LPROFILE_PORTRAIT_START;
-
-    profile_offsets[0] = tile_offset;
-    set_bkg_data(tile_offset, profile_tile_counts[0], profile_01_tiles);
-    tile_offset += profile_tile_counts[0];
-
-    profile_offsets[1] = tile_offset;
-    set_bkg_data(tile_offset, profile_tile_counts[1], profile_02_tiles);
-    tile_offset += profile_tile_counts[1];
-
-    profile_offsets[2] = tile_offset;
-    set_bkg_data(tile_offset, profile_tile_counts[2], profile_03_tiles);
-    tile_offset += profile_tile_counts[2];
-
-    profile_offsets[3] = tile_offset;
-    set_bkg_data(tile_offset, profile_tile_counts[3], profile_04_tiles);
+    // Load merged portrait tileset (all 4 characters share one tileset)
+    load_portrait_tiles(LPROFILE_PORTRAIT_START);
 
     // Load border tiles
     set_bkg_data(LPROFILE_BORDER_START, 25, border_tiles);
 
-    // Draw all 4 portraits
-    draw_portrait_local(0, profile_offsets[0]);
-    draw_portrait_local(1, profile_offsets[1]);
-    draw_portrait_local(2, profile_offsets[2]);
-    draw_portrait_local(3, profile_offsets[3]);
+    // Draw all 4 portraits from merged tileset
+    draw_portrait_at(0);
+    draw_portrait_at(1);
+    draw_portrait_at(2);
+    draw_portrait_at(3);
 
     // Initialize selection
     current_selection = 0;

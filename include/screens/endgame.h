@@ -15,8 +15,7 @@
 #define ENDGAME_BORDER_WIDTH 7
 #define ENDGAME_BORDER_HEIGHT 7
 
-// Sad portrait animation
-#define ENDGAME_SAD_TILE_START 26   // After max normal portrait (25 tiles)
+// Portrait animation timing
 #define ENDGAME_ANIM_INTERVAL 40    // ~0.67s per expression at 60fps
 
 // Text positions (y coordinates)

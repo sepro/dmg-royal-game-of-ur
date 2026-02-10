@@ -15,16 +15,7 @@
 #include "util/input.h"
 #include "util/transition.h"
 #include "util/screen_utils.h"
-
-// External references to generated profile assets
-extern const uint8_t profile_01_tiles[];
-extern const unsigned char profile_01_map[];
-extern const uint8_t profile_02_tiles[];
-extern const unsigned char profile_02_map[];
-extern const uint8_t profile_03_tiles[];
-extern const unsigned char profile_03_map[];
-extern const uint8_t profile_04_tiles[];
-extern const unsigned char profile_04_map[];
+#include "util/portrait.h"
 
 // External reference to border tiles and map (from border.c)
 extern const uint8_t border_tiles[];
@@ -63,33 +54,11 @@ static void clear_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
 }
 
 /**
- * Draw a portrait at the specified position
- * @param idx Opponent index (0-3)
- * @param tile_base VRAM tile index where this profile's tiles start
+ * Draw a portrait at the specified grid position using merged tileset
  */
-static void draw_portrait(uint8_t idx, uint8_t tile_base) {
-    uint8_t x = portrait_x[idx];
-    uint8_t y = portrait_y[idx];
-    const unsigned char *map;
-
-    // Select the correct map
-    switch (idx) {
-        case 0: map = profile_01_map; break;
-        case 1: map = profile_02_map; break;
-        case 2: map = profile_03_map; break;
-        case 3: map = profile_04_map; break;
-        default: return;
-    }
-
-    // Draw the portrait tile by tile, adding tile_base offset
-    uint8_t row_buf[PORTRAIT_WIDTH];
-    for (uint8_t row = 0; row < PORTRAIT_HEIGHT; row++) {
-        for (uint8_t col = 0; col < PORTRAIT_WIDTH; col++) {
-            uint8_t map_tile = map[row * PORTRAIT_WIDTH + col];
-            row_buf[col] = tile_base + map_tile;
-        }
-        set_bkg_tiles(x, y + row, PORTRAIT_WIDTH, 1, row_buf);
-    }
+static void draw_portrait_at(uint8_t idx) {
+    draw_portrait_expr(idx, PORTRAIT_EXPR_NORMAL, PORTRAIT_TILE_START,
+                       portrait_x[idx], portrait_y[idx], 0);
 }
 
 /**
@@ -158,34 +127,17 @@ void init_opponent_select(void) {
     // Clear the entire screen with black tiles
     clear_rect(0, 0, 20, 18);
 
-    // Load profile tiles into VRAM with proper per-profile tile counts
-    // Calculate offsets based on actual tile counts
-    uint8_t tile_offset = PORTRAIT_TILE_START;
-    uint8_t profile_offsets[OPPONENT_COUNT];
-
-    profile_offsets[0] = tile_offset;
-    set_bkg_data(tile_offset, profile_tile_counts[0], profile_01_tiles);
-    tile_offset += profile_tile_counts[0];
-
-    profile_offsets[1] = tile_offset;
-    set_bkg_data(tile_offset, profile_tile_counts[1], profile_02_tiles);
-    tile_offset += profile_tile_counts[1];
-
-    profile_offsets[2] = tile_offset;
-    set_bkg_data(tile_offset, profile_tile_counts[2], profile_03_tiles);
-    tile_offset += profile_tile_counts[2];
-
-    profile_offsets[3] = tile_offset;
-    set_bkg_data(tile_offset, profile_tile_counts[3], profile_04_tiles);
+    // Load merged portrait tileset (all 4 characters share one tileset)
+    load_portrait_tiles(PORTRAIT_TILE_START);
 
     // Load border tiles (normal, dark on white background)
     set_bkg_data(BORDER_TILE_START, 25, border_tiles);
 
-    // Draw all 4 portraits with correct tile offsets
-    draw_portrait(0, profile_offsets[0]);
-    draw_portrait(1, profile_offsets[1]);
-    draw_portrait(2, profile_offsets[2]);
-    draw_portrait(3, profile_offsets[3]);
+    // Draw all 4 portraits from merged tileset
+    draw_portrait_at(0);
+    draw_portrait_at(1);
+    draw_portrait_at(2);
+    draw_portrait_at(3);
 
     // Initialize selection to first opponent
     selected_opponent = 0;

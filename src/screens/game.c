@@ -1323,11 +1323,16 @@ void update_game(void) {
                     uint8_t piece_idx;
 
                     if (ai_select_move(dice_total, &piece_idx)) {
-                        // No capture animation for CPU moves (human's piece captured)
-                        uint8_t extra_turn = execute_move(PLAYER_CPU, piece_idx, dice_total, (void *)0);
+                        uint8_t captured = 0;
+                        uint8_t extra_turn = execute_move(PLAYER_CPU, piece_idx, dice_total, &captured);
                         update_piece_counts();
                         update_reserve_display();
                         update_dirty_squares();  // Only redraw affected squares
+
+                        // Happy animation when CPU captures or finishes a piece
+                        if ((captured || cpu_pieces[piece_idx] == POS_FINISHED) && !portrait_anim_active) {
+                            start_portrait_animation(PORTRAIT_EXPR_HAPPY);
+                        }
 
                         if (check_win_condition()) {
                             human_won = 0;  // CPU won, human lost
@@ -1388,9 +1393,9 @@ void update_game(void) {
                         update_reserve_display();
                         update_dirty_squares();
 
-                        // Start sad portrait animation if our piece was captured by remote
-                        if (captured && !portrait_anim_active) {
-                            start_portrait_animation(PORTRAIT_EXPR_SAD);
+                        // Happy animation when remote player captures or finishes a piece
+                        if ((captured || cpu_pieces[piece_idx] == POS_FINISHED) && !portrait_anim_active) {
+                            start_portrait_animation(PORTRAIT_EXPR_HAPPY);
                         }
 
                         if (check_win_condition()) {

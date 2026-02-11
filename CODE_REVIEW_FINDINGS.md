@@ -2,46 +2,11 @@
 
 This document highlights the highest-impact maintainability and correctness risks in the current codebase, why they matter, and pragmatic refactoring directions.
 
-## 1) `game.c` is doing too much (high complexity hotspot)
-
-**What I observed**
-- `src/screens/game.c` is very large (about 1.5k lines) and owns UI rendering, input flow, turn state transitions, link logic integration, pause menu, portrait animation, dice animation, and win/loss transitions.
-
-**Why this is bad**
-- A single high-traffic file becomes a regression magnet: every change has broad blast radius.
-- It is hard to reason about behavior and hard to test in isolation.
-- Cognitive overhead slows feature work and increases defect probability.
-
-**How to improve**
-- Split by domain responsibilities:
-  - `game_state_machine.c` (phase transitions)
-  - `game_ui.c` (text, HUD, pause window drawing)
-  - `game_dice.c` (roll lifecycle and animation)
-  - `game_selection.c` (move selection/destination preview)
-  - `game_link_adapter.c` (link-specific move transport)
-- Keep a thin orchestrator in `game.c`.
-- Add a `GameContext` struct passed between modules instead of relying on many globals.
+## 1) `game.c` is doing too much (high complexity hotspot)  -- Won't FIX (overkill for this project)
 
 ---
 
-## 2) Heavy coupling via cross-module globals (`extern` state sharing)
-
-**What I observed**
-- Core game state arrays and flags are defined in one module and consumed through `extern` in others (e.g. piece arrays and colors used by board and AI modules).
-
-**Why this is bad**
-- Hidden dependencies make behavior brittle and non-local.
-- Modules cannot be unit tested independently.
-- Refactoring data layout is expensive because every consumer reaches into internals.
-
-**How to improve**
-- Replace direct global access with an explicit state contract:
-  - Introduce a `GameState` struct with positions, colors, mode, turn metadata.
-  - Pass `const GameState*` for read-only logic (AI, board rendering decisions).
-  - Expose mutations via explicit APIs (`apply_move`, `set_turn`, `capture_piece`).
-- DMG performance note: this does **not** require costly copying. Keep exactly one global/static `GameState` instance and pass a pointer/reference to modules. That keeps RAM/layout equivalent to the current scattered globals while improving code boundaries.
-- If needed, split into hot/cold structs (frequently-updated gameplay fields vs rarely-changed metadata) and use `const` tables for immutable data so the runtime overhead stays negligible.
-- This yields stronger boundaries and easier deterministic tests without meaningful frame-time impact on DMG.
+## 2) Heavy coupling via cross-module globals (`extern` state sharing) -- Won't FIX (overkill for this project)
 
 ---
 

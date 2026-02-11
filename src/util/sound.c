@@ -19,6 +19,11 @@ static const uint8_t wave_triangle[] = {
     0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10
 };
 
+static const uint8_t wave_grit[] = {
+    0x0F, 0x1F, 0x2E, 0x3D, 0x4B, 0x59, 0x67, 0x75,
+    0x84, 0x93, 0xA3, 0xB4, 0xC6, 0xD9, 0xEC, 0xFF
+};
+
 // Chime note frequencies (ch3 period register values)
 // Victory: C5 -> E5 -> G5 -> C6 (ascending major arpeggio)
 static const uint16_t victory_freqs[4] = { 0x0783, 0x079D, 0x07AC, 0x07C1 };
@@ -28,12 +33,38 @@ static const uint8_t victory_durations[4] = { 12, 12, 12, 20 };
 static const uint16_t loss_freqs[4] = { 0x079D, 0x0783, 0x076B, 0x0744 };
 static const uint8_t loss_durations[4] = { 15, 15, 15, 25 };
 
+// Confirm and move-select are short two-note motifs.
+static const uint16_t confirm_freqs[2] = { 0x06E0, 0x0750 };
+static const uint8_t confirm_durations[2] = { 5, 9 };
+static const uint16_t move_select_freqs[2] = { 0x0480, 0x0560 };
+static const uint8_t move_select_durations[2] = { 4, 8 };
+
+// Noise texture options for an evolving dice roll.
+static const uint8_t dice_poly_values[] = {
+    0x13, 0x17, 0x1A, 0x23, 0x27, 0x2B, 0x33, 0x36
+};
+
 // Multi-note chime sequencer state
 static uint8_t chime_active;
 static uint8_t chime_note_index;
 static uint8_t chime_frame_counter;
+static uint8_t chime_note_count;
+static uint8_t vibrato_depth;
+static uint8_t vibrato_phase;
 static const uint16_t *chime_freqs;
 static const uint8_t *chime_durations;
+
+// Dice roll sequencer state.
+static uint8_t dice_active;
+static uint8_t dice_frame_counter;
+static uint8_t dice_frames_remaining;
+
+static void trigger_noise(uint8_t envelope, uint8_t polynomial) {
+    NR41_REG = 0x08;      // Short length
+    NR42_REG = envelope;  // Initial volume + envelope sweep
+    NR43_REG = polynomial;
+    NR44_REG = 0x80;      // Trigger
+}
 
 /**
  * Load 16 bytes into wave RAM
@@ -52,9 +83,26 @@ static void load_wave(const uint8_t *data) {
  */
 static void trigger_wave_note(uint16_t period) {
     NR31_REG = 0xEF;                              // Short length
-    NR32_REG = 0x20;                              // 100% volume (bits 5-6 = 01)
+    NR32_REG = 0x20;                              // 100% wave output
     NR33_REG = (uint8_t)(period & 0xFF);          // Frequency low
     NR34_REG = 0xC0 | ((period >> 8) & 0x07);     // Trigger + length enable + freq high
+}
+
+static void start_chime(const uint8_t *wave,
+                        const uint16_t *freqs,
+                        const uint8_t *durations,
+                        uint8_t note_count,
+                        uint8_t vibrato) {
+    load_wave(wave);
+    chime_freqs = freqs;
+    chime_durations = durations;
+    chime_note_count = note_count;
+    chime_note_index = 0;
+    chime_frame_counter = 0;
+    vibrato_depth = vibrato;
+    vibrato_phase = 0;
+    chime_active = 1;
+    trigger_wave_note(chime_freqs[0]);
 }
 
 void init_sound(void) {
@@ -69,77 +117,91 @@ void init_sound(void) {
                AUDTERM_4_LEFT | AUDTERM_4_RIGHT;
 
     chime_active = 0;
+    dice_active = 0;
 }
 
 void play_sfx(SoundEffect_t sfx) {
     switch (sfx) {
         case SFX_CURSOR:
-            // Short sharp click on noise channel
-            NR42_REG = 0xF1;  // Vol 15, envelope down 1 step
-            NR43_REG = 0x41;  // Clock shift 4, divisor 1
-            NR44_REG = 0x80;  // Trigger
+            // Sharper two-layer click for menu movement.
+            trigger_noise(0xF1, 0x31);
+            trigger_noise(0xA1, 0x51);
             break;
 
         case SFX_CONFIRM:
-            chime_active = 0;
-            load_wave(wave_sine);
-            trigger_wave_note(0x0500);
+            start_chime(wave_sine, confirm_freqs, confirm_durations, 2, 1);
             break;
 
         case SFX_MOVE_CHANGE:
-            // Softer tick on noise channel
-            NR42_REG = 0xC1;  // Vol 12, envelope down 1 step
-            NR43_REG = 0x51;  // Clock shift 5, divisor 1
-            NR44_REG = 0x80;  // Trigger
+            // Softer tactile tick.
+            trigger_noise(0xD2, 0x49);
             break;
 
         case SFX_MOVE_SELECT:
-            chime_active = 0;
-            load_wave(wave_sine);
-            trigger_wave_note(0x0400);
+            start_chime(wave_grit, move_select_freqs, move_select_durations, 2, 2);
             break;
 
         case SFX_DICE_ROLL:
-            // Rattle texture on noise channel
-            NR42_REG = 0xF3;  // Vol 15, envelope down 3 steps
-            NR43_REG = 0x33;  // Clock shift 3, divisor 3
-            NR44_REG = 0x80;  // Trigger
+            // Kick off an evolving 22-frame rattle with changing color.
+            dice_active = 1;
+            dice_frame_counter = 0;
+            dice_frames_remaining = 22;
+            trigger_noise(0xF2, 0x23);
             break;
 
         case SFX_VICTORY:
-            // Ascending chime (sine wave)
-            load_wave(wave_sine);
-            chime_freqs = victory_freqs;
-            chime_durations = victory_durations;
-            chime_note_index = 0;
-            chime_frame_counter = 0;
-            chime_active = 1;
-            trigger_wave_note(chime_freqs[0]);
+            // Ascending celebratory arpeggio with gentle vibrato.
+            start_chime(wave_sine, victory_freqs, victory_durations, 4, 2);
             break;
 
         case SFX_LOSS:
-            // Descending chime (triangle wave for darker tone)
-            load_wave(wave_triangle);
-            chime_freqs = loss_freqs;
-            chime_durations = loss_durations;
-            chime_note_index = 0;
-            chime_frame_counter = 0;
-            chime_active = 1;
-            trigger_wave_note(chime_freqs[0]);
+            // Descending darker phrase.
+            start_chime(wave_triangle, loss_freqs, loss_durations, 4, 1);
             break;
     }
 }
 
 void update_sound(void) {
-    if (!chime_active) return;
+    if (dice_active) {
+        dice_frame_counter++;
+
+        if ((dice_frame_counter & 0x01) == 0) {
+            uint8_t index = (DIV_REG ^ dice_frame_counter) & 0x07;
+            uint8_t envelope = 0xF1;
+
+            if (dice_frames_remaining < 10) {
+                envelope = 0xB2;
+            }
+
+            trigger_noise(envelope, dice_poly_values[index]);
+            dice_frames_remaining--;
+            if (!dice_frames_remaining) {
+                dice_active = 0;
+            }
+        }
+    }
+
+    if (!chime_active) {
+        return;
+    }
 
     chime_frame_counter++;
+
+    if (vibrato_depth) {
+        uint16_t base = chime_freqs[chime_note_index];
+        int16_t mod = (vibrato_phase & 0x01) ? (int16_t)vibrato_depth : -(int16_t)vibrato_depth;
+        uint16_t modulated = (uint16_t)((int16_t)base + mod);
+
+        NR33_REG = (uint8_t)(modulated & 0xFF);
+        NR34_REG = 0x40 | ((modulated >> 8) & 0x07);
+        vibrato_phase++;
+    }
 
     if (chime_frame_counter >= chime_durations[chime_note_index]) {
         chime_frame_counter = 0;
         chime_note_index++;
 
-        if (chime_note_index >= 4) {
+        if (chime_note_index >= chime_note_count) {
             // Chime complete - silence wave channel
             NR30_REG = 0x00;
             chime_active = 0;

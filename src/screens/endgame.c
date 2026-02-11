@@ -85,7 +85,7 @@ void init_endgame(void) {
 
         // Labels under portraits
         draw_text_inverted(3, ENDGAME_LINK_NAME_Y, "YOU");
-        draw_text_inverted(12, ENDGAME_LINK_NAME_Y, "OPPONENT");
+        draw_text_inverted(14, ENDGAME_LINK_NAME_Y, "OTHER");
 
         // Animation: winner=happy, loser=sad
         if (human_won) {

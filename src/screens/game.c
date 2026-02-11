@@ -116,6 +116,11 @@ static uint8_t portrait_anim_target_expr; // Target expression (sad or happy)
 #define PORTRAIT_ANIM_INTERVAL 20     // Frames per toggle (~0.33s at 60fps)
 #define PORTRAIT_ANIM_TOGGLES 6       // Total toggles (3 complete cycles)
 
+// Link waiting dot animation state
+static uint8_t waiting_dot_count;     // 0-3 dots currently shown
+static uint8_t waiting_dot_timer;     // Frame counter for dot cycling
+#define WAITING_DOT_CYCLE 20          // Frames per dot change (~0.33s at 60fps)
+
 // ============================================================================
 // Forward Declarations (for functions used before definition)
 // ============================================================================
@@ -250,6 +255,40 @@ static void draw_turn_indicator(void) {
 static void draw_prompt(const char *text) {
     clear_text_row_inverted(UI_PROMPT_X, UI_PROMPT_Y, 18);
     draw_text_inverted(UI_PROMPT_X, UI_PROMPT_Y, text);
+}
+
+/**
+ * Draw "WAITING" with animated dots (0-3)
+ */
+static void draw_waiting_prompt(void) {
+    clear_text_row_inverted(UI_PROMPT_X, UI_PROMPT_Y, 18);
+    draw_text_inverted(UI_PROMPT_X, UI_PROMPT_Y, "WAITING");
+    uint8_t x = UI_PROMPT_X + 7;
+    for (uint8_t i = 0; i < waiting_dot_count; i++) {
+        draw_text_inverted(x + i, UI_PROMPT_Y, ".");
+    }
+}
+
+/**
+ * Reset dot animation and draw initial "WAITING" prompt
+ */
+static void reset_waiting_dots(void) {
+    waiting_dot_count = 0;
+    waiting_dot_timer = 0;
+    draw_waiting_prompt();
+}
+
+/**
+ * Advance dot animation by one frame, redraw when dot count changes
+ */
+static void update_waiting_dots(void) {
+    waiting_dot_timer++;
+    if (waiting_dot_timer >= WAITING_DOT_CYCLE) {
+        waiting_dot_timer = 0;
+        waiting_dot_count++;
+        if (waiting_dot_count > 3) waiting_dot_count = 0;
+        draw_waiting_prompt();
+    }
 }
 
 /**
@@ -1030,7 +1069,7 @@ static void switch_turn(void) {
     game_phase = PHASE_WAIT_ROLL;
     hide_dice();
     if (game_mode == GAME_MODE_LINK && current_turn == 1) {
-        draw_prompt("WAITING...");
+        reset_waiting_dots();
     } else {
         draw_prompt("PRESS A TO ROLL");
     }
@@ -1160,7 +1199,7 @@ void init_game(void) {
     draw_player_info();
     draw_turn_indicator();
     if (game_mode == GAME_MODE_LINK && current_turn == 1) {
-        draw_prompt("WAITING...");
+        reset_waiting_dots();
     } else {
         draw_prompt("PRESS A TO ROLL");
     }
@@ -1245,6 +1284,7 @@ void update_game(void) {
                 }
             } else if (game_mode == GAME_MODE_LINK) {
                 // Link mode: receive dice from remote player (non-blocking)
+                update_waiting_dots();
                 {
                     uint8_t recv;
                     if (link_game_recv(&recv)) {
@@ -1300,7 +1340,7 @@ void update_game(void) {
                     start_move_selection();
                 } else if (game_mode == GAME_MODE_LINK) {
                     // Link mode: transition to dedicated recv phase
-                    draw_prompt("WAITING...");
+                    reset_waiting_dots();
                     link_recv_frames = 0;
                     game_phase = PHASE_LINK_RECV_MOVE;
                 } else {
@@ -1355,7 +1395,7 @@ void update_game(void) {
 
         case PHASE_LINK_RECV_MOVE:
             // Dedicated phase for receiving remote player's move via link
-            // "WAITING..." was drawn once on entry (in PHASE_SHOW_RESULT transition)
+            update_waiting_dots();
             {
                 uint8_t recv;
                 if (link_game_recv(&recv)) {
@@ -1443,7 +1483,7 @@ void update_game(void) {
                 link_recv_frames = 0;
                 hide_dice();
                 if (game_mode == GAME_MODE_LINK && current_turn == 1) {
-                    draw_prompt("WAITING...");
+                    reset_waiting_dots();
                 } else {
                     draw_prompt("PRESS A TO ROLL");
                 }

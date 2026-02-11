@@ -88,6 +88,19 @@ void link_reset(void) {
 }
 
 /**
+ * Soft-reset serial port state without clearing link_role/link_status.
+ * Use between screens that share a link connection.
+ */
+void link_soft_reset(void) {
+    SB_REG = 0x00;
+    SC_REG = 0x00;
+    slave_recv_armed = 0;
+    link_has_pending = 0;
+    link_pending_byte = 0;
+    link_alive_flag = 0;
+}
+
+/**
  * Exchange a byte (blocking, master mode)
  * Only use after connection is established.
  */

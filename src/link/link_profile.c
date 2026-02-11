@@ -188,6 +188,9 @@ static void show_vs_reveal(void) {
 void init_link_profile(void) {
     DISPLAY_OFF;
 
+    // Clear stale serial port state from link_connect without resetting role
+    link_soft_reset();
+
     // Load white tile at index 0
     set_bkg_data(LPROFILE_BLANK_TILE, 1, white_tile);
 

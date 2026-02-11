@@ -68,7 +68,7 @@
 // Timing
 #define LPROFILE_DOT_CYCLE       20   // Frames per dot animation step
 #define LPROFILE_VS_DURATION     180  // ~3 seconds at 60fps
-#define LPROFILE_SYNC_TIMEOUT    180  // Max frames to wait for peer sync (~3s)
+#define LPROFILE_SYNC_TIMEOUT    360  // Max frames to wait for peer sync (~6s)
 
 // Exported globals for Phase 12D
 extern uint8_t link_local_profile;

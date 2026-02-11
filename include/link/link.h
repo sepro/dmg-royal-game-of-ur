@@ -103,6 +103,13 @@ uint8_t link_exchange_slave(uint8_t send_data, uint8_t* recv_data, uint8_t timeo
 void link_reset(void);
 
 /**
+ * Soft-reset serial port state without clearing link_role/link_status.
+ * Clears SB/SC registers, slave_recv_armed, buffered data, and alive flag.
+ * Use between screens that share a link connection (e.g. link_connect → link_profile).
+ */
+void link_soft_reset(void);
+
+/**
  * Non-blocking ready sync for screen transitions
  * Both devices call this each frame when ready to advance.
  * @return 0=still waiting, 1=both sides ready, 2=peer cancelled

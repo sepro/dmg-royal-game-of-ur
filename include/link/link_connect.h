@@ -17,7 +17,7 @@
 // Timing (frames)
 #define CONNECT_DOT_CYCLE       20    // Frames per dot animation step
 #define CONNECT_REVEAL_DURATION 120   // Frames to show side before transition
-#define CONNECT_SYNC_TIMEOUT   180   // Max frames to wait for peer sync (~3s)
+#define CONNECT_SYNC_TIMEOUT   360   // Max frames to wait for peer sync (~6s)
 
 // Screen layout (tile coordinates)
 #define CONNECT_TITLE_X    2

@@ -105,3 +105,10 @@
 - Disconnection detection with timeout handling and graceful return to title
 - Game end synchronization with win/lose signals exchanged between players
 - Fully functional two-player gameplay over link cable tested in Emulicious emulator
+
+## Phase 14: Happy - Sad profile animations ✓
+
+- Portraits respond to finishing their pieces and their pieces being captured'
+- Win screens have animations (single player and link cable)
+
+

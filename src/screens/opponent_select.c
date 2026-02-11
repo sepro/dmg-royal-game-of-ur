@@ -16,6 +16,7 @@
 #include "util/transition.h"
 #include "util/screen_utils.h"
 #include "util/portrait.h"
+#include "util/sound.h"
 
 // External reference to border tiles and map (from border.c)
 extern const uint8_t border_tiles[];
@@ -178,6 +179,8 @@ void update_opponent_select(void) {
 
     // Update selection if changed
     if (new_selection != selected_opponent) {
+        play_sfx(SFX_CURSOR);
+
         // Clear old border
         clear_border(selected_opponent);
 
@@ -194,6 +197,7 @@ void update_opponent_select(void) {
 
     // Handle A button (confirm selection)
     if (input_pressed(J_A)) {
+        play_sfx(SFX_CONFIRM);
         transition_start(STATE_DIFFICULTY_SELECT, TRANSITION_PHASE_COUNT_3);
     }
 

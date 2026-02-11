@@ -15,6 +15,7 @@
 #include "util/transition.h"
 #include "util/portrait.h"
 #include "util/screen_utils.h"
+#include "util/sound.h"
 
 // Portrait assets handled by portrait.c
 
@@ -111,17 +112,20 @@ void update_difficulty_select(void) {
             current_selection--;
             move_sprite(arrow_sprite_index, DIFF_ARROW_X,
                        DIFF_ARROW_START_Y + (current_selection * DIFF_ARROW_SPACING));
+            play_sfx(SFX_CURSOR);
         }
     } else if (input_pressed(J_DOWN)) {
         if (current_selection < DIFFICULTY_COUNT - 1) {
             current_selection++;
             move_sprite(arrow_sprite_index, DIFF_ARROW_X,
                        DIFF_ARROW_START_Y + (current_selection * DIFF_ARROW_SPACING));
+            play_sfx(SFX_CURSOR);
         }
     }
 
     // Confirm with A
     if (input_pressed(J_A)) {
+        play_sfx(SFX_CONFIRM);
         selected_difficulty = current_selection;
         transition_start(STATE_COINFLIP, TRANSITION_PHASE_COUNT_3);
     }

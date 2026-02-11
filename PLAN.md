@@ -16,23 +16,6 @@ A happy or sad chime should sound upon winning or losing.
 
 - Sounds and background music made with hUGEtracker
 
-
-## Phase 14: Happy - Sad profile animations
-
-We'll add some animations to the opponents profile, if they capture a piece or finish with a piece they should
-briefly look happy. If a piece of them is captured by the human player or the human finishes a piece they should briefly look sad. 
-
-On the endgame screen, if the opponent has won their profile image should altenate between normal and happy. If they lost it should alternate between normal and sad
-
-### Assets
-
-- 4 opponent happy variants
-- 4 opponent sad variants 
-
-### STATUS
-
-Sad portraits integrated in game (animation on captured piece) and endgame
-
 ---
 
 ## Asset Summary

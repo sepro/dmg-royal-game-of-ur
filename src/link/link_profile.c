@@ -18,6 +18,7 @@
 #include "util/screen_utils.h"
 #include "screens/coinflip.h"
 #include "screens/game.h"
+#include "util/sound.h"
 
 // External reference to border tiles and map
 extern const uint8_t border_tiles[];
@@ -255,6 +256,7 @@ static void update_selecting(void) {
 
     // Update selection if changed
     if (new_selection != current_selection) {
+        play_sfx(SFX_CURSOR);
         clear_border(current_selection);
         current_selection = new_selection;
         draw_border(current_selection);
@@ -263,6 +265,7 @@ static void update_selecting(void) {
 
     // A: confirm selection
     if (input_pressed(J_A)) {
+        play_sfx(SFX_CONFIRM);
         link_local_profile = current_selection;
         phase = LPROFILE_PHASE_WAITING;
         phase_timer = 0;

@@ -13,6 +13,7 @@
 #include "util/transition.h"
 #include "util/random.h"
 #include "util/screen_utils.h"
+#include "util/sound.h"
 
 // External references to generated coin assets
 extern const uint8_t light_coin_tiles[];
@@ -375,6 +376,7 @@ void update_coinflip(void) {
             prev_selection = current_selection;
             current_selection = SIDE_LIGHT;
             draw_border(current_selection);
+            play_sfx(SFX_CURSOR);
         }
     } else if (input_pressed(J_RIGHT)) {
         if (current_selection == SIDE_LIGHT) {
@@ -382,11 +384,13 @@ void update_coinflip(void) {
             prev_selection = current_selection;
             current_selection = SIDE_DARK;
             draw_border(current_selection);
+            play_sfx(SFX_CURSOR);
         }
     }
 
     // Confirm with A - start coin flip
     if (input_pressed(J_A)) {
+        play_sfx(SFX_CONFIRM);
         selected_side = current_selection;
         start_animation();
     }

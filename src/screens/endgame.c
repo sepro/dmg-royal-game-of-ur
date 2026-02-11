@@ -11,6 +11,7 @@
 #include "screens/game.h"
 #include "link/link.h"
 #include "link/link_profile.h"
+#include "util/sound.h"
 
 extern const uint8_t border_tiles[];
 extern const unsigned char border_map[];
@@ -139,6 +140,9 @@ void init_endgame(void) {
 
     SHOW_BKG;
     DISPLAY_ON;
+
+    // Play victory or loss chime
+    play_sfx(human_won ? SFX_VICTORY : SFX_LOSS);
 }
 
 void update_endgame(void) {
@@ -172,6 +176,7 @@ void update_endgame(void) {
     }
 
     if (input_pressed(J_A)) {
+        play_sfx(SFX_CONFIRM);
         if (game_mode == GAME_MODE_LINK) {
             // Link mode: reset and return to title
             game_mode = GAME_MODE_SINGLE;

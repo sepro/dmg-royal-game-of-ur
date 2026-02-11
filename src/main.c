@@ -15,6 +15,7 @@
 #include "link/link_connect.h"
 #include "link/link_profile.h"
 #include "util/font.h"
+#include "util/sound.h"
 
 // Global game state
 ScreenState_t current_state = STATE_TITLE;
@@ -34,6 +35,9 @@ void main(void) {
 
     // Load font tiles once at boot (shared across all screens)
     load_font_inverted();
+
+    // Initialize sound system (ch3 wave + ch4 noise)
+    init_sound();
 
     // Initialize the title screen
     init_title();
@@ -138,6 +142,9 @@ void main(void) {
             default:
                 break;
         }
+
+        // Advance sound sequencer (chime multi-note effects)
+        update_sound();
 
         // Wait for VBlank before next frame
         wait_vbl_done();

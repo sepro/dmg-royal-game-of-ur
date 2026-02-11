@@ -11,6 +11,7 @@
 #include "util/input.h"
 #include "util/transition.h"
 #include "util/random.h"
+#include "util/sound.h"
 
 // Forward declarations for generated assets
 // (Actual data is compiled separately from assets/generated/*.h)
@@ -164,16 +165,19 @@ void update_title(void) {
         if (selected_option > 0) {
             selected_option--;
             move_sprite(arrow_sprite_index, ARROW_X, ARROW_START_Y + (selected_option * ARROW_SPACING));
+            play_sfx(SFX_CURSOR);
         }
     } else if (input_pressed(J_DOWN)) {
         if (selected_option < MENU_OPTION_COUNT - 1) {
             selected_option++;
             move_sprite(arrow_sprite_index, ARROW_X, ARROW_START_Y + (selected_option * ARROW_SPACING));
+            play_sfx(SFX_CURSOR);
         }
     }
 
     // Handle A button (confirm selection)
     if (input_pressed(J_A)) {
+        play_sfx(SFX_CONFIRM);
         if (selected_option == MENU_START_GAME) {
             transition_start(STATE_OPPONENT_SELECT, TRANSITION_PHASE_COUNT_3);
         } else if (selected_option == MENU_LINK_CABLE) {

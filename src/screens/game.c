@@ -19,6 +19,7 @@
 #include "logic/ai.h"
 #include "link/link.h"
 #include "link/link_profile.h"
+#include "util/sound.h"
 
 // External references to generated board asset
 extern const uint8_t board_tiles[];
@@ -641,6 +642,7 @@ static void update_move_selection(void) {
 
     // Update sprites if selection changed
     if (selection_changed) {
+        play_sfx(SFX_MOVE_CHANGE);
         position_selection_sprite();
         update_reserve_piece_indicator();
         dest_blink_timer = 0;
@@ -652,6 +654,7 @@ static void update_move_selection(void) {
 
     // Handle A button - confirm selection
     if (input_pressed(J_A)) {
+        play_sfx(SFX_MOVE_SELECT);
         uint8_t piece_idx = valid_moves[selection_index];
 
         // In link mode, send the move to remote player
@@ -991,6 +994,9 @@ static void stop_portrait_animation(void) {
 static void start_dice_roll(void) {
     // Seed random with fresh entropy
     seed_random(DIV_REG ^ ((uint16_t)frame_counter << 8));
+
+    // Play dice rattle sound
+    play_sfx(SFX_DICE_ROLL);
 
     // Initialize animation state
     game_phase = PHASE_ROLLING;

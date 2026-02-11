@@ -15,6 +15,17 @@
 #define ENDGAME_BORDER_WIDTH 7
 #define ENDGAME_BORDER_HEIGHT 7
 
+// Link mode dual portrait layout (reuses VS reveal positions)
+#define ENDGAME_LINK_LEFT_X        2
+#define ENDGAME_LINK_LEFT_Y        4
+#define ENDGAME_LINK_LEFT_BRD_X    1
+#define ENDGAME_LINK_LEFT_BRD_Y    3
+#define ENDGAME_LINK_RIGHT_X       13
+#define ENDGAME_LINK_RIGHT_Y       4
+#define ENDGAME_LINK_RIGHT_BRD_X   12
+#define ENDGAME_LINK_RIGHT_BRD_Y   3
+#define ENDGAME_LINK_NAME_Y        11
+
 // Portrait animation timing
 #define ENDGAME_ANIM_INTERVAL 40    // ~0.67s per expression at 60fps
 

@@ -10,6 +10,7 @@
 #include "util/screen_utils.h"
 #include "screens/game.h"
 #include "link/link.h"
+#include "link/link_profile.h"
 
 extern const uint8_t border_tiles[];
 extern const unsigned char border_map[];
@@ -23,6 +24,7 @@ static uint8_t anim_counter;
 static uint8_t anim_showing_expr;  // 0 = normal, 1 = expression
 static uint8_t anim_active;
 static uint8_t anim_target_expr;   // PORTRAIT_EXPR_SAD or PORTRAIT_EXPR_HAPPY
+static uint8_t anim_local_expr;    // Link mode: local player's target expression
 
 // Draw centered text (centers horizontally)
 static void draw_centered_text(uint8_t y, const char *text) {
@@ -59,43 +61,70 @@ void init_endgame(void) {
     // Load full merged portrait tileset (endgame has ample VRAM)
     load_portrait_tiles(ENDGAME_PORTRAIT_TILE_START);
 
-    // Draw normal portrait
-    draw_opponent_portrait();
-
-    // Setup animation in single player mode
+    // Initialize animation state
     anim_active = 0;
     anim_counter = 0;
     anim_showing_expr = 0;
-    if (game_mode == GAME_MODE_SINGLE) {
+
+    if (game_mode == GAME_MODE_LINK) {
+        // Link mode: dual portraits side by side
+        // Left = local player, Right = opponent (remote)
+        draw_portrait_expr(link_local_profile, PORTRAIT_EXPR_NORMAL,
+                           ENDGAME_PORTRAIT_TILE_START,
+                           ENDGAME_LINK_LEFT_X, ENDGAME_LINK_LEFT_Y, 0);
+        draw_border_frame(ENDGAME_LINK_LEFT_BRD_X, ENDGAME_LINK_LEFT_BRD_Y,
+                          ENDGAME_BORDER_WIDTH, ENDGAME_BORDER_HEIGHT,
+                          ENDGAME_BORDER_TILE_START, border_map);
+
+        draw_portrait_expr(selected_opponent, PORTRAIT_EXPR_NORMAL,
+                           ENDGAME_PORTRAIT_TILE_START,
+                           ENDGAME_LINK_RIGHT_X, ENDGAME_LINK_RIGHT_Y, 0);
+        draw_border_frame(ENDGAME_LINK_RIGHT_BRD_X, ENDGAME_LINK_RIGHT_BRD_Y,
+                          ENDGAME_BORDER_WIDTH, ENDGAME_BORDER_HEIGHT,
+                          ENDGAME_BORDER_TILE_START, border_map);
+
+        // Labels under portraits
+        draw_text_inverted(3, ENDGAME_LINK_NAME_Y, "YOU");
+        draw_text_inverted(12, ENDGAME_LINK_NAME_Y, "OPPONENT");
+
+        // Animation: winner=happy, loser=sad
         if (human_won) {
-            // Human wins: opponent toggles sad
+            anim_local_expr = PORTRAIT_EXPR_HAPPY;
+            anim_target_expr = PORTRAIT_EXPR_SAD;
+        } else {
+            anim_local_expr = PORTRAIT_EXPR_SAD;
+            anim_target_expr = PORTRAIT_EXPR_HAPPY;
+        }
+        anim_active = 1;
+    } else {
+        // Single player: centered portrait
+        draw_opponent_portrait();
+        draw_border();
+
+        if (human_won) {
             anim_target_expr = PORTRAIT_EXPR_SAD;
             anim_active = 1;
         } else {
-            // CPU wins: opponent toggles happy
             anim_target_expr = PORTRAIT_EXPR_HAPPY;
             anim_active = 1;
         }
+
+        // "YOU BEAT" / opponent name text (single player only)
+        if (human_won) {
+            draw_centered_text(ENDGAME_YOU_BEAT_Y, "YOU BEAT");
+            draw_centered_text(ENDGAME_NAME_Y, opponent_names[selected_opponent]);
+        }
     }
 
-    // Draw border around portrait
-    draw_border();
-
-    // Draw result text (offset 1 character to the right)
+    // Result text (shared by both modes)
     if (human_won) {
         const char *result_text = "YOU WON !";
         uint8_t x = (20 - strlen(result_text)) / 2 + 1;
         draw_text_inverted(x, ENDGAME_RESULT_Y, result_text);
-        draw_centered_text(ENDGAME_YOU_BEAT_Y, "YOU BEAT");
-        draw_centered_text(ENDGAME_NAME_Y, opponent_names[selected_opponent]);
     } else {
         const char *result_text = "YOU LOST !";
         uint8_t x = (20 - strlen(result_text)) / 2 + 1;
         draw_text_inverted(x, ENDGAME_RESULT_Y, result_text);
-        if (game_mode == GAME_MODE_LINK) {
-            draw_centered_text(ENDGAME_YOU_BEAT_Y, "DEFEATED BY");
-            draw_centered_text(ENDGAME_NAME_Y, opponent_names[selected_opponent]);
-        }
     }
 
     // Draw instructions
@@ -121,10 +150,24 @@ void update_endgame(void) {
         if (anim_counter >= ENDGAME_ANIM_INTERVAL) {
             anim_counter = 0;
             anim_showing_expr = !anim_showing_expr;
-            uint8_t expr = anim_showing_expr ? anim_target_expr : PORTRAIT_EXPR_NORMAL;
-            draw_portrait_expr(selected_opponent, expr,
-                               ENDGAME_PORTRAIT_TILE_START,
-                               ENDGAME_PORTRAIT_X, ENDGAME_PORTRAIT_Y, 0);
+
+            if (game_mode == GAME_MODE_LINK) {
+                // Link mode: animate both portraits
+                uint8_t local_expr = anim_showing_expr ? anim_local_expr : PORTRAIT_EXPR_NORMAL;
+                uint8_t remote_expr = anim_showing_expr ? anim_target_expr : PORTRAIT_EXPR_NORMAL;
+                draw_portrait_expr(link_local_profile, local_expr,
+                                   ENDGAME_PORTRAIT_TILE_START,
+                                   ENDGAME_LINK_LEFT_X, ENDGAME_LINK_LEFT_Y, 0);
+                draw_portrait_expr(selected_opponent, remote_expr,
+                                   ENDGAME_PORTRAIT_TILE_START,
+                                   ENDGAME_LINK_RIGHT_X, ENDGAME_LINK_RIGHT_Y, 0);
+            } else {
+                // Single player: animate opponent portrait only
+                uint8_t expr = anim_showing_expr ? anim_target_expr : PORTRAIT_EXPR_NORMAL;
+                draw_portrait_expr(selected_opponent, expr,
+                                   ENDGAME_PORTRAIT_TILE_START,
+                                   ENDGAME_PORTRAIT_X, ENDGAME_PORTRAIT_Y, 0);
+            }
         }
     }
 

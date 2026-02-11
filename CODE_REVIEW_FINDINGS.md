@@ -45,23 +45,7 @@ This document highlights the highest-impact maintainability and correctness risk
 
 ---
 
-## 3) Randomness usage is inconsistent and potentially biased
-
-**What I observed**
-- `get_random_range()` uses modulo arithmetic.
-- Some code paths bypass the shared RNG and use `DIV_REG % n` directly.
-- Range API does not guard against invalid bounds (`min > max`).
-
-**Why this is bad**
-- Modulo range reduction introduces distribution bias unless divisor is a power of two.
-- Mixed entropy sources create inconsistent behavior and make AI/gameplay less reproducible.
-- Invalid range parameters can underflow and produce undefined gameplay behavior.
-
-**How to improve**
-- Standardize on one RNG interface for all gameplay randomness.
-- Implement rejection sampling for unbiased bounded random values.
-- Add defensive validation (or assertions) in `get_random_range(min, max)`.
-- Optionally add a deterministic seed mode for repeatable debugging.
+## 3) Randomness usage is inconsistent and potentially biased -- FIXED
 
 ---
 

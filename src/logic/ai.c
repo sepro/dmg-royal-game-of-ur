@@ -683,7 +683,7 @@ static int16_t evaluate_turn_economy_move(uint8_t piece_idx, uint8_t roll) {
  * Select a random move from valid moves
  */
 static uint8_t select_random_move(uint8_t num_valid, uint8_t *valid_moves) {
-    uint8_t choice = get_random() % num_valid;
+    uint8_t choice = get_random_unbiased(num_valid);
     return valid_moves[choice];
 }
 
@@ -782,7 +782,7 @@ uint8_t ai_select_move(uint8_t roll, uint8_t *out_piece_idx) {
     }
 
     // Roll to see if we use AI or random
-    uint8_t chance_roll = get_random() % 100;
+    uint8_t chance_roll = get_random_unbiased(100);
 
     if (chance_roll >= ai_threshold) {
         // Random move (for lower difficulties)

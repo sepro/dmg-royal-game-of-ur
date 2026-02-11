@@ -10,6 +10,7 @@
 #include "screens/coinflip.h"
 #include "vram_layout.h"
 #include "screens/game.h"
+#include "util/random.h"
 
 // ============================================================================
 // External References
@@ -385,8 +386,8 @@ uint8_t find_random_valid_move(uint8_t player, uint8_t roll, uint8_t *out_piece_
         return 0;  // No valid moves
     }
 
-    // Pick a random valid move using DIV_REG for entropy
-    uint8_t choice = DIV_REG % num_valid;
+    // Pick a random valid move using shared LFSR
+    uint8_t choice = get_random() % num_valid;
     *out_piece_idx = valid_moves[choice];
 
     return 1;

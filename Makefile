@@ -116,7 +116,7 @@ $(OBJDIR)/input.o: $(INCDIR)/util/input.h
 $(OBJDIR)/opponent_data.o: $(INCDIR)/util/opponent_data.h
 $(OBJDIR)/random.o: $(INCDIR)/util/random.h
 $(OBJDIR)/game.o: $(INCDIR)/game_types.h $(INCDIR)/screens/game.h $(INCDIR)/screens/coinflip.h $(INCDIR)/screens/difficulty_select.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/logic/board_state.h $(INCDIR)/vram_layout.h $(INCDIR)/util/random.h $(INCDIR)/util/portrait.h $(INCDIR)/logic/ai.h $(INCDIR)/link/link.h $(INCDIR)/link/link_profile.h
-$(OBJDIR)/board_state.o: $(INCDIR)/logic/board_state.h $(INCDIR)/screens/coinflip.h $(INCDIR)/vram_layout.h $(INCDIR)/screens/game.h
+$(OBJDIR)/board_state.o: $(INCDIR)/logic/board_state.h $(INCDIR)/screens/coinflip.h $(INCDIR)/vram_layout.h $(INCDIR)/screens/game.h $(INCDIR)/util/random.h
 $(OBJDIR)/ai.o: $(INCDIR)/logic/ai.h $(INCDIR)/logic/board_state.h $(INCDIR)/screens/game.h $(INCDIR)/screens/difficulty_select.h $(INCDIR)/screens/opponent_select.h $(INCDIR)/util/random.h
 $(OBJDIR)/endgame.o: $(INCDIR)/game_types.h $(INCDIR)/screens/endgame.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/vram_layout.h $(INCDIR)/util/portrait.h $(INCDIR)/util/screen_utils.h $(INCDIR)/screens/game.h $(INCDIR)/link/link.h
 $(OBJDIR)/portrait.o: $(INCDIR)/util/portrait.h

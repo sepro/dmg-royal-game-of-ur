@@ -25,4 +25,10 @@ uint8_t get_random(void);
  */
 uint8_t get_random_range(uint8_t min, uint8_t max);
 
+/**
+ * Get an unbiased random value in [0, range-1] using rejection sampling
+ * Use this instead of get_random() % range when bias matters (e.g. AI decisions)
+ */
+uint8_t get_random_unbiased(uint8_t range);
+
 #endif // RANDOM_H

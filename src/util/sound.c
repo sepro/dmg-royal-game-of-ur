@@ -51,7 +51,7 @@ static void load_wave(const uint8_t *data) {
  * Trigger wave channel at given period value
  */
 static void trigger_wave_note(uint16_t period) {
-    NR31_REG = 0x10;                              // Short length (~0.06 seconds)
+    NR31_REG = 0xEF;                              // Short length
     NR32_REG = 0x20;                              // 100% volume (bits 5-6 = 01)
     NR33_REG = (uint8_t)(period & 0xFF);          // Frequency low
     NR34_REG = 0xC0 | ((period >> 8) & 0x07);     // Trigger + length enable + freq high
@@ -81,10 +81,9 @@ void play_sfx(SoundEffect_t sfx) {
             break;
 
         case SFX_CONFIRM:
-            // Short wave tone ~850 Hz
             chime_active = 0;
             load_wave(wave_sine);
-            trigger_wave_note(0x07B3);
+            trigger_wave_note(0x0500);
             break;
 
         case SFX_MOVE_CHANGE:
@@ -95,10 +94,9 @@ void play_sfx(SoundEffect_t sfx) {
             break;
 
         case SFX_MOVE_SELECT:
-            // Short wave tone ~1100 Hz
             chime_active = 0;
             load_wave(wave_sine);
-            trigger_wave_note(0x07C4);
+            trigger_wave_note(0x0400);
             break;
 
         case SFX_DICE_ROLL:

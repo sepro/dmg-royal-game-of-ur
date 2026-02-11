@@ -41,19 +41,6 @@ static const uint8_t portrait_y[OPPONENT_COUNT] = {
 };
 
 /**
- * Clear a rectangular area with black tiles
- */
-static void clear_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
-    uint8_t row[20];
-    for (uint8_t i = 0; i < w && i < 20; i++) {
-        row[i] = BLANK_TILE;
-    }
-    for (uint8_t j = 0; j < h; j++) {
-        set_bkg_tiles(x, y + j, w, 1, row);
-    }
-}
-
-/**
  * Draw a portrait at the specified grid position using merged tileset
  */
 static void draw_portrait_at(uint8_t idx) {
@@ -125,7 +112,7 @@ void init_opponent_select(void) {
     set_bkg_data(BLANK_TILE, 1, white_tile);
 
     // Clear the entire screen with black tiles
-    clear_rect(0, 0, 20, 18);
+    clear_rect(BLANK_TILE, 0, 0, 20, 18);
 
     // Load merged portrait tileset (all 4 characters share one tileset)
     load_portrait_tiles(PORTRAIT_TILE_START);

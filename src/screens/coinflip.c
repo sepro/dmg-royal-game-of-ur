@@ -78,22 +78,6 @@ static void lock_tile(uint8_t tile_idx) {
 }
 
 /**
- * Draw a coin at the specified position
- * @param x Tile X position
- * @param y Tile Y position
- * @param tile_base Starting VRAM tile index for this coin
- */
-static void draw_coin(uint8_t x, uint8_t y, uint8_t tile_base) {
-    uint8_t row_buf[COIN_WIDTH];
-    for (uint8_t row = 0; row < COIN_HEIGHT; row++) {
-        for (uint8_t col = 0; col < COIN_WIDTH; col++) {
-            row_buf[col] = tile_base + (row * COIN_WIDTH) + col;
-        }
-        set_bkg_tiles(x, y + row, COIN_WIDTH, 1, row_buf);
-    }
-}
-
-/**
  * Draw the selection border around a coin
  * Uses 7x7 tilemap from border.png (skipping inner 5x5 coin area)
  */
@@ -155,7 +139,7 @@ static void draw_animation_coin(void) {
 static void draw_result_coin(void) {
     uint8_t tile_base = (coin_result == SIDE_LIGHT) ?
                         COINFLIP_LIGHT_TILE_START : COINFLIP_DARK_TILE_START;
-    draw_coin(COINFLIP_ANIM_X, COINFLIP_ANIM_Y, tile_base);
+    draw_tile_rect(COINFLIP_ANIM_X, COINFLIP_ANIM_Y, COIN_WIDTH, COIN_HEIGHT, tile_base);
 }
 
 /**
@@ -335,8 +319,8 @@ void init_coinflip(void) {
     draw_text_inverted(COINFLIP_TITLE_X, COINFLIP_TITLE_Y, "CHOOSE YOUR SIDE");
 
     // Draw both coins
-    draw_coin(COINFLIP_LIGHT_X, COINFLIP_LIGHT_Y, COINFLIP_LIGHT_TILE_START);
-    draw_coin(COINFLIP_DARK_X, COINFLIP_DARK_Y, COINFLIP_DARK_TILE_START);
+    draw_tile_rect(COINFLIP_LIGHT_X, COINFLIP_LIGHT_Y, COIN_WIDTH, COIN_HEIGHT, COINFLIP_LIGHT_TILE_START);
+    draw_tile_rect(COINFLIP_DARK_X, COINFLIP_DARK_Y, COIN_WIDTH, COIN_HEIGHT, COINFLIP_DARK_TILE_START);
 
     // Draw labels
     draw_text_inverted(COINFLIP_LIGHT_LABEL_X, COINFLIP_LIGHT_LABEL_Y, "LIGHT");

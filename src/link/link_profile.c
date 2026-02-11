@@ -53,20 +53,6 @@ static const uint8_t white_tile[16] = {
 };
 
 /**
- * Clear a rectangular area with blank tiles
- */
-static void clear_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
-    uint8_t row[20];
-    uint8_t i;
-    for (i = 0; i < w && i < 20; i++) {
-        row[i] = LPROFILE_BLANK_TILE;
-    }
-    for (i = 0; i < h; i++) {
-        set_bkg_tiles(x, y + i, w, 1, row);
-    }
-}
-
-/**
  * Draw a portrait in the 4-portrait grid using merged tileset
  */
 static void draw_portrait_at(uint8_t idx) {
@@ -212,7 +198,7 @@ void init_link_profile(void) {
     set_bkg_data(LPROFILE_BLANK_TILE, 1, white_tile);
 
     // Clear screen
-    clear_rect(0, 0, 20, 18);
+    clear_rect(LPROFILE_BLANK_TILE, 0, 0, 20, 18);
 
     // Load merged portrait tileset (all 4 characters share one tileset)
     load_portrait_tiles(LPROFILE_PORTRAIT_START);

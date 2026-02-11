@@ -38,4 +38,25 @@ void draw_border_frame(uint8_t x, uint8_t y, uint8_t width, uint8_t height,
 void clear_border_frame(uint8_t x, uint8_t y, uint8_t width, uint8_t height,
                         uint8_t clear_tile);
 
+/**
+ * Clear a rectangular area with a given tile
+ * @param tile Tile index to fill with
+ * @param x Tile X position
+ * @param y Tile Y position
+ * @param w Width in tiles (max 20)
+ * @param h Height in tiles
+ */
+void clear_rect(uint8_t tile, uint8_t x, uint8_t y, uint8_t w, uint8_t h);
+
+/**
+ * Draw a rectangular area of sequentially-numbered tiles
+ * Tile at (col,row) = tile_base + row * w + col
+ * @param x Tile X position
+ * @param y Tile Y position
+ * @param w Width in tiles
+ * @param h Height in tiles
+ * @param tile_base Starting VRAM tile index
+ */
+void draw_tile_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t tile_base);
+
 #endif // SCREEN_UTILS_H

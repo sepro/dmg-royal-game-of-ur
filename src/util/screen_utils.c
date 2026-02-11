@@ -39,3 +39,25 @@ void clear_border_frame(uint8_t x, uint8_t y, uint8_t width, uint8_t height,
         }
     }
 }
+
+void clear_rect(uint8_t tile, uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
+    uint8_t row[20];
+    uint8_t i;
+    for (i = 0; i < w && i < 20; i++) {
+        row[i] = tile;
+    }
+    for (i = 0; i < h; i++) {
+        set_bkg_tiles(x, y + i, w, 1, row);
+    }
+}
+
+void draw_tile_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t tile_base) {
+    uint8_t row_buf[20];
+    uint8_t row, col;
+    for (row = 0; row < h; row++) {
+        for (col = 0; col < w; col++) {
+            row_buf[col] = tile_base + (row * w) + col;
+        }
+        set_bkg_tiles(x, y + row, w, 1, row_buf);
+    }
+}

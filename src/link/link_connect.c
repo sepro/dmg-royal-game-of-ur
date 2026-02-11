@@ -52,19 +52,6 @@ static void draw_waiting_status(void) {
 }
 
 /**
- * Draw a coin at the specified position
- */
-static void draw_coin(uint8_t x, uint8_t y, uint8_t tile_base) {
-    uint8_t row_buf[COIN_WIDTH];
-    for (uint8_t row = 0; row < COIN_HEIGHT; row++) {
-        for (uint8_t col = 0; col < COIN_WIDTH; col++) {
-            row_buf[col] = tile_base + (row * COIN_WIDTH) + col;
-        }
-        set_bkg_tiles(x, y + row, COIN_WIDTH, 1, row_buf);
-    }
-}
-
-/**
  * Show the side reveal screen
  */
 static void show_side_reveal(void) {
@@ -76,10 +63,10 @@ static void show_side_reveal(void) {
 
     // Draw coin based on role (master=light, slave=dark)
     if (link_role == LINK_ROLE_MASTER) {
-        draw_coin(CONNECT_COIN_X, CONNECT_COIN_Y, CONNECT_LIGHT_TILE_START);
+        draw_tile_rect(CONNECT_COIN_X, CONNECT_COIN_Y, COIN_WIDTH, COIN_HEIGHT, CONNECT_LIGHT_TILE_START);
         draw_text_inverted(CONNECT_SIDE_X, CONNECT_SIDE_Y, "YOU ARE LIGHT");
     } else {
-        draw_coin(CONNECT_COIN_X, CONNECT_COIN_Y, CONNECT_DARK_TILE_START);
+        draw_tile_rect(CONNECT_COIN_X, CONNECT_COIN_Y, COIN_WIDTH, COIN_HEIGHT, CONNECT_DARK_TILE_START);
         draw_text_inverted(CONNECT_SIDE_X, CONNECT_SIDE_Y, "YOU ARE DARK");
     }
 }

@@ -623,6 +623,38 @@ const uint8_t font_tiles[] = {
     0xE7, 0xE7,  // ..##.. -> 11100111
     0xE7, 0xE7,  // ..##.. -> 11100111
     0xFF, 0xFF,
+
+    // CHAR_PERIOD (index 40)
+    // ......
+    // ......
+    // ......
+    // ......
+    // ..##..
+    // ..##..
+    0xFF, 0xFF,
+    0xFF, 0xFF,  // ...... -> 11111111
+    0xFF, 0xFF,  // ...... -> 11111111
+    0xFF, 0xFF,  // ...... -> 11111111
+    0xFF, 0xFF,  // ...... -> 11111111
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xFF, 0xFF,
+
+    // CHAR_EXCLAIM (index 41)
+    // ..##..
+    // ..##..
+    // ..##..
+    // ..##..
+    // ......
+    // ..##..
+    0xFF, 0xFF,
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xFF, 0xFF,  // ...... -> 11111111
+    0xE7, 0xE7,  // ..##.. -> 11100111
+    0xFF, 0xFF,
 };
 
 /**
@@ -634,7 +666,7 @@ void load_font(void) {
 
 /**
  * Convert ASCII character to font tile index
- * @param c Character to convert (A-Z, 0-9, : supported, others become space)
+ * @param c Character to convert (A-Z, 0-9, :, ., ! supported, others become space)
  * @param base Base tile index (FONT_TILE_START or FONT_INVERTED_TILE_START)
  * @return Tile index for the character
  */
@@ -647,6 +679,12 @@ static uint8_t char_to_tile(char c, uint8_t base) {
     }
     if (c == ':') {
         return base + CHAR_COLON;  // base + 39
+    }
+    if (c == '.') {
+        return base + CHAR_PERIOD;  // base + 40
+    }
+    if (c == '!') {
+        return base + CHAR_EXCLAIM;  // base + 41
     }
     return base + CHAR_SPACE;  // Space (index 0) for unknown chars
 }
@@ -690,8 +728,8 @@ void clear_text_row(uint8_t x, uint8_t y, uint8_t width) {
 void load_font_inverted(void) {
     uint8_t inverted_buffer[16];  // Buffer for one tile (16 bytes)
 
-    // Generate and load all inverted character tiles (40 total)
-    // This includes letters, space, blank, white, numbers, and colon
+    // Generate and load all inverted character tiles (42 total)
+    // This includes letters, space, blank, white, numbers, colon, period, and exclaim
     for (uint8_t tile_idx = 0; tile_idx < FONT_CHAR_COUNT; tile_idx++) {
         // Calculate source offset in font_tiles array
         const uint8_t* source = font_tiles + (tile_idx * 16);

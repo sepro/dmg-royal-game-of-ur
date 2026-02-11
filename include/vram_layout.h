@@ -86,19 +86,19 @@
 #define VRAM_COINFLIP_BORDER_COUNT 25
 
 /* ----------------------------------------------------------------------------
- * Font System (Tiles 141-221) - SHARED across all screens
+ * Font System (Tiles 141-224) - SHARED across all screens
  * These tiles persist across screen transitions and are never reloaded
  * ---------------------------------------------------------------------------- */
-// Regular font: 26 letters + space + blank + 10 numbers (0-9) + colon = 40 tiles
+// Regular font: 26 letters + space + blank + 10 numbers (0-9) + colon + period + exclaim = 42 tiles
 #define VRAM_FONT_START 141
-#define VRAM_FONT_END 180
-#define VRAM_FONT_COUNT 40
+#define VRAM_FONT_END 182
+#define VRAM_FONT_COUNT 42
 
 // Inverted font: Generated at runtime via XOR (black text on white bg)
-// Contains: 26 letters + space + blank + white + 10 numbers + colon = 41 tiles
-#define VRAM_FONT_INVERTED_START 181
-#define VRAM_FONT_INVERTED_END 221
-#define VRAM_FONT_INVERTED_COUNT 41
+// Contains: 26 letters + space + blank + white + 10 numbers + colon + period + exclaim = 42 tiles
+#define VRAM_FONT_INVERTED_START 183
+#define VRAM_FONT_INVERTED_END 224
+#define VRAM_FONT_INVERTED_COUNT 42
 
 /* ----------------------------------------------------------------------------
  * Phase 6: Game Board (Tiles 0-37) - SCREEN ISOLATED
@@ -123,16 +123,16 @@
  * Pause Screen Border (Tiles 222-246)
  * Loaded only when pause is active, game screen only
  * ---------------------------------------------------------------------------- */
-#define VRAM_PAUSE_BORDER_START 222
-#define VRAM_PAUSE_BORDER_END 246
+#define VRAM_PAUSE_BORDER_START 225
+#define VRAM_PAUSE_BORDER_END 249
 #define VRAM_PAUSE_BORDER_COUNT 25
 
 /* ----------------------------------------------------------------------------
  * Background Tile Budget Summary
  * ---------------------------------------------------------------------------- */
 #define VRAM_BG_TOTAL 256
-#define VRAM_BG_USED 247   // Peak usage: font (141-221) + pause border (222-246)
-#define VRAM_BG_AVAILABLE 9  // Tiles 247-255 available for future use
+#define VRAM_BG_USED 250   // Peak usage: font (141-224) + pause border (225-249)
+#define VRAM_BG_AVAILABLE 6  // Tiles 250-255 available for future use
 
 /* ============================================================================
  * SPRITE TILES (256 total, 0-255, separate address space)

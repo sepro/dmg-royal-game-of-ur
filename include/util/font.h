@@ -54,6 +54,8 @@
 #define CHAR_8 37
 #define CHAR_9 38
 #define CHAR_COLON 39  // Colon character for "R:7 F:0" display
+#define CHAR_PERIOD 40  // Period character for "WAITING..." animations
+#define CHAR_EXCLAIM 41  // Exclamation mark for "CONNECTED!" etc.
 
 // Inverted font configuration (black text on white background)
 #define FONT_INVERTED_TILE_START VRAM_FONT_INVERTED_START

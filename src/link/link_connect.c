@@ -28,12 +28,6 @@ static uint8_t connect_phase = CONNECT_PHASE_WAITING;
 static uint8_t phase_timer = 0;
 static uint8_t dot_count = 0;
 
-// White tile data (8x8 pixels, all color 0 = white on DMG)
-static const uint8_t white_tile[16] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-
 /**
  * Draw the waiting status with animated dots
  */

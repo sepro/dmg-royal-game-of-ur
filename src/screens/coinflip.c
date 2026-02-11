@@ -46,12 +46,6 @@ static uint8_t frame_counter = 0;
 static uint8_t locked_tiles[4] = {0, 0, 0, 0};
 static uint8_t locked_count = 0;
 
-// White tile data (8x8 pixels, all color 0 = white on DMG)
-static const uint8_t white_tile[16] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-
 // Position arrays for selection border
 static const uint8_t coin_x[2] = { COINFLIP_LIGHT_X, COINFLIP_DARK_X };
 static const uint8_t coin_y[2] = { COINFLIP_LIGHT_Y, COINFLIP_DARK_Y };

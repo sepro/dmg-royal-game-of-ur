@@ -95,12 +95,6 @@ static inline uint8_t grid_row(uint8_t idx) {
     return idx >> 1;  // 0 or 1
 }
 
-// White tile data (8x8 pixels, all color 0 = white on DMG)
-static const uint8_t white_tile[16] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-
 /**
  * Initialize opponent selection screen
  */

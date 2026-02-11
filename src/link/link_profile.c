@@ -46,12 +46,6 @@ static const uint8_t portrait_y[LPROFILE_COUNT] = {
     LPROFILE_0_Y, LPROFILE_1_Y, LPROFILE_2_Y, LPROFILE_3_Y
 };
 
-// White tile data
-static const uint8_t white_tile[16] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-
 /**
  * Draw a portrait in the 4-portrait grid using merged tileset
  */

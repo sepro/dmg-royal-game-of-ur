@@ -18,12 +18,6 @@ extern ScreenState_t next_state;
 extern uint8_t selected_opponent;
 extern uint8_t human_won;
 
-// White tile data
-static const uint8_t white_tile[16] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-
 // Portrait animation state
 static uint8_t anim_counter;
 static uint8_t anim_showing_expr;  // 0 = normal, 1 = expression

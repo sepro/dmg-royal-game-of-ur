@@ -31,12 +31,6 @@ uint8_t selected_difficulty = DIFFICULTY_MEDIUM;
 static uint8_t current_selection = DIFFICULTY_MEDIUM;
 static const uint8_t arrow_sprite_index = 0;
 
-// White tile data (8x8 pixels, all color 0 = white on DMG)
-static const uint8_t white_tile[16] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-
 // Difficulty option labels
 static const char *difficulty_labels[DIFFICULTY_COUNT] = {
     "EASY",

@@ -67,21 +67,7 @@ This document highlights the highest-impact maintainability and correctness risk
 
 ---
 
-## 5) Repeated UI helper snippets suggest missing shared utilities
-
-**What I observed**
-- Identical or near-identical helper data/functions are repeated across files (e.g. blank/white tile arrays, local rectangle-clearing helpers).
-
-**Why this is bad**
-- Duplication causes drift: one fix often misses other copies.
-- Increases maintenance cost and code size.
-
-**How to improve**
-- Promote common utilities to `src/util/screen_utils.c` / `include/util/screen_utils.h`:
-  - `load_blank_tile(index)`
-  - `clear_rect(tile, x, y, w, h)`
-  - reusable border/text helper wrappers
-- Keep per-screen files focused on screen-specific behavior.
+## 5) Repeated UI helper snippets suggest missing shared utilities --  FIXED
 
 ---
 

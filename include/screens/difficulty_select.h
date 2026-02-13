@@ -21,18 +21,23 @@
 #define DIFF_NAME_X          7
 #define DIFF_NAME_Y          4
 #define DIFF_TITLE_X         2
-#define DIFF_TITLE_Y         9
+#define DIFF_TITLE_Y         10
 #define DIFF_OPTION_X        4
-#define DIFF_OPTION_START_Y  11
+#define DIFF_OPTION_START_Y  13
 
 // Arrow sprite position (pixel coordinates with GBDK offsets)
 #define DIFF_ARROW_X         24    // Sprite X = tile 2 * 8 + 8 offset
-#define DIFF_ARROW_START_Y   104   // Sprite Y = row 11 * 8 + 16 offset
+#define DIFF_ARROW_START_Y   120   // Sprite Y = row 13 * 8 + 16 offset
 #define DIFF_ARROW_SPACING   8     // 1 tile row = 8 pixels
 
 // VRAM tile indices for this screen
+
+// Border tile allocation (reuse pause/opponent border tiles)
+#define DIFF_BORDER_TILE_START VRAM_PAUSE_BORDER_START
+#define DIFF_BORDER_TILE_COUNT VRAM_PAUSE_BORDER_COUNT
 #define WHITE_TILE           0     // Tile 0 will be solid white (screen-specific semantic constant)
 #define DIFF_PORTRAIT_TILE_START VRAM_DIFF_PORTRAIT_START
+#define DIFF_MIRROR_TILE_BASE  64
 
 // Selected difficulty (readable by other modules)
 extern uint8_t selected_difficulty;

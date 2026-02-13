@@ -96,3 +96,28 @@ void draw_portrait(uint8_t opponent_idx, uint8_t tile_base, uint8_t x, uint8_t y
     load_portrait_tiles(tile_base);
     draw_portrait_expr(opponent_idx, PORTRAIT_EXPR_NORMAL, tile_base, x, y, 0);
 }
+
+
+/**
+ * Draw a mirrored portrait expression from the merged tilemap
+ */
+void draw_portrait_expr_mirrored(uint8_t char_idx, uint8_t expression,
+                                 uint8_t tile_base, uint8_t x, uint8_t y,
+                                 uint8_t use_remap) {
+    uint16_t offset = get_submap_offset(char_idx, expression);
+    uint8_t row_buf[PORTRAIT_SUB_WIDTH];
+    uint8_t row, col;
+
+    for (row = 0; row < PORTRAIT_SUB_HEIGHT; row++) {
+        for (col = 0; col < PORTRAIT_SUB_WIDTH; col++) {
+            uint8_t src_col = (uint8_t)(PORTRAIT_SUB_WIDTH - 1 - col);
+            uint8_t tile_idx = profiles_merged_map[offset + (uint16_t)row * PORTRAIT_MAP_WIDTH + src_col];
+            if (use_remap) {
+                row_buf[col] = tile_base + tile_remap[tile_idx];
+            } else {
+                row_buf[col] = tile_base + tile_idx;
+            }
+        }
+        set_bkg_tiles(x, y + row, PORTRAIT_SUB_WIDTH, 1, row_buf);
+    }
+}

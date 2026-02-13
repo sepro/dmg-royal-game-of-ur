@@ -22,6 +22,9 @@
 // External reference to arrow sprite tiles
 extern const uint8_t arrow_tiles[];
 
+// External reference to border tiles (shared with pause/opponent screens)
+extern const uint8_t border_tiles[];
+
 // External reference to next_state from main.c
 extern ScreenState_t next_state;
 
@@ -40,10 +43,77 @@ static const char *difficulty_labels[DIFFICULTY_COUNT] = {
 };
 
 /**
- * Draw the selected opponent's portrait
+ * Draw decorative border around lower half containing difficulty controls
  */
-static void draw_selected_portrait(void) {
-    draw_portrait(selected_opponent, DIFF_PORTRAIT_TILE_START, DIFF_PORTRAIT_X, DIFF_PORTRAIT_Y);
+static void draw_difficulty_box(void) {
+    uint8_t row_buf[20];
+
+    // Top edge
+    row_buf[0] = (uint8_t)(DIFF_BORDER_TILE_START + 0x00);
+    for (uint8_t x = 1; x < 19; x++) {
+        row_buf[x] = (uint8_t)(DIFF_BORDER_TILE_START + 0x01 + ((x - 1) % 5));
+    }
+    row_buf[19] = (uint8_t)(DIFF_BORDER_TILE_START + 0x06);
+    set_bkg_tiles(0, 8, 20, 1, row_buf);
+
+    // Middle rows
+    for (uint8_t y = 9; y < 17; y++) {
+        row_buf[0] = (uint8_t)(DIFF_BORDER_TILE_START + 0x07);
+        for (uint8_t x = 1; x < 19; x++) {
+            row_buf[x] = (uint8_t)(DIFF_BORDER_TILE_START + 0x08);
+        }
+        row_buf[19] = (uint8_t)(DIFF_BORDER_TILE_START + 0x09);
+        set_bkg_tiles(0, y, 20, 1, row_buf);
+    }
+
+    // Bottom edge
+    row_buf[0] = (uint8_t)(DIFF_BORDER_TILE_START + 0x12);
+    for (uint8_t x = 1; x < 19; x++) {
+        row_buf[x] = (uint8_t)(DIFF_BORDER_TILE_START + 0x13 + ((x - 1) % 5));
+    }
+    row_buf[19] = (uint8_t)(DIFF_BORDER_TILE_START + 0x18);
+    set_bkg_tiles(0, 17, 20, 1, row_buf);
+}
+
+/**
+ * Reverse bit order in a byte (abcd efgh -> hgfe dcba)
+ */
+static uint8_t reverse_bits(uint8_t v) {
+    v = (uint8_t)(((v & 0xF0u) >> 4) | ((v & 0x0Fu) << 4));
+    v = (uint8_t)(((v & 0xCCu) >> 2) | ((v & 0x33u) << 2));
+    v = (uint8_t)(((v & 0xAAu) >> 1) | ((v & 0x55u) << 1));
+    return v;
+}
+
+/**
+ * Build mirrored tile set in VRAM from already-loaded portrait tiles
+ */
+static void mirror_tiles_to_vram(uint8_t src_base, uint8_t dst_base, uint8_t count) {
+    uint8_t src_tile[16];
+    uint8_t dst_tile[16];
+
+    for (uint8_t tile = 0; tile < count; tile++) {
+        get_bkg_data(src_base + tile, 1, src_tile);
+        for (uint8_t row = 0; row < 8; row++) {
+            dst_tile[row * 2] = reverse_bits(src_tile[row * 2]);
+            dst_tile[row * 2 + 1] = reverse_bits(src_tile[row * 2 + 1]);
+        }
+        set_bkg_data(dst_base + tile, 1, dst_tile);
+    }
+}
+
+/**
+ * Draw the selected opponent portrait and mirrored copy
+ */
+static void draw_selected_portraits(void) {
+    uint8_t loaded_tiles = load_portrait_tiles_for_char(selected_opponent, DIFF_PORTRAIT_TILE_START);
+
+    if ((uint16_t)DIFF_MIRROR_TILE_BASE + loaded_tiles <= VRAM_FONT_START) {
+        mirror_tiles_to_vram(DIFF_PORTRAIT_TILE_START, DIFF_MIRROR_TILE_BASE, loaded_tiles);
+        draw_portrait_expr_mirrored(selected_opponent, PORTRAIT_EXPR_NORMAL,
+                                    DIFF_MIRROR_TILE_BASE,
+                                    DIFF_PORTRAIT_X, DIFF_PORTRAIT_Y, 1);
+    }
 }
 
 /**
@@ -59,8 +129,12 @@ void init_difficulty_select(void) {
     // Fill screen with white
     fill_screen_with_tile(WHITE_TILE);
 
-    // Draw selected opponent portrait
-    draw_selected_portrait();
+    // Draw selected opponent portraits (normal + mirrored)
+    draw_selected_portraits();
+
+    // Load and draw lower UI border box
+    set_bkg_data(DIFF_BORDER_TILE_START, DIFF_BORDER_TILE_COUNT, border_tiles);
+    draw_difficulty_box();
 
     // Draw opponent name
     draw_text_inverted(DIFF_NAME_X, DIFF_NAME_Y, opponent_names[selected_opponent]);

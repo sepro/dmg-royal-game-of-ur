@@ -24,9 +24,9 @@
 #define COINFLIP_DARK_Y       4
 
 // Selection label positions (below border which ends at y=9)
-#define COINFLIP_LIGHT_LABEL_X  3
+#define COINFLIP_LIGHT_LABEL_X  2
 #define COINFLIP_LIGHT_LABEL_Y  11
-#define COINFLIP_DARK_LABEL_X   14
+#define COINFLIP_DARK_LABEL_X   13
 #define COINFLIP_DARK_LABEL_Y   11
 
 // Animation coin position (centered, 5x5)

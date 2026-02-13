@@ -7,22 +7,18 @@
  * - When ahead: Uses defensive weights (protect the lead)
  * - When behind: Uses aggressive weights (catch up)
  * - When even: Uses balanced weights
- * - Ported from Python adaptive_agent.py
  *
  * THE MERCHANT (greedy strategy):
  * - Evaluates board positions based on advancement, rosettes, captures
- * - Ported from Python greedy_agent.py
  *
  * THE MUSICIAN (turn economy strategy):
  * - Minimizes turns to win, values extra turns highly
- * - Ported from Python turn_agent.py
  *
  * THE PRIESTESS (phase-based strategy):
  * - Adapts evaluation weights based on game phase (opening/midgame/endgame)
  * - Opening: Safe positioning, balanced play, secure center rosette
  * - Midgame: Aggressive war zone control, prioritize captures
  * - Endgame: Race to finish, maximum advancement
- * - Ported from Python phase_based_agent.py
  */
 
 #include <gb/gb.h>

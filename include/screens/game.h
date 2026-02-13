@@ -86,13 +86,13 @@
 // ============================================================================
 // UI Layout Constants (tile coordinates)
 // ============================================================================
-// Row 11: CPU player info
+// Row 10: CPU player info
 #define UI_CPU_LABEL_X      1   // "CPU"
-#define UI_CPU_LABEL_Y      11
+#define UI_CPU_LABEL_Y      10
 #define UI_CPU_RESERVE_X    6   // "R:7"
-#define UI_CPU_RESERVE_Y    11
+#define UI_CPU_RESERVE_Y    10
 #define UI_CPU_FINISH_X     10  // "F:0"
-#define UI_CPU_FINISH_Y     11
+#define UI_CPU_FINISH_Y     10
 
 // Row 13: Human player info
 #define UI_HUMAN_LABEL_X    1   // "YOU"
@@ -116,13 +116,13 @@
 // Note: Sprite X/Y positions are offset by 8/16 pixels on Game Boy
 // Pixel position = tile * 8 + 8 for X, tile * 8 + 16 for Y
 #define PIECE_SPRITE_X      (5 * 8 + 8)   // After "CPU:" text (tile 5)
-#define CPU_PIECE_SPRITE_Y  (11 * 8 + 16) // Row 11
+#define CPU_PIECE_SPRITE_Y  (10 * 8 + 16) // Row 10
 #define HUMAN_PIECE_SPRITE_Y (13 * 8 + 16) // Row 13
 
 // ============================================================================
 // Dice Sprite Positions (centered in UI area)
 // ============================================================================
-#define DICE_Y              (12 * 8 + 16) // Row 12 (between CPU and human info)
+#define DICE_Y              ((12 * 8 + 16) - 4) // Row 12 shifted up by half tile
 #define DICE_START_X        (6 * 8 + 8)   // Starting X for first die
 #define DICE_SPACING        12            // Pixels between dice centers
 

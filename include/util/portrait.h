@@ -48,6 +48,23 @@ void draw_portrait_expr(uint8_t char_idx, uint8_t expression,
                         uint8_t tile_base, uint8_t x, uint8_t y,
                         uint8_t use_remap);
 
+
+/**
+ * Draw a horizontally mirrored portrait expression.
+ * Expects mirrored tile graphics to be present at tile_base.
+ *
+ * @param char_idx   Character index (0-3)
+ * @param expression PORTRAIT_EXPR_NORMAL/SAD/HAPPY
+ * @param tile_base  VRAM tile index where mirrored tiles were loaded
+ * @param x          Background X position in tiles
+ * @param y          Background Y position in tiles
+ * @param use_remap  0 = full tileset loaded (global indices),
+ *                   1 = per-char tileset loaded (remapped indices)
+ */
+void draw_portrait_expr_mirrored(uint8_t char_idx, uint8_t expression,
+                                 uint8_t tile_base, uint8_t x, uint8_t y,
+                                 uint8_t use_remap);
+
 /**
  * Convenience: load full tileset + draw normal expression.
  * For screens that just need a single portrait displayed.

@@ -108,14 +108,11 @@ static void mirror_tiles_to_vram(uint8_t src_base, uint8_t dst_base, uint8_t cou
 static void draw_selected_portraits(void) {
     uint8_t loaded_tiles = load_portrait_tiles_for_char(selected_opponent, DIFF_PORTRAIT_TILE_START);
 
-    draw_portrait_expr(selected_opponent, PORTRAIT_EXPR_NORMAL,
-                      DIFF_PORTRAIT_TILE_START, DIFF_PORTRAIT_X, DIFF_PORTRAIT_Y, 1);
-
     if ((uint16_t)DIFF_MIRROR_TILE_BASE + loaded_tiles <= VRAM_FONT_START) {
         mirror_tiles_to_vram(DIFF_PORTRAIT_TILE_START, DIFF_MIRROR_TILE_BASE, loaded_tiles);
         draw_portrait_expr_mirrored(selected_opponent, PORTRAIT_EXPR_NORMAL,
                                     DIFF_MIRROR_TILE_BASE,
-                                    DIFF_MIRROR_PORTRAIT_X, DIFF_PORTRAIT_Y, 1);
+                                    DIFF_PORTRAIT_X, DIFF_PORTRAIT_Y, 1);
     }
 }
 

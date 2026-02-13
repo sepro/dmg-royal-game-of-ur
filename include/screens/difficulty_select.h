@@ -17,7 +17,6 @@
 
 // Screen layout constants (tile coordinates)
 #define DIFF_PORTRAIT_X      1
-#define DIFF_MIRROR_PORTRAIT_X 14
 #define DIFF_PORTRAIT_Y      2
 #define DIFF_NAME_X          7
 #define DIFF_NAME_Y          4

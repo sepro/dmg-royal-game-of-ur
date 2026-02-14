@@ -19,8 +19,10 @@ extern const unsigned char title_tiles[];
 extern const unsigned char title_map[];
 extern const unsigned char arrow_tiles[];
 extern const uint8_t blink_tiles[];
+#if TITLE_ENABLE_FALLING_PIECES
 extern const uint8_t dest_piece_white_tiles[];
 extern const uint8_t dest_piece_black_tiles[];
+#endif
 
 // External reference to next_state from main.c
 extern ScreenState_t next_state;
@@ -35,6 +37,7 @@ static uint8_t blink_frame;        // Current frame (0-3)
 static uint8_t blink_timer;        // Frame counter for animation/delay
 static uint8_t blink_x, blink_y;   // Current sprite position
 
+#if TITLE_ENABLE_FALLING_PIECES
 // Falling piece animation state (8.8 fixed-point vertical motion)
 static uint8_t falling_piece_active;
 static uint8_t falling_piece_tile_base;
@@ -42,6 +45,7 @@ static uint8_t falling_piece_x;
 static int32_t falling_piece_y_fp;
 static int32_t falling_piece_vy_fp;
 static uint8_t falling_piece_spawn_timer;
+#endif
 
 /**
  * Start a new blink animation at a random position
@@ -102,6 +106,7 @@ static void update_blink(void) {
     }
 }
 
+#if TITLE_ENABLE_FALLING_PIECES
 /**
  * Move (or hide) the 16x16 falling piece metasprite
  */
@@ -167,6 +172,8 @@ static void update_falling_piece(void) {
     move_falling_piece(falling_piece_x, (uint8_t)(y_px + 16));
 }
 
+#endif
+
 /**
  * Initialize title screen
  */
@@ -196,9 +203,11 @@ void init_title(void) {
     // Load blink sprite tiles (4 frames starting at tile 1)
     set_sprite_data(BLINK_TILE_START, BLINK_FRAME_COUNT, blink_tiles);
 
+#if TITLE_ENABLE_FALLING_PIECES
     // Load falling piece sprite tiles (white + black, 16x16 each = 4 tiles each)
     set_sprite_data(FALLING_PIECE_WHITE_TILE_START, 4, dest_piece_white_tiles);
     set_sprite_data(FALLING_PIECE_BLACK_TILE_START, 4, dest_piece_black_tiles);
+#endif
 
     // Set up arrow sprite (sprite 0)
     arrow_sprite_index = 0;
@@ -211,8 +220,10 @@ void init_title(void) {
     // Initialize blink animation in hidden state with random delay
     blink_start_delay();
 
+#if TITLE_ENABLE_FALLING_PIECES
     // Initialize falling piece animation in hidden state with random delay
     falling_piece_hide();
+#endif
 
     // Clear input state
     input_reset();
@@ -242,8 +253,10 @@ void update_title(void) {
     // Update sparkle animation
     update_blink();
 
+#if TITLE_ENABLE_FALLING_PIECES
     // Update falling piece animation
     update_falling_piece();
+#endif
 
     // Handle up/down navigation
     if (input_pressed(J_UP)) {
@@ -281,8 +294,10 @@ void cleanup_title(void) {
     // Hide blink sprite
     move_sprite(BLINK_SPRITE_INDEX, 0, 0);
 
+#if TITLE_ENABLE_FALLING_PIECES
     // Hide falling piece sprite
     move_falling_piece(0, 0);
+#endif
 
     // Ensure display is on
     DISPLAY_ON;

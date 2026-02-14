@@ -39,8 +39,8 @@ static uint8_t blink_x, blink_y;   // Current sprite position
 static uint8_t falling_piece_active;
 static uint8_t falling_piece_tile_base;
 static uint8_t falling_piece_x;
-static int16_t falling_piece_y_fp;
-static int16_t falling_piece_vy_fp;
+static int32_t falling_piece_y_fp;
+static int32_t falling_piece_vy_fp;
 static uint8_t falling_piece_spawn_timer;
 
 /**
@@ -144,7 +144,7 @@ static void falling_piece_spawn(void) {
  * Update falling piece animation (spawn + physics)
  */
 static void update_falling_piece(void) {
-    int16_t y_px;
+    int32_t y_px;
 
     if (!falling_piece_active) {
         if (falling_piece_spawn_timer > 0) {
@@ -158,7 +158,7 @@ static void update_falling_piece(void) {
     falling_piece_vy_fp += FALLING_PIECE_ACCEL_FP;
     falling_piece_y_fp += falling_piece_vy_fp;
 
-    y_px = (int16_t)(falling_piece_y_fp >> 8);
+    y_px = (falling_piece_y_fp >> 8);
     if (y_px >= FALLING_PIECE_DESPAWN_Y) {
         falling_piece_hide();
         return;

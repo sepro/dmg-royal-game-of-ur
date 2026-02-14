@@ -19,6 +19,8 @@ extern const unsigned char title_tiles[];
 extern const unsigned char title_map[];
 extern const unsigned char arrow_tiles[];
 extern const uint8_t blink_tiles[];
+extern const uint8_t piece_white_tiles[];
+extern const uint8_t piece_black_tiles[];
 
 // External reference to next_state from main.c
 extern ScreenState_t next_state;
@@ -32,6 +34,14 @@ static uint8_t blink_state;        // BLINK_STATE_HIDDEN or BLINK_STATE_ANIMATIN
 static uint8_t blink_frame;        // Current frame (0-3)
 static uint8_t blink_timer;        // Frame counter for animation/delay
 static uint8_t blink_x, blink_y;   // Current sprite position
+
+// Falling piece animation state (8.8 fixed-point vertical motion)
+static uint8_t falling_piece_active;
+static uint8_t falling_piece_tile;
+static uint8_t falling_piece_x;
+static int16_t falling_piece_y_fp;
+static int16_t falling_piece_vy_fp;
+static uint8_t falling_piece_spawn_timer;
 
 /**
  * Start a new blink animation at a random position
@@ -93,6 +103,56 @@ static void update_blink(void) {
 }
 
 /**
+ * Hide falling piece sprite and schedule next spawn
+ */
+static void falling_piece_hide(void) {
+    falling_piece_active = 0;
+    move_sprite(FALLING_PIECE_SPRITE_INDEX, 0, 0);
+    falling_piece_spawn_timer = get_random_range(FALLING_PIECE_SPAWN_DELAY_MIN, FALLING_PIECE_SPAWN_DELAY_MAX);
+}
+
+/**
+ * Spawn a new falling piece with randomized x and color
+ */
+static void falling_piece_spawn(void) {
+    falling_piece_active = 1;
+    falling_piece_x = get_random_range(FALLING_PIECE_MIN_X, FALLING_PIECE_MAX_X);
+    falling_piece_y_fp = FALLING_PIECE_START_Y_FP;
+    falling_piece_vy_fp = FALLING_PIECE_INITIAL_VY_FP;
+
+    falling_piece_tile = (get_random_range(0, 1) == 0) ? VRAM_SPRITE_GAME_START : (VRAM_SPRITE_GAME_START + 1);
+    set_sprite_tile(FALLING_PIECE_SPRITE_INDEX, falling_piece_tile);
+    move_sprite(FALLING_PIECE_SPRITE_INDEX, falling_piece_x, (uint8_t)((falling_piece_y_fp >> 8) + 16));
+}
+
+/**
+ * Update falling piece animation (spawn + physics)
+ */
+static void update_falling_piece(void) {
+    int16_t y_px;
+
+    if (!falling_piece_active) {
+        if (falling_piece_spawn_timer > 0) {
+            falling_piece_spawn_timer--;
+        } else {
+            falling_piece_spawn();
+        }
+        return;
+    }
+
+    falling_piece_vy_fp += FALLING_PIECE_ACCEL_FP;
+    falling_piece_y_fp += falling_piece_vy_fp;
+
+    y_px = (int16_t)(falling_piece_y_fp >> 8);
+    if (y_px > FALLING_PIECE_DESPAWN_Y) {
+        falling_piece_hide();
+        return;
+    }
+
+    move_sprite(FALLING_PIECE_SPRITE_INDEX, falling_piece_x, (uint8_t)(y_px + 16));
+}
+
+/**
  * Initialize title screen
  */
 void init_title(void) {
@@ -121,6 +181,10 @@ void init_title(void) {
     // Load blink sprite tiles (4 frames starting at tile 1)
     set_sprite_data(BLINK_TILE_START, BLINK_FRAME_COUNT, blink_tiles);
 
+    // Load falling piece sprite tiles (white + black)
+    set_sprite_data(VRAM_SPRITE_GAME_START, 1, piece_white_tiles);
+    set_sprite_data(VRAM_SPRITE_GAME_START + 1, 1, piece_black_tiles);
+
     // Set up arrow sprite (sprite 0)
     arrow_sprite_index = 0;
     set_sprite_tile(arrow_sprite_index, 0);
@@ -131,6 +195,9 @@ void init_title(void) {
 
     // Initialize blink animation in hidden state with random delay
     blink_start_delay();
+
+    // Initialize falling piece animation in hidden state with random delay
+    falling_piece_hide();
 
     // Clear input state
     input_reset();
@@ -159,6 +226,9 @@ void update_title(void) {
 
     // Update sparkle animation
     update_blink();
+
+    // Update falling piece animation
+    update_falling_piece();
 
     // Handle up/down navigation
     if (input_pressed(J_UP)) {
@@ -195,6 +265,9 @@ void cleanup_title(void) {
 
     // Hide blink sprite
     move_sprite(BLINK_SPRITE_INDEX, 0, 0);
+
+    // Hide falling piece sprite
+    move_sprite(FALLING_PIECE_SPRITE_INDEX, 0, 0);
 
     // Ensure display is on
     DISPLAY_ON;

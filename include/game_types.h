@@ -72,6 +72,17 @@ typedef enum {
 #define BLINK_STATE_HIDDEN 0
 #define BLINK_STATE_ANIMATING 1
 
+// Falling piece animation (title screen)
+#define FALLING_PIECE_SPRITE_INDEX 2
+#define FALLING_PIECE_SPAWN_DELAY_MIN 25   // Min frames between spawns (~0.4s)
+#define FALLING_PIECE_SPAWN_DELAY_MAX 80   // Max frames between spawns (~1.3s)
+#define FALLING_PIECE_MIN_X 12            // Keep inside visible area
+#define FALLING_PIECE_MAX_X 156
+#define FALLING_PIECE_START_Y_FP -2048     // -8 px in 8.8 fixed-point
+#define FALLING_PIECE_DESPAWN_Y 152        // Remove when fully below 144px screen
+#define FALLING_PIECE_INITIAL_VY_FP 32     // 0.125 px/frame in 8.8 fixed-point
+#define FALLING_PIECE_ACCEL_FP 5           // 0.02 px/frame^2 in 8.8 fixed-point
+
 // Screen transition animation constants
 #define TRANSITION_FLASH_DURATION 3        // Frames per flash (~50ms at 60fps)
 #define TRANSITION_PHASE_COUNT_3 4         // OFF-ON-OFF-ON = 4 phases

@@ -12,6 +12,7 @@
 #include "util/transition.h"
 #include "util/random.h"
 #include "util/sound.h"
+#include "util/falling_piece_anim.h"
 
 // Forward declarations for generated assets
 // (Actual data is compiled separately from assets/generated/*.h)
@@ -19,11 +20,6 @@ extern const unsigned char title_tiles[];
 extern const unsigned char title_map[];
 extern const unsigned char arrow_tiles[];
 extern const uint8_t blink_tiles[];
-#if TITLE_ENABLE_FALLING_PIECES
-extern const uint8_t dest_piece_white_tiles[];
-extern const uint8_t dest_piece_black_tiles[];
-#endif
-
 // External reference to next_state from main.c
 extern ScreenState_t next_state;
 
@@ -38,13 +34,7 @@ static uint8_t blink_timer;        // Frame counter for animation/delay
 static uint8_t blink_x, blink_y;   // Current sprite position
 
 #if TITLE_ENABLE_FALLING_PIECES
-// Falling piece animation state (8.8 fixed-point vertical motion)
-static uint8_t falling_piece_active;
-static uint8_t falling_piece_tile_base;
-static uint8_t falling_piece_x;
-static int32_t falling_piece_y_fp;
-static int32_t falling_piece_vy_fp;
-static uint8_t falling_piece_spawn_timer;
+static FallingPieceAnimState falling_piece_anim_state;
 #endif
 
 /**
@@ -106,74 +96,6 @@ static void update_blink(void) {
     }
 }
 
-#if TITLE_ENABLE_FALLING_PIECES
-/**
- * Move (or hide) the 16x16 falling piece metasprite
- */
-static void move_falling_piece(uint8_t sprite_x, uint8_t sprite_y) {
-    move_sprite(FALLING_PIECE_SPRITE_INDEX + 0, sprite_x, sprite_y);
-    move_sprite(FALLING_PIECE_SPRITE_INDEX + 1, sprite_x + 8u, sprite_y);
-    move_sprite(FALLING_PIECE_SPRITE_INDEX + 2, sprite_x, sprite_y + 8u);
-    move_sprite(FALLING_PIECE_SPRITE_INDEX + 3, sprite_x + 8u, sprite_y + 8u);
-}
-
-/**
- * Hide falling piece sprite and schedule next spawn
- */
-static void falling_piece_hide(void) {
-    falling_piece_active = 0;
-    move_falling_piece(0, 0);
-    falling_piece_spawn_timer = get_random_range(FALLING_PIECE_SPAWN_DELAY_MIN, FALLING_PIECE_SPAWN_DELAY_MAX);
-}
-
-/**
- * Spawn a new falling piece with randomized x and color
- */
-static void falling_piece_spawn(void) {
-    falling_piece_active = 1;
-    falling_piece_x = get_random_range(FALLING_PIECE_MIN_X, FALLING_PIECE_MAX_X);
-    falling_piece_y_fp = FALLING_PIECE_START_Y_FP;
-    falling_piece_vy_fp = FALLING_PIECE_INITIAL_VY_FP;
-
-    falling_piece_tile_base = (get_random_range(0, 1) == 0) ? FALLING_PIECE_WHITE_TILE_START : FALLING_PIECE_BLACK_TILE_START;
-
-    set_sprite_tile(FALLING_PIECE_SPRITE_INDEX + 0, falling_piece_tile_base + 0u);
-    set_sprite_tile(FALLING_PIECE_SPRITE_INDEX + 1, falling_piece_tile_base + 1u);
-    set_sprite_tile(FALLING_PIECE_SPRITE_INDEX + 2, falling_piece_tile_base + 2u);
-    set_sprite_tile(FALLING_PIECE_SPRITE_INDEX + 3, falling_piece_tile_base + 3u);
-
-    move_falling_piece(falling_piece_x, (uint8_t)((falling_piece_y_fp >> 8) + 16));
-}
-
-/**
- * Update falling piece animation (spawn + physics)
- */
-static void update_falling_piece(void) {
-    int32_t y_px;
-
-    if (!falling_piece_active) {
-        if (falling_piece_spawn_timer > 0) {
-            falling_piece_spawn_timer--;
-        } else {
-            falling_piece_spawn();
-        }
-        return;
-    }
-
-    falling_piece_vy_fp += FALLING_PIECE_ACCEL_FP;
-    falling_piece_y_fp += falling_piece_vy_fp;
-
-    y_px = (falling_piece_y_fp >> 8);
-    if (y_px >= FALLING_PIECE_DESPAWN_Y) {
-        falling_piece_hide();
-        return;
-    }
-
-    move_falling_piece(falling_piece_x, (uint8_t)(y_px + 16));
-}
-
-#endif
-
 /**
  * Initialize title screen
  */
@@ -205,8 +127,7 @@ void init_title(void) {
 
 #if TITLE_ENABLE_FALLING_PIECES
     // Load falling piece sprite tiles (white + black, 16x16 each = 4 tiles each)
-    set_sprite_data(FALLING_PIECE_WHITE_TILE_START, 4, dest_piece_white_tiles);
-    set_sprite_data(FALLING_PIECE_BLACK_TILE_START, 4, dest_piece_black_tiles);
+    falling_piece_anim_load_tiles();
 #endif
 
     // Set up arrow sprite (sprite 0)
@@ -222,7 +143,7 @@ void init_title(void) {
 
 #if TITLE_ENABLE_FALLING_PIECES
     // Initialize falling piece animation in hidden state with random delay
-    falling_piece_hide();
+    falling_piece_anim_init(&falling_piece_anim_state, FALLING_PIECE_SPRITE_INDEX);
 #endif
 
     // Clear input state
@@ -255,7 +176,7 @@ void update_title(void) {
 
 #if TITLE_ENABLE_FALLING_PIECES
     // Update falling piece animation
-    update_falling_piece();
+    falling_piece_anim_update(&falling_piece_anim_state);
 #endif
 
     // Handle up/down navigation
@@ -296,7 +217,7 @@ void cleanup_title(void) {
 
 #if TITLE_ENABLE_FALLING_PIECES
     // Hide falling piece sprite
-    move_falling_piece(0, 0);
+    falling_piece_anim_hide(&falling_piece_anim_state);
 #endif
 
     // Ensure display is on

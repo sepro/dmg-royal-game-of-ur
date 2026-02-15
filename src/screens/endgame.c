@@ -12,6 +12,7 @@
 #include "link/link.h"
 #include "link/link_profile.h"
 #include "util/sound.h"
+#include "util/falling_piece_anim.h"
 
 extern const uint8_t border_tiles[];
 extern const unsigned char border_map[];
@@ -26,6 +27,9 @@ static uint8_t anim_showing_expr;  // 0 = normal, 1 = expression
 static uint8_t anim_active;
 static uint8_t anim_target_expr;   // PORTRAIT_EXPR_SAD or PORTRAIT_EXPR_HAPPY
 static uint8_t anim_local_expr;    // Link mode: local player's target expression
+
+static uint8_t show_falling_piece_anim;
+static FallingPieceAnimState endgame_falling_piece_anim;
 
 // Draw centered text (centers horizontally)
 static void draw_centered_text(uint8_t y, const char *text) {
@@ -66,6 +70,7 @@ void init_endgame(void) {
     anim_active = 0;
     anim_counter = 0;
     anim_showing_expr = 0;
+    show_falling_piece_anim = 0;
 
     if (game_mode == GAME_MODE_LINK) {
         // Link mode: dual portraits side by side
@@ -92,6 +97,7 @@ void init_endgame(void) {
         if (human_won) {
             anim_local_expr = PORTRAIT_EXPR_HAPPY;
             anim_target_expr = PORTRAIT_EXPR_SAD;
+            show_falling_piece_anim = 1;
         } else {
             anim_local_expr = PORTRAIT_EXPR_SAD;
             anim_target_expr = PORTRAIT_EXPR_HAPPY;
@@ -105,6 +111,7 @@ void init_endgame(void) {
         if (human_won) {
             anim_target_expr = PORTRAIT_EXPR_SAD;
             anim_active = 1;
+            show_falling_piece_anim = 1;
         } else {
             anim_target_expr = PORTRAIT_EXPR_HAPPY;
             anim_active = 1;
@@ -135,8 +142,20 @@ void init_endgame(void) {
     // Reset input
     input_reset();
 
-    // Set background palette
+    // Set palettes
     BGP_REG = 0xE4;
+    // Falling piece sprites are authored for OBP0=0xE0 (same as title/game).
+    // Without this, palette state from previous screens (e.g. game cleanup 0xFC)
+    // can make endgame falling pieces render with incorrect shades.
+    OBP0_REG = 0xE0;
+
+    if (show_falling_piece_anim) {
+        falling_piece_anim_load_tiles();
+        falling_piece_anim_init(&endgame_falling_piece_anim, ENDGAME_FALLING_PIECE_SPRITE_INDEX);
+        SHOW_SPRITES;
+    } else {
+        HIDE_SPRITES;
+    }
 
     SHOW_BKG;
     DISPLAY_ON;
@@ -175,6 +194,11 @@ void update_endgame(void) {
         }
     }
 
+
+    if (show_falling_piece_anim) {
+        falling_piece_anim_update(&endgame_falling_piece_anim);
+    }
+
     if (input_pressed(J_A)) {
         play_sfx(SFX_CONFIRM);
         if (game_mode == GAME_MODE_LINK) {
@@ -190,5 +214,10 @@ void update_endgame(void) {
 }
 
 void cleanup_endgame(void) {
+    if (show_falling_piece_anim) {
+        falling_piece_anim_hide(&endgame_falling_piece_anim);
+    }
+
+    HIDE_SPRITES;
     DISPLAY_ON;
 }

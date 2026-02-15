@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "vram_layout.h"
+#include "util/falling_piece_anim.h"
 
 // Screen layout constants
 #define ENDGAME_WHITE_TILE 0
@@ -25,6 +26,10 @@
 #define ENDGAME_LINK_RIGHT_BRD_X   12
 #define ENDGAME_LINK_RIGHT_BRD_Y   3
 #define ENDGAME_LINK_NAME_Y        11
+
+
+// Falling destination-piece celebration animation
+#define ENDGAME_FALLING_PIECE_SPRITE_INDEX 0
 
 // Portrait animation timing
 #define ENDGAME_ANIM_INTERVAL 40    // ~0.67s per expression at 60fps

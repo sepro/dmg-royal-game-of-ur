@@ -101,13 +101,14 @@
 #define VRAM_FONT_INVERTED_COUNT 42
 
 /* ----------------------------------------------------------------------------
- * Game Board (Tiles 0-37) - SCREEN ISOLATED
- * Game board is screen-isolated and uses tiles 0-37
- * Portrait (38-68), pieces (69-140), font (141+) follow in game screen
+ * Game Board Frame (Tiles 0-12) - SCREEN ISOLATED
+ * 13 frame-only tiles (corners, bars, bridge connectors)
+ * Interior squares filled at runtime by board_tiles_pieces via update_board_display()
+ * Portrait (13-43), pieces (69-140), font (141+) follow in game screen
  * ---------------------------------------------------------------------------- */
 #define VRAM_GAMEBOARD_START 0
-#define VRAM_GAMEBOARD_END 37
-#define VRAM_GAMEBOARD_COUNT 38
+#define VRAM_GAMEBOARD_END 12
+#define VRAM_GAMEBOARD_COUNT 13
 
 /* ----------------------------------------------------------------------------
  * Piece Tiles (Tiles 69-140) - SCREEN ISOLATED

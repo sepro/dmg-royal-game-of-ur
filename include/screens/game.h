@@ -21,10 +21,10 @@
 #define UI_START_Y      10
 #define UI_END_Y        17
 
-// VRAM tile indices (screen-isolated: 0-38 for board)
-// Board uses tiles 0-37 (38 unique tiles from png2asset)
+// VRAM tile indices (screen-isolated: 0-12 for board frame)
+// Board frame uses tiles 0-12 (13 frame-only tiles, interior filled at runtime)
 #define GAME_BOARD_TILE_START   0
-#define GAME_BOARD_TILE_COUNT   38
+#define GAME_BOARD_TILE_COUNT   13
 
 // Background tile for UI area (use board's background tile)
 #define GAME_BG_TILE            0
@@ -202,7 +202,7 @@
 // ============================================================================
 // Opponent Portrait (5x5 tiles on right side of UI)
 // ============================================================================
-#define GAME_PORTRAIT_TILE_START  38  // After board tiles (0-37)
+#define GAME_PORTRAIT_TILE_START  13  // After board frame tiles (0-12)
 #define GAME_PORTRAIT_X           14  // Tile X position (right side)
 #define GAME_PORTRAIT_Y           10  // Tile Y position (one row above CPU info)
 #define GAME_PORTRAIT_WIDTH       5

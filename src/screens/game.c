@@ -22,8 +22,8 @@
 #include "util/sound.h"
 
 // External references to generated board asset
-extern const uint8_t board_tiles[];
-extern const unsigned char board_map[];
+extern const uint8_t board_frame_tiles[];
+extern const unsigned char board_frame_map[];
 
 // External references to sprite assets
 extern const uint8_t dice_white_tiles[];
@@ -1122,13 +1122,13 @@ void init_game(void) {
     DISPLAY_OFF;
 
     // Load board tiles into VRAM
-    set_bkg_data(GAME_BOARD_TILE_START, GAME_BOARD_TILE_COUNT, board_tiles);
+    set_bkg_data(GAME_BOARD_TILE_START, GAME_BOARD_TILE_COUNT, board_frame_tiles);
 
     // Load piece overlay tiles
     load_piece_tiles();
 
     // Draw the board tilemap at top of screen
-    set_bkg_tiles(BOARD_X, BOARD_Y, BOARD_WIDTH, BOARD_HEIGHT, board_map);
+    set_bkg_tiles(BOARD_X, BOARD_Y, BOARD_WIDTH, BOARD_HEIGHT, board_frame_map);
 
     // Fill UI area with background color
     fill_ui_area();

@@ -7,19 +7,20 @@
 #include <stdint.h>
 #include "game_types.h"
 #include "screens/title.h"
-#include "screens/game.h"
 #include "util/font.h"
 #include "util/input.h"
 #include "util/transition.h"
 #include "util/sound.h"
 #include "util/music.h"
 #include "util/portrait.h"
+#include "util/screen_utils.h"
+#include "vram_layout.h"
 
 // External references to generated assets
-extern const uint8_t board_tiles[];
-extern const unsigned char board_map[];
+extern const uint8_t board_tiles_pieces_tiles[];
+extern const uint8_t border_tiles[];
+extern const unsigned char border_map[];
 extern const unsigned char arrow_tiles[];
-extern const uint8_t selection_border_tiles[];
 
 // External reference to next_state from main.c
 extern ScreenState_t next_state;
@@ -39,21 +40,58 @@ static uint8_t showcase_toggles;
 #define TITLE_SHOWCASE_TOGGLE_INTERVAL 16
 #define TITLE_SHOWCASE_TOGGLES_PER_SWAP 8
 
+#define TITLE_BOARD_TILE_START VRAM_GAMEBOARD_START
+#define TITLE_BOARD_TILE_COUNT 72
+
+#define TITLE_BORDER_TILE_START 100
+#define TITLE_PORTRAIT_TILE_START VRAM_PIECE_TILES_START
+
 #define TITLE_PORTRAIT_BOX_X 13
 #define TITLE_PORTRAIT_BOX_Y 6
 #define TITLE_PORTRAIT_X (TITLE_PORTRAIT_BOX_X + 1)
 #define TITLE_PORTRAIT_Y (TITLE_PORTRAIT_BOX_Y + 1)
 
-#define BOX_SPRITE_TOP_LEFT      1
-#define BOX_SPRITE_TOP_RIGHT     2
-#define BOX_SPRITE_BOTTOM_LEFT   3
-#define BOX_SPRITE_BOTTOM_RIGHT  4
-#define BOX_SPRITE_TILE          1
-#define TITLE_PORTRAIT_TILE_START VRAM_PIECE_TILES_START
+// Empty square base tile for each square type (from board_tiles_pieces.png)
+static const uint8_t title_square_empty_base[6] = {
+    0, 12, 24, 36, 48, 60
+};
+
+typedef struct {
+    uint8_t x;
+    uint8_t y;
+    uint8_t square_type;
+} TitleBoardSquare_t;
+
+// Same board coordinates as gameplay board rendering
+static const TitleBoardSquare_t title_board_squares[] = {
+    { 8, 6, 1}, { 6, 6, 2}, { 4, 6, 1}, { 2, 6, 0},
+    { 2, 4, 4}, { 4, 4, 2}, { 6, 4, 5}, { 8, 4, 0},
+    {10, 4, 2}, {12, 4, 5}, {14, 4, 1}, {16, 4, 2},
+    {16, 6, 3}, {14, 6, 0},
+    { 8, 2, 1}, { 6, 2, 2}, { 4, 2, 1}, { 2, 2, 0},
+    {16, 2, 3}, {14, 2, 0}
+};
 
 static void draw_music_option(void) {
     clear_text_row(0, MENU_TEXT_ROW_2, 12);
     draw_text(MENU_TEXT_X, MENU_TEXT_ROW_2, is_music_enabled() ? "MUSIC ON" : "MUSIC OFF");
+}
+
+static void draw_board_square_empty(uint8_t x, uint8_t y, uint8_t square_type) {
+    uint8_t tile = title_square_empty_base[square_type];
+    set_bkg_tile_xy(x, y, TITLE_BOARD_TILE_START + tile);
+    set_bkg_tile_xy((uint8_t)(x + 1), y, TITLE_BOARD_TILE_START + tile + 2);
+    set_bkg_tile_xy(x, (uint8_t)(y + 1), TITLE_BOARD_TILE_START + tile + 1);
+    set_bkg_tile_xy((uint8_t)(x + 1), (uint8_t)(y + 1), TITLE_BOARD_TILE_START + tile + 3);
+}
+
+static void draw_title_board(void) {
+    uint8_t i;
+    for (i = 0; i < (sizeof(title_board_squares) / sizeof(title_board_squares[0])); i++) {
+        draw_board_square_empty(title_board_squares[i].x,
+                                title_board_squares[i].y,
+                                title_board_squares[i].square_type);
+    }
 }
 
 static void draw_showcase_portrait(void) {
@@ -64,26 +102,8 @@ static void draw_showcase_portrait(void) {
 }
 
 static void draw_portrait_box(void) {
-    uint8_t x_left = (uint8_t)(TITLE_PORTRAIT_BOX_X * 8 + 8);
-    uint8_t y_top = (uint8_t)(TITLE_PORTRAIT_BOX_Y * 8 + 16);
-    uint8_t x_right = (uint8_t)((TITLE_PORTRAIT_BOX_X + 6) * 8 + 8);
-    uint8_t y_bottom = (uint8_t)((TITLE_PORTRAIT_BOX_Y + 6) * 8 + 16);
-
-    set_sprite_tile(BOX_SPRITE_TOP_LEFT, BOX_SPRITE_TILE);
-    set_sprite_prop(BOX_SPRITE_TOP_LEFT, 0);
-    move_sprite(BOX_SPRITE_TOP_LEFT, x_left, y_top);
-
-    set_sprite_tile(BOX_SPRITE_TOP_RIGHT, BOX_SPRITE_TILE);
-    set_sprite_prop(BOX_SPRITE_TOP_RIGHT, S_FLIPX);
-    move_sprite(BOX_SPRITE_TOP_RIGHT, x_right, y_top);
-
-    set_sprite_tile(BOX_SPRITE_BOTTOM_LEFT, BOX_SPRITE_TILE);
-    set_sprite_prop(BOX_SPRITE_BOTTOM_LEFT, S_FLIPY);
-    move_sprite(BOX_SPRITE_BOTTOM_LEFT, x_left, y_bottom);
-
-    set_sprite_tile(BOX_SPRITE_BOTTOM_RIGHT, BOX_SPRITE_TILE);
-    set_sprite_prop(BOX_SPRITE_BOTTOM_RIGHT, S_FLIPX | S_FLIPY);
-    move_sprite(BOX_SPRITE_BOTTOM_RIGHT, x_right, y_bottom);
+    draw_border_frame(TITLE_PORTRAIT_BOX_X, TITLE_PORTRAIT_BOX_Y, 7, 7,
+                      TITLE_BORDER_TILE_START, border_map);
 }
 
 static void update_showcase_animation(void) {
@@ -110,30 +130,24 @@ static void update_showcase_animation(void) {
     }
 }
 
-/**
- * Initialize title screen
- */
 void init_title(void) {
     uint8_t row;
 
-    // Disable display during VRAM writes
     DISPLAY_OFF;
 
-    // Board-only title scene (black surroundings, no title artwork tiles)
-    set_bkg_data(GAME_BOARD_TILE_START, GAME_BOARD_TILE_COUNT, board_tiles);
-    set_bkg_tiles(BOARD_X, BOARD_Y, BOARD_WIDTH, BOARD_HEIGHT, board_map);
-
-    // Load font and clear lower rows to black
     load_font();
-    for (row = 10; row < 18; row++) {
-        clear_text_row(0, row, 20);
-    }
+    clear_rect((uint8_t)(FONT_TILE_START + CHAR_BLANK), 0, 0, 20, 18);
 
-    // Title text centered near top
+    // Draw board using board_tiles_pieces only (no board map/background)
+    set_bkg_data(TITLE_BOARD_TILE_START, TITLE_BOARD_TILE_COUNT, board_tiles_pieces_tiles);
+    draw_title_board();
+
+    // Load border tiles for portrait frame
+    set_bkg_data(TITLE_BORDER_TILE_START, 25, border_tiles);
+
     draw_text(5, 0, "ROYAL GAME");
     draw_text(7, 1, "OF UR");
 
-    // Menu order: START GAME, MUSIC ON/OFF, LINK CABLE
     clear_text_row(0, MENU_TEXT_ROW_1, 12);
     clear_text_row(0, MENU_TEXT_ROW_2, 12);
     clear_text_row(0, MENU_TEXT_ROW_3, 12);
@@ -141,11 +155,8 @@ void init_title(void) {
     draw_music_option();
     draw_text(MENU_TEXT_X, MENU_TEXT_ROW_3, "LINK CABLE");
 
-    // Load arrow and selection-border corner sprites
     set_sprite_data(VRAM_SPRITE_ARROW, 1, arrow_tiles);
-    set_sprite_data(BOX_SPRITE_TILE, 1, selection_border_tiles);
 
-    // Set up arrow sprite
     arrow_sprite_index = 0;
     set_sprite_tile(arrow_sprite_index, VRAM_SPRITE_ARROW);
     set_sprite_prop(arrow_sprite_index, 0);
@@ -153,7 +164,6 @@ void init_title(void) {
     selected_option = MENU_START_GAME;
     move_sprite(arrow_sprite_index, ARROW_X, ARROW_START_Y + (selected_option * ARROW_SPACING));
 
-    // Draw portrait showcase frame and initialize animation state
     draw_portrait_box();
     showcase_opponent = TITLE_SHOWCASE_MERCHANT;
     showcase_expr = PORTRAIT_EXPR_HAPPY;
@@ -161,35 +171,32 @@ void init_title(void) {
     showcase_toggles = 0;
     draw_showcase_portrait();
 
-    // Clear input state
+    // Re-clear UI rows after portrait tile loads so text stays intact
+    for (row = 10; row < 18; row++) {
+        clear_text_row(0, row, 12);
+    }
+    draw_text(MENU_TEXT_X, MENU_TEXT_ROW_1, "START GAME");
+    draw_music_option();
+    draw_text(MENU_TEXT_X, MENU_TEXT_ROW_3, "LINK CABLE");
+
     input_reset();
 
-    // Set palettes
     BGP_REG = 0xE4;
     OBP0_REG = 0xE0;
 
-    // Enable display
     SHOW_BKG;
     SHOW_SPRITES;
     DISPLAY_ON;
 }
 
-/**
- * Update title screen (called every frame)
- */
 void update_title(void) {
-    // Update transition animation if active
     if (update_transition()) {
         return;
     }
 
-    // Update input state
     input_update();
-
-    // Update right-side portrait showcase animation
     update_showcase_animation();
 
-    // Handle up/down navigation
     if (input_pressed(J_UP)) {
         if (selected_option > 0) {
             selected_option--;
@@ -204,7 +211,6 @@ void update_title(void) {
         }
     }
 
-    // Handle A button (confirm selection)
     if (input_pressed(J_A)) {
         play_sfx(SFX_CONFIRM);
         if (selected_option == MENU_START_GAME) {
@@ -218,14 +224,7 @@ void update_title(void) {
     }
 }
 
-/**
- * Cleanup title screen
- */
 void cleanup_title(void) {
     move_sprite(arrow_sprite_index, 0, 0);
-    move_sprite(BOX_SPRITE_TOP_LEFT, 0, 0);
-    move_sprite(BOX_SPRITE_TOP_RIGHT, 0, 0);
-    move_sprite(BOX_SPRITE_BOTTOM_LEFT, 0, 0);
-    move_sprite(BOX_SPRITE_BOTTOM_RIGHT, 0, 0);
     DISPLAY_ON;
 }

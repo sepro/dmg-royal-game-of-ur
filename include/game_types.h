@@ -25,8 +25,9 @@ typedef enum {
 // Title screen menu options
 typedef enum {
     MENU_START_GAME = 0,
-    MENU_LINK_CABLE = 1,
-    MENU_OPTION_COUNT = 2
+    MENU_MUSIC_TOGGLE = 1,
+    MENU_LINK_CABLE = 2,
+    MENU_OPTION_COUNT = 3
 } MenuOption_t;
 
 // Game mode (single player vs link cable multiplayer)
@@ -41,14 +42,16 @@ typedef enum {
 #define TILE_SIZE 8
 
 // Menu text positions (tile coordinates)
-#define MENU_TEXT_X 5         // Text starts at tile column 5
-#define MENU_TEXT_ROW_1 14    // "START GAME" at tile row 14
-#define MENU_TEXT_ROW_2 16    // "LINK CABLE" at tile row 16
+#define MENU_TEXT_X 2         // Text starts at tile column 2
+#define MENU_TEXT_ROW_1 12    // "START GAME" at tile row 12
+#define MENU_TEXT_ROW_2 14    // "MUSIC ON/OFF" at tile row 14
+#define MENU_TEXT_ROW_3 16    // "LINK CABLE" at tile row 16
 
 // Menu arrow sprite positions
-// Sprite Y has 16px offset, so row 14 (pixel 112) = sprite Y 128
-#define ARROW_X 36            // Pixel X position (left of text at tile 5 = pixel 40)
-#define ARROW_START_Y 128     // Sprite Y for row 14 (112 + 16 offset)
+// Sprite Y has 16px offset, so row 12 (pixel 96) = sprite Y 112
+// Arrow sits just left of text at tile column 2 (pixel 16)
+#define ARROW_X 12            // Pixel X position
+#define ARROW_START_Y 112     // Sprite Y for row 12 (96 + 16 offset)
 #define ARROW_SPACING 16      // 2 tile rows = 16 pixels
 
 // VBlank helper

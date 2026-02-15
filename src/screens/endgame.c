@@ -142,8 +142,12 @@ void init_endgame(void) {
     // Reset input
     input_reset();
 
-    // Set background palette
+    // Set palettes
     BGP_REG = 0xE4;
+    // Falling piece sprites are authored for OBP0=0xE0 (same as title/game).
+    // Without this, palette state from previous screens (e.g. game cleanup 0xFC)
+    // can make endgame falling pieces render with incorrect shades.
+    OBP0_REG = 0xE0;
 
     if (show_falling_piece_anim) {
         falling_piece_anim_load_tiles();

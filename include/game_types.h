@@ -42,14 +42,15 @@ typedef enum {
 #define TILE_SIZE 8
 
 // Menu text positions (tile coordinates)
-#define MENU_TEXT_X 5         // Text starts at tile column 5
+#define MENU_TEXT_X 2         // Text starts at tile column 2
 #define MENU_TEXT_ROW_1 12    // "START GAME" at tile row 12
 #define MENU_TEXT_ROW_2 14    // "MUSIC ON/OFF" at tile row 14
 #define MENU_TEXT_ROW_3 16    // "LINK CABLE" at tile row 16
 
 // Menu arrow sprite positions
 // Sprite Y has 16px offset, so row 12 (pixel 96) = sprite Y 112
-#define ARROW_X 36            // Pixel X position (left of text at tile 5 = pixel 40)
+// Arrow sits just left of text at tile column 2 (pixel 16)
+#define ARROW_X 12            // Pixel X position
 #define ARROW_START_Y 112     // Sprite Y for row 12 (96 + 16 offset)
 #define ARROW_SPACING 16      // 2 tile rows = 16 pixels
 

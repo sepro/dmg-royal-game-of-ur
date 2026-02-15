@@ -7,20 +7,20 @@
 #include <stdint.h>
 #include "game_types.h"
 #include "screens/title.h"
+#include "screens/game.h"
 #include "util/font.h"
 #include "util/input.h"
 #include "util/transition.h"
-#include "util/random.h"
 #include "util/sound.h"
 #include "util/music.h"
-#include "util/falling_piece_anim.h"
+#include "util/portrait.h"
 
-// Forward declarations for generated assets
-// (Actual data is compiled separately from assets/generated/*.h)
-extern const unsigned char title_tiles[];
-extern const unsigned char title_map[];
+// External references to generated assets
+extern const uint8_t board_tiles[];
+extern const unsigned char board_map[];
 extern const unsigned char arrow_tiles[];
-extern const uint8_t blink_tiles[];
+extern const uint8_t selection_border_tiles[];
+
 // External reference to next_state from main.c
 extern ScreenState_t next_state;
 
@@ -28,138 +28,145 @@ extern ScreenState_t next_state;
 static uint8_t selected_option = MENU_START_GAME;
 static uint8_t arrow_sprite_index = 0;
 
-// Blink animation state
-static uint8_t blink_state;        // BLINK_STATE_HIDDEN or BLINK_STATE_ANIMATING
-static uint8_t blink_frame;        // Current frame (0-3)
-static uint8_t blink_timer;        // Frame counter for animation/delay
-static uint8_t blink_x, blink_y;   // Current sprite position
+// Portrait showcase animation
+static uint8_t showcase_opponent;
+static uint8_t showcase_expr;
+static uint8_t showcase_timer;
+static uint8_t showcase_toggles;
 
-#if TITLE_ENABLE_FALLING_PIECES
-static FallingPieceAnimState falling_piece_anim_state;
-#endif
+#define TITLE_SHOWCASE_MERCHANT   1
+#define TITLE_SHOWCASE_PRIESTESS  3
+#define TITLE_SHOWCASE_TOGGLE_INTERVAL 16
+#define TITLE_SHOWCASE_TOGGLES_PER_SWAP 8
 
-/**
- * Start a new blink animation at a random position
- */
-static void blink_start_animation(void) {
-    blink_state = BLINK_STATE_ANIMATING;
-    blink_frame = 0;
-    blink_timer = BLINK_ANIM_SPEED;
+#define TITLE_PORTRAIT_BOX_X 13
+#define TITLE_PORTRAIT_BOX_Y 6
+#define TITLE_PORTRAIT_X (TITLE_PORTRAIT_BOX_X + 1)
+#define TITLE_PORTRAIT_Y (TITLE_PORTRAIT_BOX_Y + 1)
 
-    // Pick random position within bounds
-    blink_x = get_random_range(BLINK_MIN_X, BLINK_MAX_X);
-    blink_y = get_random_range(BLINK_MIN_Y, BLINK_MAX_Y);
-
-    // Set initial tile and position
-    set_sprite_tile(BLINK_SPRITE_INDEX, BLINK_TILE_START + blink_frame);
-    move_sprite(BLINK_SPRITE_INDEX, blink_x, blink_y);
-}
-
-/**
- * Hide sprite and start delay before next animation
- */
-static void blink_start_delay(void) {
-    blink_state = BLINK_STATE_HIDDEN;
-    blink_timer = get_random_range(BLINK_DELAY_MIN, BLINK_DELAY_MAX);
-
-    // Hide sprite by moving off-screen
-    move_sprite(BLINK_SPRITE_INDEX, 0, 0);
-}
-
-/**
- * Update blink animation (called every frame)
- */
-static void update_blink(void) {
-    if (blink_state == BLINK_STATE_HIDDEN) {
-        // Countdown delay timer
-        if (blink_timer > 0) {
-            blink_timer--;
-        } else {
-            // Delay finished, start new animation
-            blink_start_animation();
-        }
-    } else {
-        // Animating state
-        if (blink_timer > 0) {
-            blink_timer--;
-        } else {
-            // Advance to next frame
-            blink_frame++;
-            if (blink_frame >= BLINK_FRAME_COUNT) {
-                // Animation complete, start delay
-                blink_start_delay();
-            } else {
-                // Show next frame
-                blink_timer = BLINK_ANIM_SPEED;
-                set_sprite_tile(BLINK_SPRITE_INDEX, BLINK_TILE_START + blink_frame);
-            }
-        }
-    }
-}
+#define BOX_SPRITE_TOP_LEFT      1
+#define BOX_SPRITE_TOP_RIGHT     2
+#define BOX_SPRITE_BOTTOM_LEFT   3
+#define BOX_SPRITE_BOTTOM_RIGHT  4
+#define BOX_SPRITE_TILE          1
+#define TITLE_PORTRAIT_TILE_START VRAM_PIECE_TILES_START
 
 static void draw_music_option(void) {
-    clear_text_row(0, MENU_TEXT_ROW_2, 20);
+    clear_text_row(0, MENU_TEXT_ROW_2, 12);
     draw_text(MENU_TEXT_X, MENU_TEXT_ROW_2, is_music_enabled() ? "MUSIC ON" : "MUSIC OFF");
+}
+
+static void draw_showcase_portrait(void) {
+    load_portrait_tiles_for_char(showcase_opponent, TITLE_PORTRAIT_TILE_START);
+    draw_portrait_expr(showcase_opponent, showcase_expr,
+                       TITLE_PORTRAIT_TILE_START,
+                       TITLE_PORTRAIT_X, TITLE_PORTRAIT_Y, 1);
+}
+
+static void draw_portrait_box(void) {
+    uint8_t x_left = (uint8_t)(TITLE_PORTRAIT_BOX_X * 8 + 8);
+    uint8_t y_top = (uint8_t)(TITLE_PORTRAIT_BOX_Y * 8 + 16);
+    uint8_t x_right = (uint8_t)((TITLE_PORTRAIT_BOX_X + 6) * 8 + 8);
+    uint8_t y_bottom = (uint8_t)((TITLE_PORTRAIT_BOX_Y + 6) * 8 + 16);
+
+    set_sprite_tile(BOX_SPRITE_TOP_LEFT, BOX_SPRITE_TILE);
+    set_sprite_prop(BOX_SPRITE_TOP_LEFT, 0);
+    move_sprite(BOX_SPRITE_TOP_LEFT, x_left, y_top);
+
+    set_sprite_tile(BOX_SPRITE_TOP_RIGHT, BOX_SPRITE_TILE);
+    set_sprite_prop(BOX_SPRITE_TOP_RIGHT, S_FLIPX);
+    move_sprite(BOX_SPRITE_TOP_RIGHT, x_right, y_top);
+
+    set_sprite_tile(BOX_SPRITE_BOTTOM_LEFT, BOX_SPRITE_TILE);
+    set_sprite_prop(BOX_SPRITE_BOTTOM_LEFT, S_FLIPY);
+    move_sprite(BOX_SPRITE_BOTTOM_LEFT, x_left, y_bottom);
+
+    set_sprite_tile(BOX_SPRITE_BOTTOM_RIGHT, BOX_SPRITE_TILE);
+    set_sprite_prop(BOX_SPRITE_BOTTOM_RIGHT, S_FLIPX | S_FLIPY);
+    move_sprite(BOX_SPRITE_BOTTOM_RIGHT, x_right, y_bottom);
+}
+
+static void update_showcase_animation(void) {
+    showcase_timer++;
+    if (showcase_timer < TITLE_SHOWCASE_TOGGLE_INTERVAL) {
+        return;
+    }
+
+    showcase_timer = 0;
+    showcase_toggles++;
+
+    showcase_expr = (showcase_expr == PORTRAIT_EXPR_NORMAL)
+        ? PORTRAIT_EXPR_HAPPY
+        : PORTRAIT_EXPR_NORMAL;
+    draw_showcase_portrait();
+
+    if (showcase_toggles >= TITLE_SHOWCASE_TOGGLES_PER_SWAP) {
+        showcase_toggles = 0;
+        showcase_expr = PORTRAIT_EXPR_HAPPY;
+        showcase_opponent = (showcase_opponent == TITLE_SHOWCASE_MERCHANT)
+            ? TITLE_SHOWCASE_PRIESTESS
+            : TITLE_SHOWCASE_MERCHANT;
+        draw_showcase_portrait();
+    }
 }
 
 /**
  * Initialize title screen
  */
 void init_title(void) {
+    uint8_t row;
+
     // Disable display during VRAM writes
     DISPLAY_OFF;
 
-    // Load background tiles (139 unique tiles after deduplication)
-    set_bkg_data(0, 139, title_tiles);
+    // Board-only title scene (black surroundings, no title artwork tiles)
+    set_bkg_data(GAME_BOARD_TILE_START, GAME_BOARD_TILE_COUNT, board_tiles);
+    set_bkg_tiles(BOARD_X, BOARD_Y, BOARD_WIDTH, BOARD_HEIGHT, board_map);
 
-    // Load background map (20x18 tiles for 160x144 screen)
-    set_bkg_tiles(0, 0, 20, 18, title_map);
-
-    // Load font tiles for menu text
+    // Load font and clear lower rows to black
     load_font();
+    for (row = 10; row < 18; row++) {
+        clear_text_row(0, row, 20);
+    }
 
-    // Clear menu area with black background and draw menu text
-    // Menu is at rows 12/14/16, text starts at x=5 (arrow at x=3)
-    clear_text_row(0, MENU_TEXT_ROW_1, 20);
-    clear_text_row(0, MENU_TEXT_ROW_2, 20);
-    clear_text_row(0, MENU_TEXT_ROW_3, 20);
+    // Title text centered near top
+    draw_text(5, 0, "ROYAL GAME");
+    draw_text(7, 1, "OF UR");
+
+    // Menu order: START GAME, MUSIC ON/OFF, LINK CABLE
+    clear_text_row(0, MENU_TEXT_ROW_1, 12);
+    clear_text_row(0, MENU_TEXT_ROW_2, 12);
+    clear_text_row(0, MENU_TEXT_ROW_3, 12);
     draw_text(MENU_TEXT_X, MENU_TEXT_ROW_1, "START GAME");
     draw_music_option();
     draw_text(MENU_TEXT_X, MENU_TEXT_ROW_3, "LINK CABLE");
 
-    // Load arrow sprite tiles (into sprite pattern table, separate from BG)
-    set_sprite_data(0, 1, arrow_tiles);
+    // Load arrow and selection-border corner sprites
+    set_sprite_data(VRAM_SPRITE_ARROW, 1, arrow_tiles);
+    set_sprite_data(BOX_SPRITE_TILE, 1, selection_border_tiles);
 
-    // Load blink sprite tiles (4 frames starting at tile 1)
-    set_sprite_data(BLINK_TILE_START, BLINK_FRAME_COUNT, blink_tiles);
-
-#if TITLE_ENABLE_FALLING_PIECES
-    // Load falling piece sprite tiles (white + black, 16x16 each = 4 tiles each)
-    falling_piece_anim_load_tiles();
-#endif
-
-    // Set up arrow sprite (sprite 0)
+    // Set up arrow sprite
     arrow_sprite_index = 0;
-    set_sprite_tile(arrow_sprite_index, 0);
+    set_sprite_tile(arrow_sprite_index, VRAM_SPRITE_ARROW);
+    set_sprite_prop(arrow_sprite_index, 0);
 
-    // Position arrow at first menu option
     selected_option = MENU_START_GAME;
     move_sprite(arrow_sprite_index, ARROW_X, ARROW_START_Y + (selected_option * ARROW_SPACING));
 
-    // Initialize blink animation in hidden state with random delay
-    blink_start_delay();
-
-#if TITLE_ENABLE_FALLING_PIECES
-    // Initialize falling piece animation in hidden state with random delay
-    falling_piece_anim_init(&falling_piece_anim_state, FALLING_PIECE_SPRITE_INDEX);
-#endif
+    // Draw portrait showcase frame and initialize animation state
+    draw_portrait_box();
+    showcase_opponent = TITLE_SHOWCASE_MERCHANT;
+    showcase_expr = PORTRAIT_EXPR_HAPPY;
+    showcase_timer = 0;
+    showcase_toggles = 0;
+    draw_showcase_portrait();
 
     // Clear input state
     input_reset();
 
     // Set palettes
-    BGP_REG = 0xE4;   // Standard background palette
-    OBP0_REG = 0xE0;  // Sprite palette for dark background with light text
+    BGP_REG = 0xE4;
+    OBP0_REG = 0xE0;
 
     // Enable display
     SHOW_BKG;
@@ -173,19 +180,14 @@ void init_title(void) {
 void update_title(void) {
     // Update transition animation if active
     if (update_transition()) {
-        return;  // Skip input handling during transition
+        return;
     }
 
     // Update input state
     input_update();
 
-    // Update sparkle animation
-    update_blink();
-
-#if TITLE_ENABLE_FALLING_PIECES
-    // Update falling piece animation
-    falling_piece_anim_update(&falling_piece_anim_state);
-#endif
+    // Update right-side portrait showcase animation
+    update_showcase_animation();
 
     // Handle up/down navigation
     if (input_pressed(J_UP)) {
@@ -220,17 +222,10 @@ void update_title(void) {
  * Cleanup title screen
  */
 void cleanup_title(void) {
-    // Hide arrow sprite
     move_sprite(arrow_sprite_index, 0, 0);
-
-    // Hide blink sprite
-    move_sprite(BLINK_SPRITE_INDEX, 0, 0);
-
-#if TITLE_ENABLE_FALLING_PIECES
-    // Hide falling piece sprite
-    falling_piece_anim_hide(&falling_piece_anim_state);
-#endif
-
-    // Ensure display is on
+    move_sprite(BOX_SPRITE_TOP_LEFT, 0, 0);
+    move_sprite(BOX_SPRITE_TOP_RIGHT, 0, 0);
+    move_sprite(BOX_SPRITE_BOTTOM_LEFT, 0, 0);
+    move_sprite(BOX_SPRITE_BOTTOM_RIGHT, 0, 0);
     DISPLAY_ON;
 }

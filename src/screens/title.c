@@ -9,6 +9,7 @@
 #include "screens/title.h"
 #include "util/font.h"
 #include "util/input.h"
+#include "util/random.h"
 #include "util/transition.h"
 #include "util/sound.h"
 #include "util/music.h"
@@ -46,11 +47,17 @@ static uint8_t showcase_opponent;
 static uint8_t showcase_expr;
 static uint8_t showcase_timer;
 static uint8_t showcase_toggles;
+static uint8_t showcase_phase;
 
 #define TITLE_SHOWCASE_MERCHANT   1
 #define TITLE_SHOWCASE_PRIESTESS  3
 #define TITLE_SHOWCASE_TOGGLE_INTERVAL 16
-#define TITLE_SHOWCASE_TOGGLES_PER_SWAP 8
+#define TITLE_SHOWCASE_TOGGLES_PER_SWAP 6
+
+#define TITLE_SHOWCASE_PHASE_TOGGLE          0
+#define TITLE_SHOWCASE_PHASE_OLD_NEUTRAL     1
+#define TITLE_SHOWCASE_PHASE_NEW_NEUTRAL     2
+#define TITLE_SHOWCASE_PHASE_NEW_HAPPY       3
 
 #define TITLE_BOARD_TILE_START VRAM_GAMEBOARD_START
 #define TITLE_BOARD_TILE_COUNT 72
@@ -67,6 +74,11 @@ static uint8_t showcase_toggles;
 #define TITLE_BLINK_0_Y 40
 #define TITLE_BLINK_1_X 144
 #define TITLE_BLINK_1_Y 56
+
+#define TITLE_BLINK_MIN_X 16
+#define TITLE_BLINK_MAX_X 152
+#define TITLE_BLINK_MIN_Y 32
+#define TITLE_BLINK_MAX_Y 96
 
 // Empty square base tile for each square type (from board_tiles_pieces.png)
 static const uint8_t title_square_empty_base[6] = {
@@ -106,7 +118,7 @@ static void draw_title_board(void) {
     uint8_t i;
     for (i = 0; i < (sizeof(title_board_squares) / sizeof(title_board_squares[0])); i++) {
         draw_board_square_empty(title_board_squares[i].x,
-                                title_board_squares[i].y,
+                                (uint8_t)(title_board_squares[i].y + 1),
                                 title_board_squares[i].square_type);
     }
 }
@@ -130,21 +142,51 @@ static void update_showcase_animation(void) {
     }
 
     showcase_timer = 0;
-    showcase_toggles++;
+    if (showcase_phase == TITLE_SHOWCASE_PHASE_TOGGLE) {
+        showcase_toggles++;
 
-    showcase_expr = (showcase_expr == PORTRAIT_EXPR_NORMAL)
-        ? PORTRAIT_EXPR_HAPPY
-        : PORTRAIT_EXPR_NORMAL;
-    draw_showcase_portrait();
+        showcase_expr = (showcase_expr == PORTRAIT_EXPR_NORMAL)
+            ? PORTRAIT_EXPR_HAPPY
+            : PORTRAIT_EXPR_NORMAL;
+        draw_showcase_portrait();
 
-    if (showcase_toggles >= TITLE_SHOWCASE_TOGGLES_PER_SWAP) {
-        showcase_toggles = 0;
-        showcase_expr = PORTRAIT_EXPR_HAPPY;
+        if (showcase_toggles >= TITLE_SHOWCASE_TOGGLES_PER_SWAP) {
+            showcase_toggles = 0;
+            showcase_phase = TITLE_SHOWCASE_PHASE_OLD_NEUTRAL;
+        }
+        return;
+    }
+
+    if (showcase_phase == TITLE_SHOWCASE_PHASE_OLD_NEUTRAL) {
+        showcase_expr = PORTRAIT_EXPR_NORMAL;
+        draw_showcase_portrait();
+        showcase_phase = TITLE_SHOWCASE_PHASE_NEW_NEUTRAL;
+        return;
+    }
+
+    if (showcase_phase == TITLE_SHOWCASE_PHASE_NEW_NEUTRAL) {
         showcase_opponent = (showcase_opponent == TITLE_SHOWCASE_MERCHANT)
             ? TITLE_SHOWCASE_PRIESTESS
             : TITLE_SHOWCASE_MERCHANT;
+        showcase_expr = PORTRAIT_EXPR_NORMAL;
         draw_showcase_portrait();
+        showcase_phase = TITLE_SHOWCASE_PHASE_NEW_HAPPY;
+        return;
     }
+
+    showcase_expr = PORTRAIT_EXPR_HAPPY;
+    draw_showcase_portrait();
+    showcase_phase = TITLE_SHOWCASE_PHASE_TOGGLE;
+}
+
+static void randomize_blink_positions(void) {
+    uint8_t blink0_x = get_random_range(TITLE_BLINK_MIN_X, TITLE_BLINK_MAX_X);
+    uint8_t blink0_y = get_random_range(TITLE_BLINK_MIN_Y, TITLE_BLINK_MAX_Y);
+    uint8_t blink1_x = get_random_range(TITLE_BLINK_MIN_X, TITLE_BLINK_MAX_X);
+    uint8_t blink1_y = get_random_range(TITLE_BLINK_MIN_Y, TITLE_BLINK_MAX_Y);
+
+    move_sprite(TITLE_BLINK_SPRITE_0, blink0_x, blink0_y);
+    move_sprite(TITLE_BLINK_SPRITE_1, blink1_x, blink1_y);
 }
 
 static void update_blink_animation(void) {
@@ -159,6 +201,10 @@ static void update_blink_animation(void) {
     set_sprite_tile(TITLE_BLINK_SPRITE_0, VRAM_SPRITE_BLINK_START + blink_anim_frame);
     set_sprite_tile(TITLE_BLINK_SPRITE_1,
                     VRAM_SPRITE_BLINK_START + (uint8_t)((blink_anim_frame + 2u) & 0x03u));
+
+    if (blink_anim_frame == 0) {
+        randomize_blink_positions();
+    }
 }
 
 void init_title(void) {
@@ -203,6 +249,7 @@ void init_title(void) {
     set_sprite_prop(TITLE_BLINK_SPRITE_1, 0);
     move_sprite(TITLE_BLINK_SPRITE_0, TITLE_BLINK_0_X, TITLE_BLINK_0_Y);
     move_sprite(TITLE_BLINK_SPRITE_1, TITLE_BLINK_1_X, TITLE_BLINK_1_Y);
+    randomize_blink_positions();
 
     blink_anim_timer = 0;
     blink_anim_frame = 0;
@@ -214,6 +261,7 @@ void init_title(void) {
     showcase_expr = PORTRAIT_EXPR_HAPPY;
     showcase_timer = 0;
     showcase_toggles = 0;
+    showcase_phase = TITLE_SHOWCASE_PHASE_TOGGLE;
     draw_showcase_portrait();
 
     // Re-clear UI rows after portrait tile loads so text stays intact

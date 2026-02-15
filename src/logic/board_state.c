@@ -1,7 +1,7 @@
 /**
  * board_state.c
  * Board state tracking and visualization
- * Phase 8b: Piece position tracking, move validation, and board rendering
+ * Piece position tracking, move validation, and board rendering
  */
 
 #include <gb/gb.h>

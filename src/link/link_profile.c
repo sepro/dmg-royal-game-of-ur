@@ -27,7 +27,7 @@ extern const unsigned char border_map[];
 // External reference to next_state from main.c
 extern ScreenState_t next_state;
 
-// Exported globals for Phase 12D
+// Exported globals
 uint8_t link_local_profile = 0;
 uint8_t link_remote_profile = 0;
 

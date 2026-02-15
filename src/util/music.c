@@ -47,6 +47,7 @@ static uint8_t music_row;
 static uint8_t music_tick;
 static uint8_t sequence_index;
 static uint8_t active_pattern;
+static uint8_t music_enabled;
 
 static uint16_t note_period(uint8_t code) {
     switch (code) {
@@ -82,6 +83,12 @@ static void play_ch2(uint16_t period) {
     NR24_REG = 0xC0 | (uint8_t)(period >> 8); // trigger + length
 }
 
+static void silence_music_channels(void) {
+    // CH1 + CH2 off while keeping master sound and SFX channels active
+    NR12_REG = 0x00;
+    NR22_REG = 0x00;
+}
+
 static void play_row(uint8_t row) {
     uint8_t step;
 
@@ -114,10 +121,27 @@ void init_music(void) {
     music_tick = 0;
     sequence_index = 0;
     active_pattern = pattern_sequence[sequence_index];
+    music_enabled = 1;
     play_row(0);
 }
 
+void set_music_enabled(uint8_t enabled) {
+    music_enabled = enabled ? 1 : 0;
+    if (!music_enabled) {
+        silence_music_channels();
+    } else {
+        play_row(music_row);
+    }
+}
+
+uint8_t is_music_enabled(void) {
+    return music_enabled;
+}
+
 void update_music(void) {
+    if (!music_enabled) {
+        return;
+    }
     music_tick++;
     if (music_tick < ROW_FRAMES) {
         return;

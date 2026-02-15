@@ -12,6 +12,7 @@
 #include "util/transition.h"
 #include "util/random.h"
 #include "util/sound.h"
+#include "util/music.h"
 #include "util/falling_piece_anim.h"
 
 // Forward declarations for generated assets
@@ -96,6 +97,11 @@ static void update_blink(void) {
     }
 }
 
+static void draw_music_option(void) {
+    clear_text_row(0, MENU_TEXT_ROW_2, 20);
+    draw_text(MENU_TEXT_X, MENU_TEXT_ROW_2, is_music_enabled() ? "MUSIC ON" : "MUSIC OFF");
+}
+
 /**
  * Initialize title screen
  */
@@ -113,11 +119,13 @@ void init_title(void) {
     load_font();
 
     // Clear menu area with black background and draw menu text
-    // Menu is at rows 14 and 16, text starts at x=5 (arrow at x=3)
+    // Menu is at rows 12/14/16, text starts at x=5 (arrow at x=3)
     clear_text_row(0, MENU_TEXT_ROW_1, 20);
     clear_text_row(0, MENU_TEXT_ROW_2, 20);
+    clear_text_row(0, MENU_TEXT_ROW_3, 20);
     draw_text(MENU_TEXT_X, MENU_TEXT_ROW_1, "START GAME");
-    draw_text(MENU_TEXT_X, MENU_TEXT_ROW_2, "LINK CABLE");
+    draw_music_option();
+    draw_text(MENU_TEXT_X, MENU_TEXT_ROW_3, "LINK CABLE");
 
     // Load arrow sprite tiles (into sprite pattern table, separate from BG)
     set_sprite_data(0, 1, arrow_tiles);
@@ -199,6 +207,9 @@ void update_title(void) {
         play_sfx(SFX_CONFIRM);
         if (selected_option == MENU_START_GAME) {
             transition_start(STATE_OPPONENT_SELECT, TRANSITION_PHASE_COUNT_3);
+        } else if (selected_option == MENU_MUSIC_TOGGLE) {
+            set_music_enabled(!is_music_enabled());
+            draw_music_option();
         } else if (selected_option == MENU_LINK_CABLE) {
             transition_start(STATE_LINK_CONNECT, TRANSITION_PHASE_COUNT_3);
         }

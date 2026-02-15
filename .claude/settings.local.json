@@ -27,7 +27,10 @@
       "Bash(git stash:*)",
       "Bash(file:*)",
       "Bash(git log:*)",
-      "mcp__ide__executeCode"
+      "mcp__ide__executeCode",
+      "Bash(for asset in board_frame board_tiles_pieces border dark_coin light_coin dice_black dice_white dest_piece_black dest_piece_white piece_black piece_white profiles_merged arrow blink selection_border)",
+      "Bash(do)",
+      "Bash(done)"
     ]
   }
 }

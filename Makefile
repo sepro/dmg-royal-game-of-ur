@@ -63,10 +63,6 @@ $(OBJDIR)/%.o: src/util/%.c
 	@mkdir -p $(OBJDIR)
 	$(LCC) $(CFLAGS) -c -o $@ $<
 
-$(OBJDIR)/%.o: assets/generated/title/%.c
-	@mkdir -p $(OBJDIR)
-	$(LCC) $(CFLAGS) -c -o $@ $<
-
 $(OBJDIR)/%.o: assets/generated/ui/%.c
 	@mkdir -p $(OBJDIR)
 	$(LCC) $(CFLAGS) -c -o $@ $<

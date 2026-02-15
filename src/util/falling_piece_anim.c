@@ -30,24 +30,25 @@ void falling_piece_anim_init(FallingPieceAnimState *state, uint8_t sprite_index)
 }
 
 static void falling_piece_anim_spawn(FallingPieceAnimState *state) {
+    uint8_t tile_base;
+
     state->active = 1;
     state->x = get_random_range(FALLING_PIECE_MIN_X, FALLING_PIECE_MAX_X);
-    state->y_fp = FALLING_PIECE_START_Y_FP;
-    state->vy_fp = FALLING_PIECE_INITIAL_VY_FP;
+    state->y = FALLING_PIECE_START_Y;
+    state->vy = FALLING_PIECE_INITIAL_VY;
+    state->accel_tick = 0;
 
-    state->tile_base = (get_random_range(0, 1) == 0) ? FALLING_PIECE_WHITE_TILE_START : FALLING_PIECE_BLACK_TILE_START;
+    tile_base = (get_random_range(0, 1) == 0) ? FALLING_PIECE_WHITE_TILE_START : FALLING_PIECE_BLACK_TILE_START;
 
-    set_sprite_tile(state->sprite_index + 0, state->tile_base + 0u);
-    set_sprite_tile(state->sprite_index + 1, state->tile_base + 1u);
-    set_sprite_tile(state->sprite_index + 2, state->tile_base + 2u);
-    set_sprite_tile(state->sprite_index + 3, state->tile_base + 3u);
+    set_sprite_tile(state->sprite_index + 0, tile_base + 0u);
+    set_sprite_tile(state->sprite_index + 1, tile_base + 1u);
+    set_sprite_tile(state->sprite_index + 2, tile_base + 2u);
+    set_sprite_tile(state->sprite_index + 3, tile_base + 3u);
 
-    move_falling_piece(state->sprite_index, state->x, (uint8_t)((state->y_fp >> 8) + 16));
+    move_falling_piece(state->sprite_index, state->x, (uint8_t)(state->y + 16));
 }
 
 void falling_piece_anim_update(FallingPieceAnimState *state) {
-    int32_t y_px;
-
     if (!state->active) {
         if (state->spawn_timer > 0) {
             state->spawn_timer--;
@@ -57,14 +58,17 @@ void falling_piece_anim_update(FallingPieceAnimState *state) {
         return;
     }
 
-    state->vy_fp += FALLING_PIECE_ACCEL_FP;
-    state->y_fp += state->vy_fp;
+    state->accel_tick++;
+    if ((state->accel_tick & FALLING_PIECE_ACCEL_TICK_MASK) == 0) {
+        state->vy++;
+    }
 
-    y_px = (state->y_fp >> 8);
-    if (y_px >= FALLING_PIECE_DESPAWN_Y) {
+    state->y += state->vy;
+
+    if (state->y >= FALLING_PIECE_DESPAWN_Y) {
         falling_piece_anim_hide(state);
         return;
     }
 
-    move_falling_piece(state->sprite_index, state->x, (uint8_t)(y_px + 16));
+    move_falling_piece(state->sprite_index, state->x, (uint8_t)(state->y + 16));
 }

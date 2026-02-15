@@ -105,7 +105,7 @@ run: $(TARGET)
 # Header Dependencies
 # GBDK's lcc doesn't support automatic dependency generation (-MD -MP)
 # Manual dependencies ensure header changes trigger recompilation
-$(OBJDIR)/main.o: $(INCDIR)/game_types.h $(INCDIR)/screens/title.h $(INCDIR)/screens/opponent_select.h $(INCDIR)/screens/difficulty_select.h $(INCDIR)/screens/coinflip.h $(INCDIR)/screens/game.h $(INCDIR)/screens/endgame.h $(INCDIR)/link/link_connect.h $(INCDIR)/link/link_profile.h $(INCDIR)/util/font.h $(INCDIR)/util/sound.h
+$(OBJDIR)/main.o: $(INCDIR)/game_types.h $(INCDIR)/screens/title.h $(INCDIR)/screens/opponent_select.h $(INCDIR)/screens/difficulty_select.h $(INCDIR)/screens/coinflip.h $(INCDIR)/screens/game.h $(INCDIR)/screens/endgame.h $(INCDIR)/link/link_connect.h $(INCDIR)/link/link_profile.h $(INCDIR)/util/font.h $(INCDIR)/util/sound.h $(INCDIR)/util/music.h
 $(OBJDIR)/title.o: $(INCDIR)/game_types.h $(INCDIR)/screens/title.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/random.h $(INCDIR)/util/sound.h $(INCDIR)/util/falling_piece_anim.h
 $(OBJDIR)/opponent_select.o: $(INCDIR)/game_types.h $(INCDIR)/screens/opponent_select.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/portrait.h $(INCDIR)/util/sound.h
 $(OBJDIR)/difficulty_select.o: $(INCDIR)/game_types.h $(INCDIR)/screens/difficulty_select.h $(INCDIR)/screens/opponent_select.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/portrait.h $(INCDIR)/util/screen_utils.h $(INCDIR)/util/sound.h
@@ -121,6 +121,7 @@ $(OBJDIR)/ai.o: $(INCDIR)/logic/ai.h $(INCDIR)/logic/board_state.h $(INCDIR)/scr
 $(OBJDIR)/endgame.o: $(INCDIR)/game_types.h $(INCDIR)/screens/endgame.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/vram_layout.h $(INCDIR)/util/portrait.h $(INCDIR)/util/screen_utils.h $(INCDIR)/screens/game.h $(INCDIR)/link/link.h $(INCDIR)/link/link_profile.h $(INCDIR)/util/sound.h $(INCDIR)/util/falling_piece_anim.h
 $(OBJDIR)/portrait.o: $(INCDIR)/util/portrait.h
 $(OBJDIR)/sound.o: $(INCDIR)/util/sound.h
+$(OBJDIR)/music.o: $(INCDIR)/util/music.h
 $(OBJDIR)/screen_utils.o: $(INCDIR)/util/screen_utils.h
 $(OBJDIR)/link.o: $(INCDIR)/link/link.h
 $(OBJDIR)/link_connect.o: $(INCDIR)/link/link_connect.h $(INCDIR)/link/link.h $(INCDIR)/game_types.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/screens/coinflip.h $(INCDIR)/util/screen_utils.h

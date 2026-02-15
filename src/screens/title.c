@@ -12,7 +12,6 @@
 #include "util/transition.h"
 #include "util/sound.h"
 #include "util/music.h"
-#include "util/random.h"
 #include "util/portrait.h"
 #include "util/screen_utils.h"
 #include "vram_layout.h"
@@ -30,11 +29,16 @@ extern ScreenState_t next_state;
 static uint8_t selected_option = MENU_START_GAME;
 static uint8_t arrow_sprite_index = 0;
 
-// Portrait showcase state (picked once per boot)
+// Portrait showcase animation
 static uint8_t showcase_opponent;
-static uint8_t showcase_initialized;
+static uint8_t showcase_expr;
+static uint8_t showcase_timer;
+static uint8_t showcase_toggles;
 
-#define TITLE_SHOWCASE_COUNT 4
+#define TITLE_SHOWCASE_MERCHANT   1
+#define TITLE_SHOWCASE_PRIESTESS  3
+#define TITLE_SHOWCASE_TOGGLE_INTERVAL 16
+#define TITLE_SHOWCASE_TOGGLES_PER_SWAP 8
 
 #define TITLE_BOARD_TILE_START VRAM_GAMEBOARD_START
 #define TITLE_BOARD_TILE_COUNT 72
@@ -92,7 +96,7 @@ static void draw_title_board(void) {
 
 static void draw_showcase_portrait(void) {
     load_portrait_tiles_for_char(showcase_opponent, TITLE_PORTRAIT_TILE_START);
-    draw_portrait_expr(showcase_opponent, PORTRAIT_EXPR_NORMAL,
+    draw_portrait_expr(showcase_opponent, showcase_expr,
                        TITLE_PORTRAIT_TILE_START,
                        TITLE_PORTRAIT_X, TITLE_PORTRAIT_Y, 1);
 }
@@ -100,6 +104,30 @@ static void draw_showcase_portrait(void) {
 static void draw_portrait_box(void) {
     draw_border_frame(TITLE_PORTRAIT_BOX_X, TITLE_PORTRAIT_BOX_Y, 7, 7,
                       TITLE_BORDER_TILE_START, border_map);
+}
+
+static void update_showcase_animation(void) {
+    showcase_timer++;
+    if (showcase_timer < TITLE_SHOWCASE_TOGGLE_INTERVAL) {
+        return;
+    }
+
+    showcase_timer = 0;
+    showcase_toggles++;
+
+    showcase_expr = (showcase_expr == PORTRAIT_EXPR_NORMAL)
+        ? PORTRAIT_EXPR_HAPPY
+        : PORTRAIT_EXPR_NORMAL;
+    draw_showcase_portrait();
+
+    if (showcase_toggles >= TITLE_SHOWCASE_TOGGLES_PER_SWAP) {
+        showcase_toggles = 0;
+        showcase_expr = PORTRAIT_EXPR_HAPPY;
+        showcase_opponent = (showcase_opponent == TITLE_SHOWCASE_MERCHANT)
+            ? TITLE_SHOWCASE_PRIESTESS
+            : TITLE_SHOWCASE_MERCHANT;
+        draw_showcase_portrait();
+    }
 }
 
 void init_title(void) {
@@ -137,12 +165,10 @@ void init_title(void) {
     move_sprite(arrow_sprite_index, ARROW_X, ARROW_START_Y + (selected_option * ARROW_SPACING));
 
     draw_portrait_box();
-    if (!showcase_initialized) {
-        // Pick one portrait once per boot using hardware entropy (no frame counter)
-        seed_random((((uint16_t)DIV_REG) << 8) ^ ((uint16_t)LY_REG) ^ (uint16_t)joypad());
-        showcase_opponent = get_random_unbiased(TITLE_SHOWCASE_COUNT);
-        showcase_initialized = 1;
-    }
+    showcase_opponent = TITLE_SHOWCASE_MERCHANT;
+    showcase_expr = PORTRAIT_EXPR_HAPPY;
+    showcase_timer = 0;
+    showcase_toggles = 0;
     draw_showcase_portrait();
 
     // Re-clear UI rows after portrait tile loads so text stays intact
@@ -169,6 +195,7 @@ void update_title(void) {
     }
 
     input_update();
+    update_showcase_animation();
 
     if (input_pressed(J_UP)) {
         if (selected_option > 0) {

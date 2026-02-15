@@ -201,6 +201,9 @@ static void start_animation(void) {
     anim_timer = ANIM_CHAOTIC_DURATION;
     anim_counter = 0;
 
+    // Clear the title text
+    clear_text_row_inverted(COINFLIP_TITLE_X, COINFLIP_TITLE_Y, 16);
+
     // Hide selection coins and show animation area
     // Clear from row 3 to row 11 (covers coins, border, and labels)
     for (uint8_t y = 3; y <= 11; y++) {

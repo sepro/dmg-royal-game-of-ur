@@ -1,7 +1,7 @@
 /**
  * game.c
  * Game board display and main gameplay state
- * Phase 6 & 7: Complete board UI with player info and dice rolling
+ * Complete board UI with player info and dice rolling
  */
 
 #include <gb/gb.h>
@@ -31,7 +31,7 @@ extern const uint8_t dice_black_tiles[];
 extern const uint8_t piece_white_tiles[];
 extern const uint8_t piece_black_tiles[];
 
-// Phase 8c: Selection and destination preview sprite assets
+// Selection and destination preview sprite assets
 extern const uint8_t selection_border_tiles[];
 extern const uint8_t dest_piece_white_tiles[];
 extern const uint8_t dest_piece_black_tiles[];
@@ -84,16 +84,16 @@ static uint8_t result_timer;           // Timer for result display
 
 static uint8_t frame_counter;
 
-// Turn and time tracking (Phase 8a)
+// Turn and time tracking
 static uint16_t turn_count;          // Number of turns played
 static uint16_t elapsed_frames;      // Frames since game started (for time tracking)
 
-// Pause state (Phase 8a)
+// Pause state
 static uint8_t is_paused;            // 1 = paused, 0 = running
 static uint8_t pause_animating;      // 1 = window sliding, 0 = static
 static uint8_t window_y;             // Current window Y position
 
-// Phase 8c: Move selection state
+// Move selection state
 static uint8_t valid_moves[PIECES_PER_PLAYER];  // Indices of pieces with valid moves
 static uint8_t num_valid_moves;                  // Number of valid moves
 static uint8_t selection_index;                  // Current index into valid_moves[]
@@ -372,7 +372,7 @@ static void update_dice_sprites(void) {
 }
 
 // ============================================================================
-// Phase 8c: Move Selection Functions
+// Move selection functions
 // ============================================================================
 
 /**
@@ -699,7 +699,7 @@ static void update_move_selection(void) {
 }
 
 // ============================================================================
-// Pause Screen Functions (Phase 8a)
+// Pause screen functions
 // ============================================================================
 
 /**
@@ -1124,7 +1124,7 @@ void init_game(void) {
     // Load board tiles into VRAM
     set_bkg_data(GAME_BOARD_TILE_START, GAME_BOARD_TILE_COUNT, board_tiles);
 
-    // Load piece overlay tiles (Phase 8b)
+    // Load piece overlay tiles
     load_piece_tiles();
 
     // Draw the board tilemap at top of screen
@@ -1153,7 +1153,7 @@ void init_game(void) {
     cpu_color = (selected_side == SIDE_LIGHT) ? SIDE_DARK : SIDE_LIGHT;
     current_turn = starting_player;
 
-    // Initialize piece position arrays (Phase 8b)
+    // Initialize piece position arrays
     for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
         human_pieces[i] = POS_RESERVE;
         cpu_pieces[i] = POS_RESERVE;
@@ -1176,17 +1176,17 @@ void init_game(void) {
     frame_counter = 0;
     seed_random(DIV_REG ^ ((uint16_t)frame_counter << 8));
 
-    // Initialize turn and time tracking (Phase 8a)
+    // Initialize turn and time tracking
     turn_count = 1;          // Start at turn 1
     elapsed_frames = 0;
 
-    // Initialize pause state (Phase 8a)
+    // Initialize pause state
     is_paused = 0;
     pause_animating = 0;
     window_y = PAUSE_WIN_Y_HIDDEN;
     HIDE_WIN;  // Ensure window starts hidden
 
-    // Initialize move selection state (Phase 8c)
+    // Initialize move selection state
     num_valid_moves = 0;
     selection_index = 0;
     selection_sprites_loaded = 0;
@@ -1210,7 +1210,7 @@ void init_game(void) {
         draw_prompt("PRESS A TO ROLL");
     }
 
-    // Draw initial board state (Phase 8b)
+    // Draw initial board state
     update_board_display();
 
     // Setup sprites

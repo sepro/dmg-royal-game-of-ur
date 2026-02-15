@@ -35,9 +35,9 @@
 #define PHASE_WAIT_ROLL     0   // Waiting for player to press A to roll
 #define PHASE_ROLLING       1   // Dice animation in progress
 #define PHASE_SHOW_RESULT   2   // Showing dice result briefly
-#define PHASE_SELECT_MOVE   3   // Player selecting which piece to move (Phase 8)
+#define PHASE_SELECT_MOVE   3   // Player selecting which piece to move
 #define PHASE_CPU_THINK     4   // CPU calculating move
-#define PHASE_ANIMATE_MOVE  5   // Piece movement animation (Phase 8)
+#define PHASE_ANIMATE_MOVE  5   // Piece movement animation
 #define PHASE_ROSETTE_BONUS 6   // Extra roll after landing on rosette
 #define PHASE_LINK_RECV_MOVE 7  // Waiting for remote player's move via link
 
@@ -64,19 +64,19 @@
 #define OAM_DICE_2          4   // Third die
 #define OAM_DICE_3          5   // Fourth die
 
-// Phase 8c: Selection border (4 sprites for 16x16, uses flip flags)
+// Selection border (4 sprites for 16x16, uses flip flags)
 #define OAM_SELECTION_TL    6   // Top-left corner
 #define OAM_SELECTION_TR    7   // Top-right corner
 #define OAM_SELECTION_BL    8   // Bottom-left corner
 #define OAM_SELECTION_BR    9   // Bottom-right corner
 
-// Phase 8c: Destination preview (4 sprites for 16x16)
+// Destination preview (4 sprites for 16x16)
 #define OAM_DEST_TL         10  // Top-left
 #define OAM_DEST_TR         11  // Top-right
 #define OAM_DEST_BL         12  // Bottom-left
 #define OAM_DEST_BR         13  // Bottom-right
 
-// Phase 8c: Reserve piece indicator (4 sprites for 16x16)
+// Reserve piece indicator (4 sprites for 16x16)
 // Lower OAM index = rendered on top, so reserve indicator is behind selection border
 #define OAM_RESERVE_TL      14  // Top-left
 #define OAM_RESERVE_TR      15  // Top-right
@@ -181,7 +181,7 @@
 #define NUM_DICE            4   // 4 binary dice
 
 // ============================================================================
-// Phase 8c: Reserve and Bearoff Indicator Positions (tile coordinates)
+// Reserve and Bearoff indicator positions (tile coordinates)
 // ============================================================================
 // Reserve indicator: right of starting square (position 1)
 // Human reserve: right of human start (tile 8,6 -> indicator at 10,6)

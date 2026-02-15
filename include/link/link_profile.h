@@ -59,9 +59,9 @@
 // VRAM allocation (screen-isolated, reloaded on entry)
 #define LPROFILE_BLANK_TILE         0
 #define LPROFILE_PORTRAIT_START     1    // Merged tileset (117 tiles, 1-117)
-#define LPROFILE_BORDER_START       118  // Border tiles for selection phase (25 tiles, 118-139 fits before font at 140)
+#define LPROFILE_BORDER_START       118  // Border tiles for selection (25 tiles, 118-139 fits before font at 141)
 
-// VS phase VRAM (reloaded, shares tileset with selection phase)
+// VS screen VRAM (reloaded, shares tileset with selection)
 #define LPROFILE_VS_YOU_TILE_START  1    // Same as LPROFILE_PORTRAIT_START (shared tileset)
 #define LPROFILE_VS_BORDER_START    118  // Border tiles (25 tiles, 118-139)
 
@@ -70,7 +70,7 @@
 #define LPROFILE_VS_DURATION     180  // ~3 seconds at 60fps
 #define LPROFILE_SYNC_TIMEOUT    360  // Max frames to wait for peer sync (~6s)
 
-// Exported globals for Phase 12D
+// Exported globals
 extern uint8_t link_local_profile;
 extern uint8_t link_remote_profile;
 

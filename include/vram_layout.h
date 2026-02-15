@@ -101,7 +101,7 @@
 #define VRAM_FONT_INVERTED_COUNT 42
 
 /* ----------------------------------------------------------------------------
- * Phase 6: Game Board (Tiles 0-37) - SCREEN ISOLATED
+ * Game Board (Tiles 0-37) - SCREEN ISOLATED
  * Game board is screen-isolated and uses tiles 0-37
  * Portrait (38-68), pieces (69-140), font (141+) follow in game screen
  * ---------------------------------------------------------------------------- */
@@ -110,7 +110,7 @@
 #define VRAM_GAMEBOARD_COUNT 38
 
 /* ----------------------------------------------------------------------------
- * Phase 8b: Piece Tiles (Tiles 69-140) - SCREEN ISOLATED
+ * Piece Tiles (Tiles 69-140) - SCREEN ISOLATED
  * 6 square types x 3 piece states x 4 tiles per 16x16 square = 72 tiles
  * Used to overlay pieces on board squares during gameplay
  * Starts at 69 to leave room for per-char portrait tiles (38-68, max 31)
@@ -151,7 +151,7 @@
 #define VRAM_SPRITE_BLINK_COUNT 4
 
 /* ----------------------------------------------------------------------------
- * Phase 7: Game UI Sprites (Tiles 5-8)
+ * Game UI Sprites (Tiles 5-8)
  * ---------------------------------------------------------------------------- */
 // Piece indicator sprites (8x8 each)
 #define VRAM_SPRITE_PIECE_WHITE      5
@@ -161,7 +161,7 @@
 #define VRAM_SPRITE_DICE_BLACK       8
 
 /* ----------------------------------------------------------------------------
- * Phase 8c: Move Selection Sprites (Tiles 9-17)
+ * Move Selection Sprites (Tiles 9-17)
  * ---------------------------------------------------------------------------- */
 // Selection border: 1 tile (uses flip flags for 4 corners)
 #define VRAM_SPRITE_SELECTION_START    9
@@ -176,7 +176,7 @@
 #define VRAM_SPRITE_DEST_BLACK_COUNT   4
 
 /* ----------------------------------------------------------------------------
- * Phase 5+: Game Sprites (Tiles 18-255) - AVAILABLE
+ * Game Sprites (Tiles 18-255) - AVAILABLE
  * Reserved for:
  *   - Coin flip animation sprites
  *   - Future game piece animations
@@ -209,7 +209,7 @@
 #endif
 
 // Verify game board (screen-isolated) doesn't overlap with font
-// This is OK because game board only uses 0-37 and font starts at 140
+// This is OK because game board only uses 0-37 and font starts at 141
 #if VRAM_GAMEBOARD_END >= VRAM_FONT_START
 #error "VRAM conflict: Game board overlaps with font tiles"
 #endif
@@ -237,7 +237,7 @@
  * ----------------------------------
  * - Title, opponent select, difficulty, and coin flip screens each completely
  *   reload VRAM on entry, so tiles 0-138 can be reused across these screens
- * - Font tiles (140-196) are loaded ONCE and never reloaded, persisting
+ * - Font tiles (141-224) are loaded ONCE and never reloaded, persisting
  *   across all screen transitions
  *
  * Adding New Graphics:

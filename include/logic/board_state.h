@@ -1,7 +1,7 @@
 /**
  * board_state.h
  * Board state types, position constants, and function declarations
- * Phase 8b: Piece position tracking and board visualization
+ * Piece position tracking and board visualization
  */
 
 #ifndef BOARD_STATE_H

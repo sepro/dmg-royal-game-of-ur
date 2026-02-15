@@ -54,7 +54,7 @@ typedef enum {
 // VBlank helper
 #define WAIT_VBLANK wait_vbl_done()
 
-// Blink sprite configuration (Phase 2)
+// Blink sprite configuration
 #define BLINK_SPRITE_INDEX 1      // OAM entry (arrow uses 0)
 #define BLINK_TILE_START VRAM_SPRITE_BLINK_START
 #define BLINK_FRAME_COUNT 4

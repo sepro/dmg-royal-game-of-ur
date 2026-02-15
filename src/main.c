@@ -16,6 +16,7 @@
 #include "link/link_profile.h"
 #include "util/font.h"
 #include "util/sound.h"
+#include "util/music.h"
 
 // Global game state
 ScreenState_t current_state = STATE_TITLE;
@@ -38,6 +39,9 @@ void main(void) {
 
     // Initialize sound system (ch3 wave + ch4 noise)
     init_sound();
+
+    // Start background music on ch1 + ch2
+    init_music();
 
     // Initialize the title screen
     init_title();
@@ -145,6 +149,9 @@ void main(void) {
 
         // Advance sound sequencer (chime multi-note effects)
         update_sound();
+
+        // Advance background music sequencer
+        update_music();
 
         // Wait for VBlank before next frame
         wait_vbl_done();

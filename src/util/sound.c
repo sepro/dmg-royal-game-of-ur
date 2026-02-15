@@ -112,8 +112,10 @@ void init_sound(void) {
     // Max volume both speakers
     NR50_REG = AUDVOL_VOL_LEFT(7) | AUDVOL_VOL_RIGHT(7);
 
-    // Route ch3 and ch4 to both speakers (leave ch1+ch2 unrouted)
-    NR51_REG = AUDTERM_3_LEFT | AUDTERM_3_RIGHT |
+    // Route all channels to both speakers
+    NR51_REG = AUDTERM_1_LEFT | AUDTERM_1_RIGHT |
+               AUDTERM_2_LEFT | AUDTERM_2_RIGHT |
+               AUDTERM_3_LEFT | AUDTERM_3_RIGHT |
                AUDTERM_4_LEFT | AUDTERM_4_RIGHT;
 
     chime_active = 0;

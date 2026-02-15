@@ -24,6 +24,7 @@ SOURCES = src/main.c \
 
 # Asset files (organized by subfolder)
 ASSETS = assets/generated/ui/arrow_asset.c \
+         assets/generated/ui/blink_asset.c \
          assets/generated/ui/selection_border_asset.c \
          $(wildcard assets/generated/portraits/*.c) \
          $(wildcard assets/generated/coins/*.c) \
@@ -106,7 +107,7 @@ run: $(TARGET)
 # GBDK's lcc doesn't support automatic dependency generation (-MD -MP)
 # Manual dependencies ensure header changes trigger recompilation
 $(OBJDIR)/main.o: $(INCDIR)/game_types.h $(INCDIR)/screens/title.h $(INCDIR)/screens/opponent_select.h $(INCDIR)/screens/difficulty_select.h $(INCDIR)/screens/coinflip.h $(INCDIR)/screens/game.h $(INCDIR)/screens/endgame.h $(INCDIR)/link/link_connect.h $(INCDIR)/link/link_profile.h $(INCDIR)/util/font.h $(INCDIR)/util/sound.h $(INCDIR)/util/music.h
-$(OBJDIR)/title.o: $(INCDIR)/game_types.h $(INCDIR)/screens/title.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/sound.h $(INCDIR)/util/music.h $(INCDIR)/util/portrait.h $(INCDIR)/util/screen_utils.h $(INCDIR)/vram_layout.h
+$(OBJDIR)/title.o: $(INCDIR)/game_types.h $(INCDIR)/screens/title.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/sound.h $(INCDIR)/util/music.h $(INCDIR)/util/portrait.h $(INCDIR)/util/screen_utils.h $(INCDIR)/util/falling_piece_anim.h $(INCDIR)/vram_layout.h
 $(OBJDIR)/opponent_select.o: $(INCDIR)/game_types.h $(INCDIR)/screens/opponent_select.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/portrait.h $(INCDIR)/util/sound.h
 $(OBJDIR)/difficulty_select.o: $(INCDIR)/game_types.h $(INCDIR)/screens/difficulty_select.h $(INCDIR)/screens/opponent_select.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/portrait.h $(INCDIR)/util/screen_utils.h $(INCDIR)/util/sound.h
 $(OBJDIR)/coinflip.o: $(INCDIR)/game_types.h $(INCDIR)/screens/coinflip.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/random.h $(INCDIR)/util/screen_utils.h $(INCDIR)/util/sound.h

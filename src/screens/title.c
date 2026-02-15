@@ -14,6 +14,7 @@
 #include "util/music.h"
 #include "util/portrait.h"
 #include "util/screen_utils.h"
+#include "util/falling_piece_anim.h"
 #include "vram_layout.h"
 
 // External references to generated assets
@@ -21,6 +22,7 @@ extern const uint8_t board_tiles_pieces_tiles[];
 extern const uint8_t border_tiles[];
 extern const unsigned char border_map[];
 extern const unsigned char arrow_tiles[];
+extern const uint8_t blink_tiles[];
 
 // External reference to next_state from main.c
 extern ScreenState_t next_state;
@@ -28,6 +30,16 @@ extern ScreenState_t next_state;
 // Title screen state
 static uint8_t selected_option = MENU_START_GAME;
 static uint8_t arrow_sprite_index = 0;
+static FallingPieceAnimState title_falling_piece_anim;
+
+// Sparkle animation state
+static uint8_t blink_anim_timer;
+static uint8_t blink_anim_frame;
+
+#define TITLE_BLINK_SPRITE_0 1
+#define TITLE_BLINK_SPRITE_1 2
+#define TITLE_FALLING_PIECE_SPRITE_INDEX 3
+#define TITLE_BLINK_FRAME_INTERVAL 8
 
 // Portrait showcase animation
 static uint8_t showcase_opponent;
@@ -50,6 +62,11 @@ static uint8_t showcase_toggles;
 #define TITLE_PORTRAIT_BOX_Y 6
 #define TITLE_PORTRAIT_X (TITLE_PORTRAIT_BOX_X + 1)
 #define TITLE_PORTRAIT_Y (TITLE_PORTRAIT_BOX_Y + 1)
+
+#define TITLE_BLINK_0_X 40
+#define TITLE_BLINK_0_Y 40
+#define TITLE_BLINK_1_X 144
+#define TITLE_BLINK_1_Y 56
 
 // Empty square base tile for each square type (from board_tiles_pieces.png)
 static const uint8_t title_square_empty_base[6] = {
@@ -130,6 +147,20 @@ static void update_showcase_animation(void) {
     }
 }
 
+static void update_blink_animation(void) {
+    blink_anim_timer++;
+    if (blink_anim_timer < TITLE_BLINK_FRAME_INTERVAL) {
+        return;
+    }
+
+    blink_anim_timer = 0;
+    blink_anim_frame = (uint8_t)((blink_anim_frame + 1u) & 0x03u);
+
+    set_sprite_tile(TITLE_BLINK_SPRITE_0, VRAM_SPRITE_BLINK_START + blink_anim_frame);
+    set_sprite_tile(TITLE_BLINK_SPRITE_1,
+                    VRAM_SPRITE_BLINK_START + (uint8_t)((blink_anim_frame + 2u) & 0x03u));
+}
+
 void init_title(void) {
     uint8_t row;
 
@@ -156,6 +187,8 @@ void init_title(void) {
     draw_text(MENU_TEXT_X, MENU_TEXT_ROW_3, "LINK CABLE");
 
     set_sprite_data(VRAM_SPRITE_ARROW, 1, arrow_tiles);
+    set_sprite_data(VRAM_SPRITE_BLINK_START, VRAM_SPRITE_BLINK_COUNT, blink_tiles);
+    falling_piece_anim_load_tiles();
 
     arrow_sprite_index = 0;
     set_sprite_tile(arrow_sprite_index, VRAM_SPRITE_ARROW);
@@ -163,6 +196,18 @@ void init_title(void) {
 
     selected_option = MENU_START_GAME;
     move_sprite(arrow_sprite_index, ARROW_X, ARROW_START_Y + (selected_option * ARROW_SPACING));
+
+    set_sprite_tile(TITLE_BLINK_SPRITE_0, VRAM_SPRITE_BLINK_START);
+    set_sprite_tile(TITLE_BLINK_SPRITE_1, VRAM_SPRITE_BLINK_START + 2);
+    set_sprite_prop(TITLE_BLINK_SPRITE_0, 0);
+    set_sprite_prop(TITLE_BLINK_SPRITE_1, 0);
+    move_sprite(TITLE_BLINK_SPRITE_0, TITLE_BLINK_0_X, TITLE_BLINK_0_Y);
+    move_sprite(TITLE_BLINK_SPRITE_1, TITLE_BLINK_1_X, TITLE_BLINK_1_Y);
+
+    blink_anim_timer = 0;
+    blink_anim_frame = 0;
+
+    falling_piece_anim_init(&title_falling_piece_anim, TITLE_FALLING_PIECE_SPRITE_INDEX);
 
     draw_portrait_box();
     showcase_opponent = TITLE_SHOWCASE_MERCHANT;
@@ -196,6 +241,8 @@ void update_title(void) {
 
     input_update();
     update_showcase_animation();
+    update_blink_animation();
+    falling_piece_anim_update(&title_falling_piece_anim);
 
     if (input_pressed(J_UP)) {
         if (selected_option > 0) {
@@ -225,6 +272,9 @@ void update_title(void) {
 }
 
 void cleanup_title(void) {
+    falling_piece_anim_hide(&title_falling_piece_anim);
     move_sprite(arrow_sprite_index, 0, 0);
+    move_sprite(TITLE_BLINK_SPRITE_0, 0, 0);
+    move_sprite(TITLE_BLINK_SPRITE_1, 0, 0);
     DISPLAY_ON;
 }

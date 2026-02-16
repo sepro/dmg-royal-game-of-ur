@@ -359,14 +359,14 @@ static void hide_dice(void) {
 
 /**
  * Update dice sprite tiles based on current values
- * White triangle = 0, Black triangle = 1
+ * Black tip = 0, White tip = 1
  */
 static void update_dice_sprites(void) {
     for (uint8_t i = 0; i < NUM_DICE; i++) {
         if (dice_values[i] == 0) {
-            set_sprite_tile(OAM_DICE_0 + i, SPRITE_DICE_WHITE);
-        } else {
             set_sprite_tile(OAM_DICE_0 + i, SPRITE_DICE_BLACK);
+        } else {
+            set_sprite_tile(OAM_DICE_0 + i, SPRITE_DICE_WHITE);
         }
     }
 }

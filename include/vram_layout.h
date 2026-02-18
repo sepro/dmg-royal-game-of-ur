@@ -12,7 +12,7 @@
  *
  * Current Usage:
  * - Background: 197 tiles used, 59 available (197-255)
- * - Sprites: 5 tiles used, 251 available (5-255)
+ * - Sprites: 18 tiles used, 238 available (18-255)
  */
 
 #ifndef VRAM_LAYOUT_H
@@ -251,7 +251,7 @@
  *
  * Performance Considerations:
  * --------------------------
- * - Always wait for VBlank before VRAM writes (see vblank_wait() in CLAUDE.md)
+ * - Always wait for VBlank before VRAM writes (call wait_vbl_done() before set_bkg_data/set_bkg_tiles)
  * - Loading large tile sets (>50 tiles) may take multiple frames
  * - Consider spreading VRAM updates across frames if needed
  */

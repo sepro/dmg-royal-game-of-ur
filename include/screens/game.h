@@ -176,7 +176,7 @@
 // ============================================================================
 // Game Constants
 // ============================================================================
-#define PIECES_PER_PLAYER   7   // Each player has 7 pieces (set to 1 for testing)
+#define PIECES_PER_PLAYER   7   // Each player has 7 pieces
 #define NUM_DICE            4   // 4 binary dice
 
 // ============================================================================

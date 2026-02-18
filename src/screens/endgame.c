@@ -1,3 +1,9 @@
+/**
+ * endgame.c
+ * Victory/defeat screen implementation
+ * Displays result text, portrait animation, and falling piece celebration
+ */
+
 #include <gb/gb.h>
 #include <stdint.h>
 #include <string.h>

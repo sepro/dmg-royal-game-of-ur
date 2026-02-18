@@ -2,9 +2,8 @@
  * random.c - Shared random number generator
  *
  * Implements a Galois Linear Feedback Shift Register (LFSR) for
- * pseudo-random number generation. This module consolidates random
- * number generation that was previously duplicated across multiple
- * game screens.
+ * Galois LFSR-based pseudo-random number generation with seeding,
+ * range, and rejection-sampled unbiased variants.
  */
 
 #include "util/random.h"

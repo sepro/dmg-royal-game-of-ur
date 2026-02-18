@@ -1,3 +1,8 @@
+/**
+ * falling_piece_anim.h
+ * Falling piece title and endgame screen
+ */
+
 #ifndef FALLING_PIECE_ANIM_H
 #define FALLING_PIECE_ANIM_H
 

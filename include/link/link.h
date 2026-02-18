@@ -147,9 +147,9 @@ uint8_t link_game_send(uint8_t data);
 
 /**
  * Receive a game data byte over the link cable
- * Blocks until a non-idle byte arrives or timeout.
+ * Non-blocking receive. Returns 1 and stores data in *out if valid game
+ * data is available; returns 0 immediately if nothing yet.
  * @param out Pointer to store received byte
- * @return 1 on success, 0 on timeout
  */
 uint8_t link_game_recv(uint8_t *out);
 

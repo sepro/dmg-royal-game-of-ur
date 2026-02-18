@@ -1,10 +1,10 @@
 /**
  * ai.h
  * AI opponent logic for multiple opponent types
- * - THE MERCHANT: Greedy strategy (ported from Python greedy_agent.py)
- * - THE MUSICIAN: Turn economy strategy (ported from Python turn_agent.py)
- * - THE PRIESTESS: Phase-based strategy (ported from Python phase_based_agent.py)
- * - THE SCHOLAR: Adaptive strategy (ported from Python adaptive_agent.py)
+ * - THE MERCHANT: Greedy strategy
+ * - THE MUSICIAN: Turn economy strategy
+ * - THE PRIESTESS: Phase-based strategy
+ * - THE SCHOLAR: Adaptive strategy
  */
 
 #ifndef AI_H
@@ -131,7 +131,7 @@
 /**
  * Select the best move for the CPU player
  *
- * Uses greedy evaluation based on difficulty setting:
+ * Uses opponent-specific evaluation based on difficulty setting:
  * - EASY: 40% chance to use AI, otherwise random
  * - MEDIUM: 65% chance to use AI, otherwise random
  * - HARD: Always uses AI evaluation

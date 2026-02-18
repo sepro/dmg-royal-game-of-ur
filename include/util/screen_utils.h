@@ -9,13 +9,13 @@
 #include <gb/gb.h>
 #include <stdint.h>
 
+/** Blank tile data (8x8 pixels, all color 0 = white on DMG) */
+extern const uint8_t white_tile[16];
+
 /**
  * Fill the entire screen with a single tile
  * @param tile_index The tile index to fill the screen with
  */
-/** Blank tile data (8x8 pixels, all color 0 = white on DMG) */
-extern const uint8_t white_tile[16];
-
 void fill_screen_with_tile(uint8_t tile_index);
 
 /**

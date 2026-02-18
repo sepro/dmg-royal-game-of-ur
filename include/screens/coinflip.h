@@ -73,7 +73,7 @@
 #define COINFLIP_DARK_TILE_END    50
 #define COINFLIP_DARK_TILE_COUNT  25
 
-// Border tiles: 51-58 (reused pattern from opponent select)
+// Border tiles: 51-75 (reused pattern from opponent select)
 #define COINFLIP_BORDER_TILE_START 51
 
 // Selected side (readable by other modules: SIDE_LIGHT or SIDE_DARK)

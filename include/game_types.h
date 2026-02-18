@@ -54,9 +54,6 @@ typedef enum {
 #define ARROW_START_Y 112     // Sprite Y for row 12 (96 + 16 offset)
 #define ARROW_SPACING 16      // 2 tile rows = 16 pixels
 
-// VBlank helper
-#define WAIT_VBLANK wait_vbl_done()
-
 // Blink sprite configuration
 #define BLINK_SPRITE_INDEX 1      // OAM entry (arrow uses 0)
 #define BLINK_TILE_START VRAM_SPRITE_BLINK_START

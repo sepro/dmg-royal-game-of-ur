@@ -110,15 +110,6 @@ uint8_t is_rosette(uint8_t pos);
 uint8_t execute_move(uint8_t player, uint8_t piece_idx, uint8_t roll, uint8_t *out_captured);
 
 /**
- * Find a random valid move for a player
- * @param player        PLAYER_HUMAN or PLAYER_CPU
- * @param roll          Dice roll result (1-4)
- * @param out_piece_idx Pointer to store the piece index if move found
- * @return 1 if a valid move was found, 0 if no valid moves
- */
-uint8_t find_random_valid_move(uint8_t player, uint8_t roll, uint8_t *out_piece_idx);
-
-/**
  * Get all valid moves for a player with given roll
  * @param player     PLAYER_HUMAN or PLAYER_CPU
  * @param roll       Dice roll result (1-4)

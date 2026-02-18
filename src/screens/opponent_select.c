@@ -28,9 +28,6 @@ extern ScreenState_t next_state;
 // Selected opponent (0-3)
 uint8_t selected_opponent = 0;
 
-// Previous selection (for redrawing border)
-static uint8_t prev_selection = 0;
-
 // Portrait X positions (tile coordinates)
 static const uint8_t portrait_x[OPPONENT_COUNT] = {
     PORTRAIT_0_X, PORTRAIT_1_X, PORTRAIT_2_X, PORTRAIT_3_X
@@ -123,7 +120,6 @@ void init_opponent_select(void) {
 
     // Initialize selection to first opponent
     selected_opponent = 0;
-    prev_selection = 0;
 
     // Draw initial selection border
     draw_border(selected_opponent);
@@ -185,7 +181,6 @@ void update_opponent_select(void) {
         clear_border(selected_opponent);
 
         // Update selection
-        prev_selection = selected_opponent;
         selected_opponent = new_selection;
 
         // Draw new border

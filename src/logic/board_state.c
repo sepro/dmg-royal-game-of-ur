@@ -370,29 +370,6 @@ uint8_t execute_move(uint8_t player, uint8_t piece_idx, uint8_t roll, uint8_t *o
     return 0;
 }
 
-uint8_t find_random_valid_move(uint8_t player, uint8_t roll, uint8_t *out_piece_idx) {
-    uint8_t valid_moves[PIECES_PER_PLAYER];
-    uint8_t num_valid = 0;
-
-    // Find all valid moves
-    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
-        if (is_valid_move(player, i, roll)) {
-            valid_moves[num_valid] = i;
-            num_valid++;
-        }
-    }
-
-    if (num_valid == 0) {
-        return 0;  // No valid moves
-    }
-
-    // Pick a random valid move using shared LFSR
-    uint8_t choice = get_random() % num_valid;
-    *out_piece_idx = valid_moves[choice];
-
-    return 1;
-}
-
 uint8_t get_valid_moves(uint8_t player, uint8_t roll, uint8_t *out_moves) {
     uint8_t num_valid = 0;
     uint8_t reserve_added = 0;  // Track if we've already added a reserve piece

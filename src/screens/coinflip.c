@@ -33,7 +33,6 @@ uint8_t starting_player = 0;
 
 // Local state
 static uint8_t current_selection = SIDE_LIGHT;
-static uint8_t prev_selection = SIDE_LIGHT;
 
 // Animation state
 static uint8_t anim_phase = ANIM_PHASE_NONE;
@@ -326,7 +325,6 @@ void init_coinflip(void) {
 
     // Initialize selection
     current_selection = SIDE_LIGHT;
-    prev_selection = SIDE_LIGHT;
     selected_side = SIDE_LIGHT;
 
     // Draw initial selection border
@@ -376,7 +374,6 @@ void update_coinflip(void) {
     if (input_pressed(J_LEFT)) {
         if (current_selection == SIDE_DARK) {
             clear_border(current_selection);
-            prev_selection = current_selection;
             current_selection = SIDE_LIGHT;
             draw_border(current_selection);
             play_sfx(SFX_CURSOR);
@@ -384,7 +381,6 @@ void update_coinflip(void) {
     } else if (input_pressed(J_RIGHT)) {
         if (current_selection == SIDE_LIGHT) {
             clear_border(current_selection);
-            prev_selection = current_selection;
             current_selection = SIDE_DARK;
             draw_border(current_selection);
             play_sfx(SFX_CURSOR);

@@ -15,8 +15,9 @@
 extern ScreenState_t next_state;
 
 // Transition animation state
+static uint8_t transition_active = 0;
 static uint8_t transition_timer = 0;
-static uint8_t transition_phase = TRANSITION_IDLE;
+static uint8_t transition_phase = 0;
 static ScreenState_t transition_target = STATE_TITLE;
 static uint8_t transition_phase_count = 0;
 
@@ -24,6 +25,7 @@ static uint8_t transition_phase_count = 0;
  * Start a screen transition animation
  */
 void transition_start(ScreenState_t target, uint8_t phase_count) {
+    transition_active = 1;
     transition_phase = 0;
     transition_timer = TRANSITION_FLASH_DURATION;
     transition_target = target;
@@ -36,7 +38,7 @@ void transition_start(ScreenState_t target, uint8_t phase_count) {
  * Returns 1 if transition is active, 0 if complete
  */
 uint8_t update_transition(void) {
-    if (transition_phase == TRANSITION_IDLE) {
+    if (!transition_active) {
         return 0;
     }
 
@@ -48,7 +50,8 @@ uint8_t update_transition(void) {
     transition_phase++;
 
     if (transition_phase >= transition_phase_count) {
-        transition_phase = TRANSITION_IDLE;
+        transition_active = 0;
+        transition_phase = 0;
         DISPLAY_ON;
         next_state = transition_target;
         return 0;

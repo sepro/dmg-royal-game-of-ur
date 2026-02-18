@@ -108,6 +108,9 @@ static void mirror_tiles_to_vram(uint8_t src_base, uint8_t dst_base, uint8_t cou
 static void draw_selected_portraits(void) {
     uint8_t loaded_tiles = load_portrait_tiles_for_char(selected_opponent, DIFF_PORTRAIT_TILE_START);
 
+    // Safety: mirror tiles must fit before font starts at VRAM_FONT_START (141).
+    // DIFF_MIRROR_TILE_BASE (64) + max ~40 tiles = ~104, so this always passes in practice.
+    // If it fails, the mirrored portrait is silently skipped.
     if ((uint16_t)DIFF_MIRROR_TILE_BASE + loaded_tiles <= VRAM_FONT_START) {
         mirror_tiles_to_vram(DIFF_PORTRAIT_TILE_START, DIFF_MIRROR_TILE_BASE, loaded_tiles);
         draw_portrait_expr_mirrored(selected_opponent, PORTRAIT_EXPR_NORMAL,

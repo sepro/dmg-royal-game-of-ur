@@ -1174,7 +1174,7 @@ void init_game(void) {
 
     // Initialize random state
     frame_counter = 0;
-    seed_random(DIV_REG ^ ((uint16_t)frame_counter << 8));
+    seed_random(DIV_REG); // DIV_REG is a free-running hardware timer; sufficient entropy at init
 
     // Initialize turn and time tracking
     turn_count = 1;          // Start at turn 1

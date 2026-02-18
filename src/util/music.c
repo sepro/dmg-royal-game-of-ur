@@ -3,7 +3,7 @@
 #include "util/music.h"
 
 enum {
-    ROW_FRAMES = 12,
+    ROW_FRAMES = 9,
     STEP_COUNT = 9,
     RESP_COUNT = 3,
     SEQ_COUNT = 5

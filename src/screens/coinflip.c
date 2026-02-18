@@ -144,7 +144,7 @@ static uint8_t lock_random_tiles(uint8_t max_count) {
     uint8_t count = 0;
 
     // Try to lock up to max_count tiles
-    for (uint8_t attempts = 0; attempts < 50 && count < max_count; attempts++) {
+    for (uint8_t attempts = 0; attempts < COIN_LOCK_ATTEMPTS && count < max_count; attempts++) {
         uint8_t tile_idx = get_random() % COIN_TILES;
         if (!is_tile_locked(tile_idx)) {
             lock_tile(tile_idx);
@@ -205,11 +205,7 @@ static void start_animation(void) {
 
     // Hide selection coins and show animation area
     // Clear from row 3 to row 11 (covers coins, border, and labels)
-    for (uint8_t y = 3; y <= 11; y++) {
-        for (uint8_t x = 0; x < 20; x++) {
-            set_bkg_tile_xy(x, y, COINFLIP_WHITE_TILE);
-        }
-    }
+    clear_rect(COINFLIP_WHITE_TILE, 0, 3, 20, 9);
 
     // Draw initial chaotic coin
     draw_animation_coin();

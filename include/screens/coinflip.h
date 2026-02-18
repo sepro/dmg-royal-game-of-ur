@@ -53,6 +53,9 @@
 #define ANIM_PHASE_COMPLETE 3
 #define ANIM_PHASE_RESULT   4
 
+// Max random attempts when locking tiles during lock-in phase
+#define COIN_LOCK_ATTEMPTS 50
+
 // Animation timing (frames)
 #define ANIM_CHAOTIC_DURATION  45   // Chaotic flipping phase
 #define ANIM_CHAOTIC_INTERVAL   4   // Update interval during chaotic

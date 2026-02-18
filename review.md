@@ -136,17 +136,6 @@ These describe the same VRAM slot with inconsistent semantics (blank vs white). 
 
 ---
 
-### 4.2 C99 for-loop variable declarations in `difficulty_select.c`
-**File:** `src/screens/difficulty_select.c:53, 60, 71`
-```c
-for (uint8_t x = 1; x < 19; x++) { ...
-```
-The rest of the codebase declares loop counters before the `for` statement (C89 style). GBDK's `lcc` supports C99 in practice, but the inconsistency is jarring.
-
-**Fix:** Declare `uint8_t x; uint8_t y;` before the loops, matching the rest of the codebase.
-
----
-
 ### 4.3 `(void *)0` instead of `NULL`
 **File:** `src/logic/board_state.c:353`
 ```c
@@ -185,73 +174,8 @@ The `5` and `2` are bare position constants. `LPROFILE_VS_YOU_BRD_Y - 1` is arit
 
 ---
 
-## 5. Minor Logic / Clarity Issues
+## 5. Minor Logic / Clarity Issues - FIXED
 
-### 5.1 `TRANSITION_IDLE = 0xFF` as a sentinel is fragile
-**File:** `include/game_types.h:82`, `src/util/transition.c:19`
-```c
-#define TRANSITION_IDLE 0xFF
-static uint8_t transition_phase = TRANSITION_IDLE;
-```
-The idle state is encoded as 0xFF (max uint8_t). When checking `if (transition_phase == TRANSITION_IDLE)` this works because phase never reaches 255 in practice, but the chosen value is not obviously "sentinel" — it reads as a phase number. Using a separate boolean flag or an enum would be clearer.
-
-**Suggested fix:** Add a `static uint8_t transition_active = 0;` flag and check that, removing the sentinel value.
-
----
-
-### 5.2 `init_game()` seeds RNG with `frame_counter` always 0
-**File:** `src/screens/game.c:1176–1177`
-```c
-frame_counter = 0;
-seed_random(DIV_REG ^ ((uint16_t)frame_counter << 8));
-```
-`frame_counter` is set to 0 two lines above, so the `<< 8` term is always 0. The seed reduces to just `DIV_REG`. This is still random (DIV_REG is a free-running hardware timer), but the comment and formula imply frame entropy that doesn't exist at init time.
-
-**Fix:** Simplify to `seed_random(DIV_REG)` and remove the `frame_counter` term from this one call site.
-
----
-
-### 5.3 `draw_selected_portraits()` silently skips the mirrored portrait
-**File:** `src/screens/difficulty_select.c:111`
-```c
-if ((uint16_t)DIFF_MIRROR_TILE_BASE + loaded_tiles <= VRAM_FONT_START) {
-    mirror_tiles_to_vram(...);
-    draw_portrait_expr_mirrored(...);
-}
-```
-If the condition fails, the mirrored portrait is simply not drawn with no visible error or fallback. Since `DIFF_MIRROR_TILE_BASE = 64` and max loaded tiles per character is ~30–40, this check passes in practice, but silent failure leaves the screen partially blank.
-
-**Fix:** Add a comment explaining the safety check and what the screen looks like if it fails:
-```c
-// Safety: mirror tiles must fit before font starts at VRAM_FONT_START (141)
-// DIFF_MIRROR_TILE_BASE (64) + max ~40 tiles = ~104, so this always passes in practice
-```
-
----
-
-### 5.4 `lock_random_tiles()` hardcoded 50-attempt limit
-**File:** `src/screens/coinflip.c:148`
-```c
-for (uint8_t attempts = 0; attempts < 50 && count < max_count; attempts++) {
-```
-With 25 tiles total and the later tiles mostly locked, this loop may fail to lock `max_count` tiles in late lock-in phase. The caller has a fallback that force-locks all remaining tiles, so there's no bug, but the 50 is an arbitrary magic number.
-
-**Fix:** Define `COIN_LOCK_ATTEMPTS 50` as a named constant, or simplify by iterating through tiles directly when few are left.
-
----
-
-### 5.5 `start_animation()` clears rows with a nested loop
-**File:** `src/screens/coinflip.c:209–213`
-```c
-for (uint8_t y = 3; y <= 11; y++) {
-    for (uint8_t x = 0; x < 20; x++) {
-        set_bkg_tile_xy(x, y, COINFLIP_WHITE_TILE);
-    }
-}
-```
-`clear_rect()` exists in `screen_utils.c` and does exactly this. The nested loop is an unnecessary reinvention.
-
-**Fix:** Replace with `clear_rect(COINFLIP_WHITE_TILE, 0, 3, 20, 9)`.
 
 ---
 
@@ -284,8 +208,3 @@ for (uint8_t y = 3; y <= 11; y++) {
 | 4.3 | Style | Trivial | `board_state.c` |
 | 4.4 | Magic literals | Low | `link_connect.c` |
 | 4.5 | Magic literals | Low | `link_profile.c` |
-| 5.1 | Clarity | Low | `transition.c`, `game_types.h` |
-| 5.2 | Misleading code | Trivial | `game.c` |
-| 5.3 | Silent failure | Low | `difficulty_select.c` |
-| 5.4 | Magic number | Trivial | `coinflip.c` |
-| 5.5 | Reinvented util | Low | `coinflip.c` |

@@ -250,6 +250,50 @@ static int16_t evaluate_player_phased(uint8_t *pieces, uint8_t *opponent, uint8_
 }
 
 /**
+ * Simulate a CPU move on temporary piece arrays.
+ * Copies global piece state, applies the move (including capture logic),
+ * and returns the resulting position of the moved piece.
+ *
+ * @param piece_idx   Index of CPU piece to move
+ * @param roll        Dice roll value
+ * @param temp_cpu    Output: copy of cpu_pieces after the move
+ * @param temp_human  Output: copy of human_pieces after any capture
+ * @return new_pos    Position the piece lands on
+ */
+static uint8_t simulate_move(uint8_t piece_idx, uint8_t roll,
+                              uint8_t *temp_cpu, uint8_t *temp_human) {
+    uint8_t i;
+    uint8_t new_pos;
+
+    for (i = 0; i < PIECES_PER_PLAYER; i++) {
+        temp_cpu[i] = cpu_pieces[i];
+        temp_human[i] = human_pieces[i];
+    }
+
+    if (temp_cpu[piece_idx] == POS_RESERVE) {
+        new_pos = roll;
+    } else {
+        new_pos = (uint8_t)(temp_cpu[piece_idx] + roll);
+    }
+
+    if (new_pos >= POS_FINISHED) {
+        new_pos = POS_FINISHED;
+    }
+
+    if (is_in_war_zone(new_pos) && new_pos != 8) {
+        for (i = 0; i < PIECES_PER_PLAYER; i++) {
+            if (temp_human[i] == new_pos) {
+                temp_human[i] = POS_RESERVE;
+                break;
+            }
+        }
+    }
+
+    temp_cpu[piece_idx] = new_pos;
+    return new_pos;
+}
+
+/**
  * Simulate a move and evaluate using phase-based weights
  *
  * @param piece_idx  Index of piece to move
@@ -258,48 +302,13 @@ static int16_t evaluate_player_phased(uint8_t *pieces, uint8_t *opponent, uint8_
  * @return Evaluation score (higher = better for CPU)
  */
 static int16_t evaluate_phase_move(uint8_t piece_idx, uint8_t roll, uint8_t phase) {
-    // Create temporary copies of piece arrays
     uint8_t temp_cpu[PIECES_PER_PLAYER];
     uint8_t temp_human[PIECES_PER_PLAYER];
 
-    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
-        temp_cpu[i] = cpu_pieces[i];
-        temp_human[i] = human_pieces[i];
-    }
+    simulate_move(piece_idx, roll, temp_cpu, temp_human);
 
-    // Simulate the move
-    uint8_t current_pos = temp_cpu[piece_idx];
-    uint8_t new_pos;
-
-    if (current_pos == POS_RESERVE) {
-        new_pos = roll;
-    } else {
-        new_pos = current_pos + roll;
-    }
-
-    // Cap at finished
-    if (new_pos >= POS_FINISHED) {
-        new_pos = POS_FINISHED;
-    }
-
-    // Check for capture (in war zone, not on rosette)
-    if (is_in_war_zone(new_pos) && new_pos != 8) {
-        for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
-            if (temp_human[i] == new_pos) {
-                temp_human[i] = POS_RESERVE;
-                break;
-            }
-        }
-    }
-
-    // Apply the move
-    temp_cpu[piece_idx] = new_pos;
-
-    // Evaluate: CPU score minus human score
-    int16_t cpu_score = evaluate_player_phased(temp_cpu, temp_human, phase);
-    int16_t human_score = evaluate_player_phased(temp_human, temp_cpu, phase);
-
-    return cpu_score - human_score;
+    return evaluate_player_phased(temp_cpu, temp_human, phase)
+         - evaluate_player_phased(temp_human, temp_cpu, phase);
 }
 
 // ============================================================================
@@ -403,39 +412,10 @@ static int16_t evaluate_adaptive_move(uint8_t piece_idx, uint8_t roll, uint8_t m
     uint8_t temp_cpu[PIECES_PER_PLAYER];
     uint8_t temp_human[PIECES_PER_PLAYER];
 
-    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
-        temp_cpu[i] = cpu_pieces[i];
-        temp_human[i] = human_pieces[i];
-    }
+    simulate_move(piece_idx, roll, temp_cpu, temp_human);
 
-    uint8_t current_pos = temp_cpu[piece_idx];
-    uint8_t new_pos;
-
-    if (current_pos == POS_RESERVE) {
-        new_pos = roll;
-    } else {
-        new_pos = current_pos + roll;
-    }
-
-    if (new_pos >= POS_FINISHED) {
-        new_pos = POS_FINISHED;
-    }
-
-    if (is_in_war_zone(new_pos) && new_pos != 8) {
-        for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
-            if (temp_human[i] == new_pos) {
-                temp_human[i] = POS_RESERVE;
-                break;
-            }
-        }
-    }
-
-    temp_cpu[piece_idx] = new_pos;
-
-    int16_t cpu_score = evaluate_player_adaptive(temp_cpu, temp_human, mode);
-    int16_t human_score = evaluate_player_adaptive(temp_human, temp_cpu, mode);
-
-    return cpu_score - human_score;
+    return evaluate_player_adaptive(temp_cpu, temp_human, mode)
+         - evaluate_player_adaptive(temp_human, temp_cpu, mode);
 }
 
 /**
@@ -514,48 +494,13 @@ static int16_t evaluate_player(uint8_t *pieces, uint8_t *opponent) {
  * @return Evaluation score (higher = better for CPU)
  */
 static int16_t evaluate_move(uint8_t piece_idx, uint8_t roll) {
-    // Create temporary copies of piece arrays
     uint8_t temp_cpu[PIECES_PER_PLAYER];
     uint8_t temp_human[PIECES_PER_PLAYER];
 
-    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
-        temp_cpu[i] = cpu_pieces[i];
-        temp_human[i] = human_pieces[i];
-    }
+    simulate_move(piece_idx, roll, temp_cpu, temp_human);
 
-    // Simulate the move
-    uint8_t current_pos = temp_cpu[piece_idx];
-    uint8_t new_pos;
-
-    if (current_pos == POS_RESERVE) {
-        new_pos = roll;
-    } else {
-        new_pos = current_pos + roll;
-    }
-
-    // Cap at finished
-    if (new_pos >= POS_FINISHED) {
-        new_pos = POS_FINISHED;
-    }
-
-    // Check for capture (in war zone, not on rosette)
-    if (is_in_war_zone(new_pos) && new_pos != 8) {
-        for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
-            if (temp_human[i] == new_pos) {
-                temp_human[i] = POS_RESERVE;
-                break;
-            }
-        }
-    }
-
-    // Apply the move
-    temp_cpu[piece_idx] = new_pos;
-
-    // Evaluate: CPU score minus human score
-    int16_t cpu_score = evaluate_player(temp_cpu, temp_human);
-    int16_t human_score = evaluate_player(temp_human, temp_cpu);
-
-    return cpu_score - human_score;
+    return evaluate_player(temp_cpu, temp_human)
+         - evaluate_player(temp_human, temp_cpu);
 }
 
 // ============================================================================
@@ -603,47 +548,14 @@ static int16_t estimate_turns_to_win(uint8_t *pieces) {
  */
 static int16_t evaluate_turn_economy_move(uint8_t piece_idx, uint8_t roll) {
     int16_t score = 0;
-
-    // Create temporary copies of piece arrays
     uint8_t temp_cpu[PIECES_PER_PLAYER];
     uint8_t temp_human[PIECES_PER_PLAYER];
 
-    for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
-        temp_cpu[i] = cpu_pieces[i];
-        temp_human[i] = human_pieces[i];
-    }
+    // Calculate current turn estimates before the move (using global arrays)
+    int16_t cpu_turns_before = estimate_turns_to_win(cpu_pieces);
+    int16_t human_turns_before = estimate_turns_to_win(human_pieces);
 
-    // Calculate current turn estimates before the move
-    int16_t cpu_turns_before = estimate_turns_to_win(temp_cpu);
-    int16_t human_turns_before = estimate_turns_to_win(temp_human);
-
-    // Simulate the move
-    uint8_t current_pos = temp_cpu[piece_idx];
-    uint8_t new_pos;
-
-    if (current_pos == POS_RESERVE) {
-        new_pos = roll;
-    } else {
-        new_pos = current_pos + roll;
-    }
-
-    // Cap at finished
-    if (new_pos >= POS_FINISHED) {
-        new_pos = POS_FINISHED;
-    }
-
-    // Check for capture (in war zone, not on rosette)
-    if (is_in_war_zone(new_pos) && new_pos != 8) {
-        for (uint8_t i = 0; i < PIECES_PER_PLAYER; i++) {
-            if (temp_human[i] == new_pos) {
-                temp_human[i] = POS_RESERVE;
-                break;
-            }
-        }
-    }
-
-    // Apply the move
-    temp_cpu[piece_idx] = new_pos;
+    uint8_t new_pos = simulate_move(piece_idx, roll, temp_cpu, temp_human);
 
     // Extra turn bonus for landing on rosette
     if (is_rosette(new_pos)) {

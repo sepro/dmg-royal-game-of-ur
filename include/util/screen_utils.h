@@ -62,4 +62,24 @@ void clear_rect(uint8_t tile, uint8_t x, uint8_t y, uint8_t w, uint8_t h);
  */
 void draw_tile_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t tile_base);
 
+/**
+ * Draw "WAITING" followed by 0-3 animated dots at the given tile position.
+ * Clears the row first (16 tiles wide), then draws "WAITING" + dot_count dots.
+ * @param x Tile X position
+ * @param y Tile Y position
+ * @param dot_count Number of dots to draw (0-3)
+ */
+void draw_waiting_text(uint8_t x, uint8_t y, uint8_t dot_count);
+
+/**
+ * Draw a full-screen-width (20 tile) border box using the standard border tile layout.
+ * Top/middle/bottom rows use offset pattern: 0x00 corner, 0x01-0x05 top edge, 0x06 corner,
+ * 0x07/0x08/0x09 sides, 0x12-0x18 bottom.
+ * @param tile_start VRAM index of the first border tile
+ * @param y_start Top tile row of the border
+ * @param rows Total height in tile rows (must be >= 2)
+ * @param use_window 0 = draw to background layer, non-zero = draw to window layer
+ */
+void draw_full_width_border(uint8_t tile_start, uint8_t y_start, uint8_t rows, uint8_t use_window);
+
 #endif // SCREEN_UTILS_H

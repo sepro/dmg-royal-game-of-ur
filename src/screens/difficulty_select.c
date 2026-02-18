@@ -46,33 +46,7 @@ static const char *difficulty_labels[DIFFICULTY_COUNT] = {
  * Draw decorative border around lower half containing difficulty controls
  */
 static void draw_difficulty_box(void) {
-    uint8_t row_buf[20];
-
-    // Top edge
-    row_buf[0] = (uint8_t)(DIFF_BORDER_TILE_START + 0x00);
-    for (uint8_t x = 1; x < 19; x++) {
-        row_buf[x] = (uint8_t)(DIFF_BORDER_TILE_START + 0x01 + ((x - 1) % 5));
-    }
-    row_buf[19] = (uint8_t)(DIFF_BORDER_TILE_START + 0x06);
-    set_bkg_tiles(0, 8, 20, 1, row_buf);
-
-    // Middle rows
-    for (uint8_t y = 9; y < 17; y++) {
-        row_buf[0] = (uint8_t)(DIFF_BORDER_TILE_START + 0x07);
-        for (uint8_t x = 1; x < 19; x++) {
-            row_buf[x] = (uint8_t)(DIFF_BORDER_TILE_START + 0x08);
-        }
-        row_buf[19] = (uint8_t)(DIFF_BORDER_TILE_START + 0x09);
-        set_bkg_tiles(0, y, 20, 1, row_buf);
-    }
-
-    // Bottom edge
-    row_buf[0] = (uint8_t)(DIFF_BORDER_TILE_START + 0x12);
-    for (uint8_t x = 1; x < 19; x++) {
-        row_buf[x] = (uint8_t)(DIFF_BORDER_TILE_START + 0x13 + ((x - 1) % 5));
-    }
-    row_buf[19] = (uint8_t)(DIFF_BORDER_TILE_START + 0x18);
-    set_bkg_tiles(0, 17, 20, 1, row_buf);
+    draw_full_width_border(DIFF_BORDER_TILE_START, 8, 10, 0);
 }
 
 /**

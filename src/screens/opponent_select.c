@@ -110,7 +110,7 @@ void init_opponent_select(void) {
     load_portrait_tiles(PORTRAIT_TILE_START);
 
     // Load border tiles (normal, dark on white background)
-    set_bkg_data(BORDER_TILE_START, 25, border_tiles);
+    set_bkg_data(BORDER_TILE_START, VRAM_BORDER_COUNT, border_tiles);
 
     // Draw all 4 portraits from merged tileset
     draw_portrait_at(0);

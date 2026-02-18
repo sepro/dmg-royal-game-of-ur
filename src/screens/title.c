@@ -60,7 +60,6 @@ static uint8_t showcase_phase;
 #define TITLE_SHOWCASE_PHASE_NEW_HAPPY       3
 
 #define TITLE_BOARD_TILE_START VRAM_GAMEBOARD_START
-#define TITLE_BOARD_TILE_COUNT 72
 
 #define TITLE_BORDER_TILE_START 100
 #define TITLE_PORTRAIT_TILE_START VRAM_PIECE_TILES_START
@@ -216,21 +215,14 @@ void init_title(void) {
     clear_rect((uint8_t)(FONT_TILE_START + CHAR_BLANK), 0, 0, 20, 18);
 
     // Draw board using board_tiles_pieces only (no board map/background)
-    set_bkg_data(TITLE_BOARD_TILE_START, TITLE_BOARD_TILE_COUNT, board_tiles_pieces_tiles);
+    set_bkg_data(TITLE_BOARD_TILE_START, VRAM_PIECE_TILES_COUNT, board_tiles_pieces_tiles);
     draw_title_board();
 
     // Load border tiles for portrait frame
-    set_bkg_data(TITLE_BORDER_TILE_START, 25, border_tiles);
+    set_bkg_data(TITLE_BORDER_TILE_START, VRAM_BORDER_COUNT, border_tiles);
 
     draw_text(5, 0, "ROYAL GAME");
     draw_text(7, 1, "OF UR");
-
-    clear_text_row(0, MENU_TEXT_ROW_1, 12);
-    clear_text_row(0, MENU_TEXT_ROW_2, 12);
-    clear_text_row(0, MENU_TEXT_ROW_3, 12);
-    draw_text(MENU_TEXT_X, MENU_TEXT_ROW_1, "START GAME");
-    draw_music_option();
-    draw_text(MENU_TEXT_X, MENU_TEXT_ROW_3, "LINK CABLE");
 
     set_sprite_data(VRAM_SPRITE_ARROW, 1, arrow_tiles);
     set_sprite_data(VRAM_SPRITE_BLINK_START, VRAM_SPRITE_BLINK_COUNT, blink_tiles);

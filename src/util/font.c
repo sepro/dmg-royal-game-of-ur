@@ -8,6 +8,7 @@
 #include <gb/gb.h>
 #include <stdint.h>
 #include "util/font.h"
+#include "vram_layout.h"
 
 /*
  * Font tile data - 8x8 pixels, 2bpp format
@@ -807,9 +808,6 @@ void draw_text_at(uint8_t x, uint8_t y, const char *str, uint8_t use_window) {
 // External reference to border tiles (from border.c)
 extern const uint8_t border_tiles[];
 
-// Number of border tiles (from border.h)
-#define BORDER_TILE_COUNT_IMG 25
-
 /**
  * Load border tiles inverted (XOR with 0xFF) into VRAM
  * Used for dark background screens where border needs light-on-dark appearance
@@ -817,7 +815,7 @@ extern const uint8_t border_tiles[];
 void load_border_inverted(uint8_t vram_start) {
     uint8_t inverted_buffer[16];
 
-    for (uint8_t tile_idx = 0; tile_idx < BORDER_TILE_COUNT_IMG; tile_idx++) {
+    for (uint8_t tile_idx = 0; tile_idx < VRAM_BORDER_COUNT; tile_idx++) {
         const uint8_t* source = border_tiles + (tile_idx * 16);
 
         // Invert each byte of the tile (XOR with 0xFF)

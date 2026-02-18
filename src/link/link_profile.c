@@ -154,7 +154,7 @@ static void show_vs_reveal(void) {
 
     // Load border tiles and draw borders around both portraits
     // Border starts after portrait tiles (117 + 1 = tile 118)
-    set_bkg_data(LPROFILE_VS_BORDER_START, 25, border_tiles);
+    set_bkg_data(LPROFILE_VS_BORDER_START, VRAM_BORDER_COUNT, border_tiles);
     draw_border_frame(LPROFILE_VS_YOU_BRD_X, LPROFILE_VS_YOU_BRD_Y,
                       LPROFILE_BORDER_WIDTH, LPROFILE_BORDER_HEIGHT,
                       LPROFILE_VS_BORDER_START, border_map);
@@ -202,7 +202,7 @@ void init_link_profile(void) {
     load_portrait_tiles(LPROFILE_PORTRAIT_START);
 
     // Load border tiles
-    set_bkg_data(LPROFILE_BORDER_START, 25, border_tiles);
+    set_bkg_data(LPROFILE_BORDER_START, VRAM_BORDER_COUNT, border_tiles);
 
     // Draw all 4 portraits from merged tileset
     draw_portrait_at(0);
@@ -290,14 +290,7 @@ static void update_selecting(void) {
  * Draw waiting dots animation
  */
 static void draw_waiting_dots(void) {
-    // Redraw waiting text with current dot count
-    clear_text_row_inverted(LPROFILE_DESC_X, LPROFILE_DESC_Y + 1, LPROFILE_DESC_WIDTH);
-    draw_text_inverted(LPROFILE_DESC_X, LPROFILE_DESC_Y + 1, "WAITING");
-
-    uint8_t x = LPROFILE_DESC_X + 7;
-    for (uint8_t i = 0; i < dot_count; i++) {
-        draw_text_inverted(x + i, LPROFILE_DESC_Y + 1, ".");
-    }
+    draw_waiting_text(LPROFILE_DESC_X, (uint8_t)(LPROFILE_DESC_Y + 1), dot_count);
 }
 
 /**

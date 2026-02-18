@@ -108,18 +108,18 @@ $(OBJDIR)/opponent_select.o: $(INCDIR)/game_types.h $(INCDIR)/screens/opponent_s
 $(OBJDIR)/difficulty_select.o: $(INCDIR)/game_types.h $(INCDIR)/screens/difficulty_select.h $(INCDIR)/screens/opponent_select.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/portrait.h $(INCDIR)/util/screen_utils.h $(INCDIR)/util/sound.h
 $(OBJDIR)/coinflip.o: $(INCDIR)/game_types.h $(INCDIR)/screens/coinflip.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/random.h $(INCDIR)/util/screen_utils.h $(INCDIR)/util/sound.h
 $(OBJDIR)/transition.o: $(INCDIR)/game_types.h $(INCDIR)/util/transition.h
-$(OBJDIR)/font.o: $(INCDIR)/util/font.h
+$(OBJDIR)/font.o: $(INCDIR)/util/font.h $(INCDIR)/vram_layout.h
 $(OBJDIR)/input.o: $(INCDIR)/util/input.h
 $(OBJDIR)/opponent_data.o: $(INCDIR)/util/opponent_data.h
 $(OBJDIR)/random.o: $(INCDIR)/util/random.h
-$(OBJDIR)/game.o: $(INCDIR)/game_types.h $(INCDIR)/screens/game.h $(INCDIR)/screens/coinflip.h $(INCDIR)/screens/difficulty_select.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/logic/board_state.h $(INCDIR)/vram_layout.h $(INCDIR)/util/random.h $(INCDIR)/util/portrait.h $(INCDIR)/logic/ai.h $(INCDIR)/link/link.h $(INCDIR)/link/link_profile.h $(INCDIR)/util/sound.h
+$(OBJDIR)/game.o: $(INCDIR)/game_types.h $(INCDIR)/screens/game.h $(INCDIR)/screens/coinflip.h $(INCDIR)/screens/difficulty_select.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/logic/board_state.h $(INCDIR)/vram_layout.h $(INCDIR)/util/random.h $(INCDIR)/util/portrait.h $(INCDIR)/logic/ai.h $(INCDIR)/link/link.h $(INCDIR)/link/link_profile.h $(INCDIR)/util/sound.h $(INCDIR)/util/screen_utils.h
 $(OBJDIR)/board_state.o: $(INCDIR)/logic/board_state.h $(INCDIR)/screens/coinflip.h $(INCDIR)/vram_layout.h $(INCDIR)/screens/game.h $(INCDIR)/util/random.h
 $(OBJDIR)/ai.o: $(INCDIR)/logic/ai.h $(INCDIR)/logic/board_state.h $(INCDIR)/screens/game.h $(INCDIR)/screens/difficulty_select.h $(INCDIR)/screens/opponent_select.h $(INCDIR)/util/random.h
 $(OBJDIR)/endgame.o: $(INCDIR)/game_types.h $(INCDIR)/screens/endgame.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/vram_layout.h $(INCDIR)/util/portrait.h $(INCDIR)/util/screen_utils.h $(INCDIR)/screens/game.h $(INCDIR)/link/link.h $(INCDIR)/link/link_profile.h $(INCDIR)/util/sound.h $(INCDIR)/util/falling_piece_anim.h
 $(OBJDIR)/portrait.o: $(INCDIR)/util/portrait.h
 $(OBJDIR)/sound.o: $(INCDIR)/util/sound.h
 $(OBJDIR)/music.o: $(INCDIR)/util/music.h
-$(OBJDIR)/screen_utils.o: $(INCDIR)/util/screen_utils.h
+$(OBJDIR)/screen_utils.o: $(INCDIR)/util/screen_utils.h $(INCDIR)/util/font.h
 $(OBJDIR)/link.o: $(INCDIR)/link/link.h
 $(OBJDIR)/link_connect.o: $(INCDIR)/link/link_connect.h $(INCDIR)/link/link.h $(INCDIR)/game_types.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/screens/coinflip.h $(INCDIR)/util/screen_utils.h
 $(OBJDIR)/link_profile.o: $(INCDIR)/link/link_profile.h $(INCDIR)/game_types.h $(INCDIR)/link/link.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/portrait.h $(INCDIR)/util/screen_utils.h $(INCDIR)/screens/coinflip.h $(INCDIR)/screens/game.h $(INCDIR)/util/sound.h

@@ -4,6 +4,7 @@
  */
 
 #include "util/screen_utils.h"
+#include "util/font.h"
 
 const uint8_t white_tile[16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -53,6 +54,58 @@ void clear_rect(uint8_t tile, uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
     }
     for (i = 0; i < h; i++) {
         set_bkg_tiles(x, y + i, w, 1, row);
+    }
+}
+
+void draw_waiting_text(uint8_t x, uint8_t y, uint8_t dot_count) {
+    uint8_t i;
+    clear_text_row_inverted(x, y, 16);
+    draw_text_inverted(x, y, "WAITING");
+    for (i = 0; i < dot_count; i++) {
+        draw_text_inverted((uint8_t)(x + 7 + i), y, ".");
+    }
+}
+
+void draw_full_width_border(uint8_t tile_start, uint8_t y_start, uint8_t rows, uint8_t use_window) {
+    uint8_t row_buf[20];
+    uint8_t x;
+
+    // Top edge: corner + repeating top tiles + corner
+    row_buf[0] = (uint8_t)(tile_start + 0x00);
+    for (x = 1; x < 19; x++) {
+        row_buf[x] = (uint8_t)(tile_start + 0x01 + ((x - 1) % 5));
+    }
+    row_buf[19] = (uint8_t)(tile_start + 0x06);
+    if (use_window) {
+        set_win_tiles(0, y_start, 20, 1, row_buf);
+    } else {
+        set_bkg_tiles(0, y_start, 20, 1, row_buf);
+    }
+
+    // Middle rows: left edge + fill + right edge
+    row_buf[0] = (uint8_t)(tile_start + 0x07);
+    for (x = 1; x < 19; x++) {
+        row_buf[x] = (uint8_t)(tile_start + 0x08);
+    }
+    row_buf[19] = (uint8_t)(tile_start + 0x09);
+    for (uint8_t y = (uint8_t)(y_start + 1); y < (uint8_t)(y_start + rows - 1); y++) {
+        if (use_window) {
+            set_win_tiles(0, y, 20, 1, row_buf);
+        } else {
+            set_bkg_tiles(0, y, 20, 1, row_buf);
+        }
+    }
+
+    // Bottom edge: corner + repeating bottom tiles + corner
+    row_buf[0] = (uint8_t)(tile_start + 0x12);
+    for (x = 1; x < 19; x++) {
+        row_buf[x] = (uint8_t)(tile_start + 0x13 + ((x - 1) % 5));
+    }
+    row_buf[19] = (uint8_t)(tile_start + 0x18);
+    if (use_window) {
+        set_win_tiles(0, (uint8_t)(y_start + rows - 1), 20, 1, row_buf);
+    } else {
+        set_bkg_tiles(0, (uint8_t)(y_start + rows - 1), 20, 1, row_buf);
     }
 }
 

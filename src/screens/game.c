@@ -20,6 +20,7 @@
 #include "link/link.h"
 #include "link/link_profile.h"
 #include "util/sound.h"
+#include "util/screen_utils.h"
 
 // External references to generated board asset
 extern const uint8_t board_frame_tiles[];
@@ -262,12 +263,7 @@ static void draw_prompt(const char *text) {
  * Draw "WAITING" with animated dots (0-3)
  */
 static void draw_waiting_prompt(void) {
-    clear_text_row_inverted(UI_PROMPT_X, UI_PROMPT_Y, 18);
-    draw_text_inverted(UI_PROMPT_X, UI_PROMPT_Y, "WAITING");
-    uint8_t x = UI_PROMPT_X + 7;
-    for (uint8_t i = 0; i < waiting_dot_count; i++) {
-        draw_text_inverted(x + i, UI_PROMPT_Y, ".");
-    }
+    draw_waiting_text(UI_PROMPT_X, UI_PROMPT_Y, waiting_dot_count);
 }
 
 /**
@@ -762,38 +758,9 @@ static void clear_pause_window(void) {
 
 /**
  * Draw decorative border around pause window
- * Uses border tiles to create a frame
  */
 static void draw_pause_border(void) {
-    uint8_t row_buf[PAUSE_WIN_WIDTH];
-
-    // Top row (y=0): Left corner + repeated top edges + right corner
-    row_buf[0] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x00);  // Top-left corner
-    for (uint8_t x = 1; x < 19; x++) {
-        // Repeat top edge tiles (0x01-0x05 pattern)
-        row_buf[x] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x01 + ((x - 1) % 5));
-    }
-    row_buf[19] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x06);  // Top-right corner
-    set_win_tiles(0, 0, PAUSE_WIN_WIDTH, 1, row_buf);
-
-    // Middle rows (y=1-16): Left edge + white fill + right edge
-    for (uint8_t y = 1; y < 17; y++) {
-        row_buf[0] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x07);  // Left edge
-        for (uint8_t x = 1; x < 19; x++) {
-            row_buf[x] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x08);  // White fill
-        }
-        row_buf[19] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x09);  // Right edge
-        set_win_tiles(0, y, PAUSE_WIN_WIDTH, 1, row_buf);
-    }
-
-    // Bottom row (y=17): Left corner + repeated bottom edges + right corner
-    row_buf[0] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x12);  // Bottom-left corner
-    for (uint8_t x = 1; x < 19; x++) {
-        // Repeat bottom edge tiles (0x13-0x17 pattern)
-        row_buf[x] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x13 + ((x - 1) % 5));
-    }
-    row_buf[19] = (uint8_t)(PAUSE_BORDER_TILE_START + 0x18);  // Bottom-right corner
-    set_win_tiles(0, 17, PAUSE_WIN_WIDTH, 1, row_buf);
+    draw_full_width_border(PAUSE_BORDER_TILE_START, 0, PAUSE_WIN_HEIGHT, 1);
 }
 
 /**

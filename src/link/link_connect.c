@@ -32,17 +32,7 @@ static uint8_t dot_count = 0;
  * Draw the waiting status with animated dots
  */
 static void draw_waiting_status(void) {
-    // Clear status line first
-    clear_text_row_inverted(CONNECT_STATUS_X, CONNECT_STATUS_Y, 16);
-
-    // Draw base text
-    draw_text_inverted(CONNECT_STATUS_X, CONNECT_STATUS_Y, "WAITING");
-
-    // Add animated dots (0-3)
-    uint8_t x = CONNECT_STATUS_X + 7;
-    for (uint8_t i = 0; i < dot_count; i++) {
-        draw_text_inverted(x + i, CONNECT_STATUS_Y, ".");
-    }
+    draw_waiting_text(CONNECT_STATUS_X, CONNECT_STATUS_Y, dot_count);
 }
 
 /**

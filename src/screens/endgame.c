@@ -67,7 +67,7 @@ void init_endgame(void) {
     fill_screen_with_tile(ENDGAME_WHITE_TILE);
 
     // Load border tiles
-    set_bkg_data(ENDGAME_BORDER_TILE_START, 25, border_tiles);
+    set_bkg_data(ENDGAME_BORDER_TILE_START, VRAM_BORDER_COUNT, border_tiles);
 
     // Load full merged portrait tileset (endgame has ample VRAM)
     load_portrait_tiles(ENDGAME_PORTRAIT_TILE_START);

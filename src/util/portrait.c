@@ -22,11 +22,15 @@ static void apply_tile_fade(const uint8_t *src_tile, uint8_t fade_level) {
     uint8_t row;
     uint8_t keep_mask;
 
-    if (fade_level > 3) {
-        fade_level = 3;
+    if (fade_level > 8) {
+        fade_level = 8;
     }
 
-    keep_mask = (uint8_t)(0xFFu << fade_level);
+    if (fade_level == 8) {
+        keep_mask = 0;
+    } else {
+        keep_mask = (uint8_t)(0xFFu << fade_level);
+    }
 
     for (row = 0; row < 8; row++) {
         uint8_t lo = src_tile[row * 2];

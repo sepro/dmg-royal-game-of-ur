@@ -48,16 +48,18 @@ static uint8_t showcase_expr;
 static uint8_t showcase_timer;
 static uint8_t showcase_toggles;
 static uint8_t showcase_phase;
+static uint8_t showcase_fade_level;
 
 #define TITLE_SHOWCASE_MERCHANT   1
 #define TITLE_SHOWCASE_PRIESTESS  3
 #define TITLE_SHOWCASE_TOGGLE_INTERVAL 16
+#define TITLE_SHOWCASE_FADE_INTERVAL 8
 #define TITLE_SHOWCASE_TOGGLES_PER_SWAP 6
+#define TITLE_SHOWCASE_FADE_STEPS 8
 
-#define TITLE_SHOWCASE_PHASE_TOGGLE          0
-#define TITLE_SHOWCASE_PHASE_OLD_NEUTRAL     1
-#define TITLE_SHOWCASE_PHASE_NEW_NEUTRAL     2
-#define TITLE_SHOWCASE_PHASE_NEW_HAPPY       3
+#define TITLE_SHOWCASE_PHASE_TOGGLE             0
+#define TITLE_SHOWCASE_PHASE_FADE_OUT_TO_WHITE  1
+#define TITLE_SHOWCASE_PHASE_FADE_IN_FROM_WHITE 2
 
 #define TITLE_BOARD_TILE_START VRAM_GAMEBOARD_START
 
@@ -123,7 +125,9 @@ static void draw_title_board(void) {
 }
 
 static void draw_showcase_portrait(void) {
-    load_portrait_tiles_for_char(showcase_opponent, TITLE_PORTRAIT_TILE_START);
+    load_portrait_tiles_for_char_fade(showcase_opponent,
+                                      TITLE_PORTRAIT_TILE_START,
+                                      showcase_fade_level);
     draw_portrait_expr(showcase_opponent, showcase_expr,
                        TITLE_PORTRAIT_TILE_START,
                        TITLE_PORTRAIT_X, TITLE_PORTRAIT_Y, 1);
@@ -135,8 +139,12 @@ static void draw_portrait_box(void) {
 }
 
 static void update_showcase_animation(void) {
+    uint8_t phase_interval = (showcase_phase == TITLE_SHOWCASE_PHASE_TOGGLE)
+        ? TITLE_SHOWCASE_TOGGLE_INTERVAL
+        : TITLE_SHOWCASE_FADE_INTERVAL;
+
     showcase_timer++;
-    if (showcase_timer < TITLE_SHOWCASE_TOGGLE_INTERVAL) {
+    if (showcase_timer < phase_interval) {
         return;
     }
 
@@ -151,31 +159,41 @@ static void update_showcase_animation(void) {
 
         if (showcase_toggles >= TITLE_SHOWCASE_TOGGLES_PER_SWAP) {
             showcase_toggles = 0;
-            showcase_phase = TITLE_SHOWCASE_PHASE_OLD_NEUTRAL;
+            showcase_expr = PORTRAIT_EXPR_NORMAL;
+            showcase_fade_level = 1;
+            draw_showcase_portrait();
+            showcase_phase = TITLE_SHOWCASE_PHASE_FADE_OUT_TO_WHITE;
         }
         return;
     }
 
-    if (showcase_phase == TITLE_SHOWCASE_PHASE_OLD_NEUTRAL) {
-        showcase_expr = PORTRAIT_EXPR_NORMAL;
-        draw_showcase_portrait();
-        showcase_phase = TITLE_SHOWCASE_PHASE_NEW_NEUTRAL;
+    if (showcase_phase == TITLE_SHOWCASE_PHASE_FADE_OUT_TO_WHITE) {
+        if (showcase_fade_level < TITLE_SHOWCASE_FADE_STEPS) {
+            showcase_fade_level++;
+            draw_showcase_portrait();
+        }
+
+        if (showcase_fade_level >= TITLE_SHOWCASE_FADE_STEPS) {
+            showcase_opponent = (showcase_opponent == TITLE_SHOWCASE_MERCHANT)
+                ? TITLE_SHOWCASE_PRIESTESS
+                : TITLE_SHOWCASE_MERCHANT;
+            showcase_expr = PORTRAIT_EXPR_NORMAL;
+            draw_showcase_portrait();
+            showcase_phase = TITLE_SHOWCASE_PHASE_FADE_IN_FROM_WHITE;
+        }
         return;
     }
 
-    if (showcase_phase == TITLE_SHOWCASE_PHASE_NEW_NEUTRAL) {
-        showcase_opponent = (showcase_opponent == TITLE_SHOWCASE_MERCHANT)
-            ? TITLE_SHOWCASE_PRIESTESS
-            : TITLE_SHOWCASE_MERCHANT;
-        showcase_expr = PORTRAIT_EXPR_NORMAL;
+    if (showcase_fade_level > 0) {
+        showcase_fade_level--;
         draw_showcase_portrait();
-        showcase_phase = TITLE_SHOWCASE_PHASE_NEW_HAPPY;
-        return;
     }
 
-    showcase_expr = PORTRAIT_EXPR_HAPPY;
-    draw_showcase_portrait();
-    showcase_phase = TITLE_SHOWCASE_PHASE_TOGGLE;
+    if (showcase_fade_level == 0) {
+        showcase_expr = PORTRAIT_EXPR_HAPPY;
+        draw_showcase_portrait();
+        showcase_phase = TITLE_SHOWCASE_PHASE_TOGGLE;
+    }
 }
 
 static void randomize_blink_positions(void) {
@@ -254,6 +272,7 @@ void init_title(void) {
     showcase_timer = 0;
     showcase_toggles = 0;
     showcase_phase = TITLE_SHOWCASE_PHASE_TOGGLE;
+    showcase_fade_level = 0;
     draw_showcase_portrait();
 
     // Re-clear UI rows after portrait tile loads so text stays intact

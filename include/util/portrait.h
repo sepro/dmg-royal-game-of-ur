@@ -34,6 +34,17 @@ void load_portrait_tiles(uint8_t tile_base);
 uint8_t load_portrait_tiles_for_char(uint8_t char_idx, uint8_t tile_base);
 
 /**
+ * Load one character's portrait tiles with a fade-to-white effect.
+ *
+ * @param char_idx   Character index (0-3)
+ * @param tile_base  VRAM tile index where tiles are loaded
+ * @param fade_level 0 = normal, 1..8 = progressively whiter (8 = full white)
+ * @return Number of unique tiles loaded
+ */
+uint8_t load_portrait_tiles_for_char_fade(uint8_t char_idx, uint8_t tile_base,
+                                          uint8_t fade_level);
+
+/**
  * Draw a portrait expression using the merged tilemap.
  *
  * @param char_idx   Character index (0-3)

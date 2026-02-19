@@ -53,6 +53,7 @@ static uint8_t showcase_fade_level;
 #define TITLE_SHOWCASE_MERCHANT   1
 #define TITLE_SHOWCASE_PRIESTESS  3
 #define TITLE_SHOWCASE_TOGGLE_INTERVAL 16
+#define TITLE_SHOWCASE_FADE_INTERVAL 8
 #define TITLE_SHOWCASE_TOGGLES_PER_SWAP 6
 #define TITLE_SHOWCASE_FADE_STEPS 8
 
@@ -138,8 +139,12 @@ static void draw_portrait_box(void) {
 }
 
 static void update_showcase_animation(void) {
+    uint8_t phase_interval = (showcase_phase == TITLE_SHOWCASE_PHASE_TOGGLE)
+        ? TITLE_SHOWCASE_TOGGLE_INTERVAL
+        : TITLE_SHOWCASE_FADE_INTERVAL;
+
     showcase_timer++;
-    if (showcase_timer < TITLE_SHOWCASE_TOGGLE_INTERVAL) {
+    if (showcase_timer < phase_interval) {
         return;
     }
 

@@ -63,8 +63,10 @@ If your install path is different, either:
 
 ## Build
 
+To run the build on four cores run
+
 ```bash
-make
+make -j4
 ```
 
 This produces:

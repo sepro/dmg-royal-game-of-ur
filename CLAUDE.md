@@ -22,7 +22,7 @@ Make sure to add new dependencies and headers (.h) to @Makefile before building.
 Always use the build-validator agent to test building the rom! The agent will run the commands below and report if the build was successfull. If not it will point out the issue that needs to be tackled.
 
 ```bash
-make          # Build the ROM
+make -j4      # Build the ROM (on four cores in parallel)
 make clean    # Remove build artifacts
 make run      # Build and launch in emulator (if configured)
 ```

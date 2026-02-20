@@ -34,17 +34,6 @@ void load_portrait_tiles(uint8_t tile_base);
 uint8_t load_portrait_tiles_for_char(uint8_t char_idx, uint8_t tile_base);
 
 /**
- * Load one character's portrait tiles with a fade-to-white effect.
- *
- * @param char_idx   Character index (0-3)
- * @param tile_base  VRAM tile index where tiles are loaded
- * @param fade_level 0 = normal, 1..8 = progressively whiter (8 = full white)
- * @return Number of unique tiles loaded
- */
-uint8_t load_portrait_tiles_for_char_fade(uint8_t char_idx, uint8_t tile_base,
-                                          uint8_t fade_level);
-
-/**
  * Draw a portrait expression using the merged tilemap.
  *
  * @param char_idx   Character index (0-3)
@@ -75,6 +64,22 @@ void draw_portrait_expr(uint8_t char_idx, uint8_t expression,
 void draw_portrait_expr_mirrored(uint8_t char_idx, uint8_t expression,
                                  uint8_t tile_base, uint8_t x, uint8_t y,
                                  uint8_t use_remap);
+
+/**
+ * Resolve one portrait tile index from the merged tilemap.
+ *
+ * @param char_idx   Character index (0-3)
+ * @param expression PORTRAIT_EXPR_NORMAL/SAD/HAPPY
+ * @param tile_base  VRAM tile index where tiles were loaded
+ * @param row        Portrait row (0-4)
+ * @param col        Portrait column (0-4)
+ * @param use_remap  0 = full tileset loaded (global indices),
+ *                   1 = per-char tileset loaded (remapped indices)
+ * @return Background tile index for the requested portrait tile
+ */
+uint8_t get_portrait_expr_tile(uint8_t char_idx, uint8_t expression,
+                               uint8_t tile_base, uint8_t row, uint8_t col,
+                               uint8_t use_remap);
 
 /**
  * Convenience: load full tileset + draw normal expression.

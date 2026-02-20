@@ -16,38 +16,6 @@ extern const unsigned char profiles_merged_map[];
 // Maps global tile index -> local index (0xFF = not loaded)
 static uint8_t tile_remap[PORTRAIT_TILE_COUNT];
 
-static uint8_t fade_tile_buffer[16];
-
-static void apply_tile_fade(const uint8_t *src_tile, uint8_t fade_level) {
-    uint8_t row;
-    uint8_t keep_mask;
-
-    if (fade_level > 8) {
-        fade_level = 8;
-    }
-
-    if (fade_level == 8) {
-        keep_mask = 0;
-    } else {
-        keep_mask = (uint8_t)(0xFFu << fade_level);
-    }
-
-    for (row = 0; row < 8; row++) {
-        uint8_t lo = src_tile[row * 2];
-        uint8_t hi = src_tile[row * 2 + 1];
-        uint8_t shade3 = (uint8_t)(lo & hi);
-        uint8_t shade2 = (uint8_t)((~lo) & hi);
-        uint8_t shade1 = (uint8_t)(lo & (~hi));
-
-        shade3 &= keep_mask;
-        shade2 &= keep_mask;
-        shade1 &= keep_mask;
-
-        fade_tile_buffer[row * 2] = (uint8_t)(shade3 | shade1);
-        fade_tile_buffer[row * 2 + 1] = (uint8_t)(shade3 | shade2);
-    }
-}
-
 /**
  * Get pointer to start of sub-map for a character + expression
  * Returns offset into profiles_merged_map for the first row
@@ -68,8 +36,7 @@ void load_portrait_tiles(uint8_t tile_base) {
  * Load only tiles needed by one character (all 3 expressions)
  * Builds remap table and loads individual tiles
  */
-uint8_t load_portrait_tiles_for_char_fade(uint8_t char_idx, uint8_t tile_base,
-                                          uint8_t fade_level) {
+uint8_t load_portrait_tiles_for_char(uint8_t char_idx, uint8_t tile_base) {
     uint8_t loaded = 0;
     uint8_t i, row, col, expr;
     uint8_t tile_idx;
@@ -88,14 +55,8 @@ uint8_t load_portrait_tiles_for_char_fade(uint8_t char_idx, uint8_t tile_base,
                 if (tile_idx < PORTRAIT_TILE_COUNT && tile_remap[tile_idx] == 0xFF) {
                     // New tile - load it and assign a local index
                     tile_remap[tile_idx] = loaded;
-
-                    if (fade_level == 0) {
-                        set_bkg_data(tile_base + loaded, 1,
-                                     &profiles_merged_tiles[(uint16_t)tile_idx * 16]);
-                    } else {
-                        apply_tile_fade(&profiles_merged_tiles[(uint16_t)tile_idx * 16], fade_level);
-                        set_bkg_data(tile_base + loaded, 1, fade_tile_buffer);
-                    }
+                    set_bkg_data(tile_base + loaded, 1,
+                                 &profiles_merged_tiles[(uint16_t)tile_idx * 16]);
                     loaded++;
                 }
             }
@@ -103,10 +64,6 @@ uint8_t load_portrait_tiles_for_char_fade(uint8_t char_idx, uint8_t tile_base,
     }
 
     return loaded;
-}
-
-uint8_t load_portrait_tiles_for_char(uint8_t char_idx, uint8_t tile_base) {
-    return load_portrait_tiles_for_char_fade(char_idx, tile_base, 0);
 }
 
 /**
@@ -163,4 +120,20 @@ void draw_portrait_expr_mirrored(uint8_t char_idx, uint8_t expression,
         }
         set_bkg_tiles(x, y + row, PORTRAIT_SUB_WIDTH, 1, row_buf);
     }
+}
+
+uint8_t get_portrait_expr_tile(uint8_t char_idx, uint8_t expression,
+                               uint8_t tile_base, uint8_t row, uint8_t col,
+                               uint8_t use_remap) {
+    uint16_t offset;
+    uint8_t tile_idx;
+
+    offset = get_submap_offset(char_idx, expression);
+    tile_idx = profiles_merged_map[offset + (uint16_t)row * PORTRAIT_MAP_WIDTH + col];
+
+    if (use_remap) {
+        return tile_base + tile_remap[tile_idx];
+    }
+
+    return tile_base + tile_idx;
 }

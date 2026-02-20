@@ -44,22 +44,25 @@ static uint8_t blink_anim_frame;
 
 // Portrait showcase animation
 static uint8_t showcase_opponent;
+static uint8_t showcase_next_opponent;
 static uint8_t showcase_expr;
 static uint8_t showcase_timer;
-static uint8_t showcase_toggles;
 static uint8_t showcase_phase;
-static uint8_t showcase_fade_level;
+static uint8_t showcase_spiral_step;
+static uint8_t showcase_expr_cycles;
+static uint8_t showcase_target_tiles[PORTRAIT_SUB_WIDTH * PORTRAIT_SUB_HEIGHT];
 
 #define TITLE_SHOWCASE_MERCHANT   1
 #define TITLE_SHOWCASE_PRIESTESS  3
-#define TITLE_SHOWCASE_TOGGLE_INTERVAL 16
-#define TITLE_SHOWCASE_FADE_INTERVAL 8
-#define TITLE_SHOWCASE_TOGGLES_PER_SWAP 6
-#define TITLE_SHOWCASE_FADE_STEPS 8
+#define TITLE_SHOWCASE_EXPR_INTERVAL 16
+#define TITLE_SHOWCASE_SPIRAL_INTERVAL 2
+#define TITLE_SHOWCASE_TILE_COUNT (PORTRAIT_SUB_WIDTH * PORTRAIT_SUB_HEIGHT)
+#define TITLE_SHOWCASE_EXPR_CYCLES 3
+#define TITLE_PORTRAIT_CLEAR_TILE ((uint8_t)(FONT_TILE_START + CHAR_WHITE))
 
-#define TITLE_SHOWCASE_PHASE_TOGGLE             0
-#define TITLE_SHOWCASE_PHASE_FADE_OUT_TO_WHITE  1
-#define TITLE_SHOWCASE_PHASE_FADE_IN_FROM_WHITE 2
+#define TITLE_SHOWCASE_PHASE_EXPR       0
+#define TITLE_SHOWCASE_PHASE_SPIRAL_OUT 1
+#define TITLE_SHOWCASE_PHASE_SPIRAL_IN  2
 
 #define TITLE_BOARD_TILE_START VRAM_GAMEBOARD_START
 
@@ -80,6 +83,14 @@ static uint8_t showcase_fade_level;
 #define TITLE_BLINK_MAX_X 152
 #define TITLE_BLINK_MIN_Y 32
 #define TITLE_BLINK_MAX_Y 96
+
+static const uint8_t showcase_spiral_x[TITLE_SHOWCASE_TILE_COUNT] = {
+    0, 1, 2, 3, 4, 4, 4, 4, 4, 3, 2, 1, 0, 0, 0, 0, 1, 2, 3, 3, 3, 2, 1, 1, 2
+};
+
+static const uint8_t showcase_spiral_y[TITLE_SHOWCASE_TILE_COUNT] = {
+    0, 0, 0, 0, 0, 1, 2, 3, 4, 4, 4, 4, 4, 3, 2, 1, 1, 1, 1, 2, 3, 3, 3, 2, 2
+};
 
 // Empty square base tile for each square type (from board_tiles_pieces.png)
 static const uint8_t title_square_empty_base[6] = {
@@ -124,10 +135,23 @@ static void draw_title_board(void) {
     }
 }
 
+static void cache_showcase_tiles(uint8_t opponent_idx) {
+    uint8_t row;
+    uint8_t col;
+
+    for (row = 0; row < PORTRAIT_SUB_HEIGHT; row++) {
+        for (col = 0; col < PORTRAIT_SUB_WIDTH; col++) {
+            uint8_t idx = (uint8_t)(row * PORTRAIT_SUB_WIDTH + col);
+            showcase_target_tiles[idx] = get_portrait_expr_tile(opponent_idx,
+                                                                 PORTRAIT_EXPR_NORMAL,
+                                                                 TITLE_PORTRAIT_TILE_START,
+                                                                 row, col, 1);
+        }
+    }
+}
+
 static void draw_showcase_portrait(void) {
-    load_portrait_tiles_for_char_fade(showcase_opponent,
-                                      TITLE_PORTRAIT_TILE_START,
-                                      showcase_fade_level);
+    load_portrait_tiles_for_char(showcase_opponent, TITLE_PORTRAIT_TILE_START);
     draw_portrait_expr(showcase_opponent, showcase_expr,
                        TITLE_PORTRAIT_TILE_START,
                        TITLE_PORTRAIT_X, TITLE_PORTRAIT_Y, 1);
@@ -139,9 +163,9 @@ static void draw_portrait_box(void) {
 }
 
 static void update_showcase_animation(void) {
-    uint8_t phase_interval = (showcase_phase == TITLE_SHOWCASE_PHASE_TOGGLE)
-        ? TITLE_SHOWCASE_TOGGLE_INTERVAL
-        : TITLE_SHOWCASE_FADE_INTERVAL;
+    uint8_t phase_interval = (showcase_phase == TITLE_SHOWCASE_PHASE_EXPR)
+        ? TITLE_SHOWCASE_EXPR_INTERVAL
+        : TITLE_SHOWCASE_SPIRAL_INTERVAL;
 
     showcase_timer++;
     if (showcase_timer < phase_interval) {
@@ -149,50 +173,62 @@ static void update_showcase_animation(void) {
     }
 
     showcase_timer = 0;
-    if (showcase_phase == TITLE_SHOWCASE_PHASE_TOGGLE) {
-        showcase_toggles++;
 
-        showcase_expr = (showcase_expr == PORTRAIT_EXPR_NORMAL)
-            ? PORTRAIT_EXPR_HAPPY
-            : PORTRAIT_EXPR_NORMAL;
+    if (showcase_phase == TITLE_SHOWCASE_PHASE_EXPR) {
+        if (showcase_expr == PORTRAIT_EXPR_NORMAL) {
+            showcase_expr = PORTRAIT_EXPR_HAPPY;
+            showcase_expr_cycles++;
+        } else {
+            showcase_expr = PORTRAIT_EXPR_NORMAL;
+        }
         draw_showcase_portrait();
 
-        if (showcase_toggles >= TITLE_SHOWCASE_TOGGLES_PER_SWAP) {
-            showcase_toggles = 0;
-            showcase_expr = PORTRAIT_EXPR_NORMAL;
-            showcase_fade_level = 1;
-            draw_showcase_portrait();
-            showcase_phase = TITLE_SHOWCASE_PHASE_FADE_OUT_TO_WHITE;
-        }
-        return;
-    }
-
-    if (showcase_phase == TITLE_SHOWCASE_PHASE_FADE_OUT_TO_WHITE) {
-        if (showcase_fade_level < TITLE_SHOWCASE_FADE_STEPS) {
-            showcase_fade_level++;
-            draw_showcase_portrait();
-        }
-
-        if (showcase_fade_level >= TITLE_SHOWCASE_FADE_STEPS) {
-            showcase_opponent = (showcase_opponent == TITLE_SHOWCASE_MERCHANT)
+        if (showcase_expr_cycles >= TITLE_SHOWCASE_EXPR_CYCLES &&
+            showcase_expr == PORTRAIT_EXPR_HAPPY) {
+            showcase_next_opponent = (showcase_opponent == TITLE_SHOWCASE_MERCHANT)
                 ? TITLE_SHOWCASE_PRIESTESS
                 : TITLE_SHOWCASE_MERCHANT;
-            showcase_expr = PORTRAIT_EXPR_NORMAL;
-            draw_showcase_portrait();
-            showcase_phase = TITLE_SHOWCASE_PHASE_FADE_IN_FROM_WHITE;
+            showcase_phase = TITLE_SHOWCASE_PHASE_SPIRAL_OUT;
+            showcase_spiral_step = 0;
+            showcase_expr_cycles = 0;
         }
         return;
     }
 
-    if (showcase_fade_level > 0) {
-        showcase_fade_level--;
-        draw_showcase_portrait();
+    if (showcase_phase == TITLE_SHOWCASE_PHASE_SPIRAL_OUT) {
+        uint8_t x = showcase_spiral_x[showcase_spiral_step];
+        uint8_t y = showcase_spiral_y[showcase_spiral_step];
+
+        set_bkg_tile_xy((uint8_t)(TITLE_PORTRAIT_X + x),
+                        (uint8_t)(TITLE_PORTRAIT_Y + y),
+                        TITLE_PORTRAIT_CLEAR_TILE);
+        showcase_spiral_step++;
+
+        if (showcase_spiral_step >= TITLE_SHOWCASE_TILE_COUNT) {
+            showcase_opponent = showcase_next_opponent;
+            load_portrait_tiles_for_char(showcase_opponent, TITLE_PORTRAIT_TILE_START);
+            cache_showcase_tiles(showcase_opponent);
+            showcase_phase = TITLE_SHOWCASE_PHASE_SPIRAL_IN;
+            showcase_spiral_step = 0;
+        }
+        return;
     }
 
-    if (showcase_fade_level == 0) {
-        showcase_expr = PORTRAIT_EXPR_HAPPY;
-        draw_showcase_portrait();
-        showcase_phase = TITLE_SHOWCASE_PHASE_TOGGLE;
+    {
+        uint8_t x = showcase_spiral_x[showcase_spiral_step];
+        uint8_t y = showcase_spiral_y[showcase_spiral_step];
+        uint8_t idx = (uint8_t)(y * PORTRAIT_SUB_WIDTH + x);
+
+        set_bkg_tile_xy((uint8_t)(TITLE_PORTRAIT_X + x),
+                        (uint8_t)(TITLE_PORTRAIT_Y + y),
+                        showcase_target_tiles[idx]);
+        showcase_spiral_step++;
+    }
+
+    if (showcase_spiral_step >= TITLE_SHOWCASE_TILE_COUNT) {
+        showcase_expr = PORTRAIT_EXPR_NORMAL;
+        showcase_phase = TITLE_SHOWCASE_PHASE_EXPR;
+        showcase_spiral_step = 0;
     }
 }
 
@@ -268,11 +304,12 @@ void init_title(void) {
 
     draw_portrait_box();
     showcase_opponent = TITLE_SHOWCASE_MERCHANT;
-    showcase_expr = PORTRAIT_EXPR_HAPPY;
+    showcase_next_opponent = TITLE_SHOWCASE_PRIESTESS;
+    showcase_expr = PORTRAIT_EXPR_NORMAL;
     showcase_timer = 0;
-    showcase_toggles = 0;
-    showcase_phase = TITLE_SHOWCASE_PHASE_TOGGLE;
-    showcase_fade_level = 0;
+    showcase_phase = TITLE_SHOWCASE_PHASE_EXPR;
+    showcase_spiral_step = 0;
+    showcase_expr_cycles = 0;
     draw_showcase_portrait();
 
     // Re-clear UI rows after portrait tile loads so text stays intact

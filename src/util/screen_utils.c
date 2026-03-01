@@ -59,7 +59,7 @@ void clear_rect(uint8_t tile, uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
 
 void draw_waiting_text(uint8_t x, uint8_t y, uint8_t dot_count) {
     uint8_t i;
-    clear_text_row_inverted(x, y, 16);
+    clear_text_row_inverted(x, y, 18);
     draw_text_inverted(x, y, "WAITING");
     for (i = 0; i < dot_count; i++) {
         draw_text_inverted((uint8_t)(x + 7 + i), y, ".");

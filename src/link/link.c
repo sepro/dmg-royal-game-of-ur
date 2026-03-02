@@ -28,12 +28,13 @@
 // Each _START state initiates a transfer once.
 // Each _WAIT state polls for completion across frames.
 #define HS_IDLE          0
-#define HS_MASTER_START  1
-#define HS_MASTER_WAIT   2
-#define HS_SLAVE_START   3
-#define HS_SLAVE_WAIT    4
-#define HS_ACK_START     5
-#define HS_ACK_WAIT      6
+#define HS_DELAY         1   // Random delay to break symmetry
+#define HS_MASTER_START  2
+#define HS_MASTER_WAIT   3
+#define HS_SLAVE_START   4
+#define HS_SLAVE_WAIT    5
+#define HS_ACK_START     6
+#define HS_ACK_WAIT      7
 
 // Timing
 #define MASTER_TRY_FRAMES  3    // Internal clock completes in <1 frame; give margin
@@ -55,6 +56,7 @@ static uint8_t link_has_pending;    // 1 = buffer has unread data
 // Internal state
 static uint8_t hs_state = HS_IDLE;
 static uint8_t hs_timer = 0;
+static uint8_t hs_delay = 0;  // Random delay to break handshake symmetry
 
 /**
  * Check if serial transfer is complete (bit 7 cleared by hardware)
@@ -417,7 +419,20 @@ LinkStatus_t link_connect_step(void) {
     switch (hs_state) {
         case HS_IDLE:
             link_status = LINK_CONNECTING;
-            hs_state = HS_MASTER_START;
+            hs_timer = 0;
+            // Random delay 0-15 frames using DIV hardware timer.
+            // DIV_REG differs between devices because users press A at
+            // slightly different times, breaking handshake symmetry.
+            hs_delay = DIV_REG & 0x0F;
+            hs_state = HS_DELAY;
+            break;
+
+        /* --- Random delay to prevent both devices entering master
+         *     mode on the same frame (causes deadlock in emulators) --- */
+        case HS_DELAY:
+            if (hs_timer++ >= hs_delay) {
+                hs_state = HS_MASTER_START;
+            }
             break;
 
         /* --- Master attempt: start transfer once --- */

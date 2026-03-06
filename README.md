@@ -1,3 +1,5 @@
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 # Royal Game of Ur (Game Boy DMG)
 
 A Game Boy implementation of the **Royal Game of Ur**, built in C with **GBDK-2020**.

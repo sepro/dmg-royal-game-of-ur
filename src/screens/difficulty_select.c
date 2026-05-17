@@ -139,6 +139,7 @@ void init_difficulty_select(void) {
     // Set palettes
     BGP_REG = 0xE4;   // Standard background palette
     OBP0_REG = 0xFC;  // Sprite palette for white background with dark text
+    sync_sprite_palette_to_obp0();
 
     SHOW_BKG;
     SHOW_SPRITES;

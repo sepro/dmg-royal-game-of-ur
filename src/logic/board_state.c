@@ -266,6 +266,36 @@ uint8_t is_rosette(uint8_t pos) {
     return (pos == 4 || pos == 8 || pos == 14);
 }
 
+// Top-left (x, y) BG tile coords of all 5 rosette squares on the game board.
+// Mirrors the rosette entries in p1_squares[] / p2_private_squares[] above.
+static const uint8_t rosette_tile_xy[5][2] = {
+    { 2, 2}, {14, 2},
+    { 8, 4},
+    { 2, 6}, {14, 6}
+};
+
+void apply_board_cgb_palettes(void) {
+    if (_cpu != CGB_TYPE) return;
+
+    static const uint8_t rosette_attr_row[2] = {
+        ROSETTE_CGB_PALETTE, ROSETTE_CGB_PALETTE
+    };
+
+    uint8_t i;
+    VBK_REG = 1;
+    // Sand palette across the entire 20x10 board area.
+    fill_bkg_rect(BOARD_X, BOARD_Y, BOARD_WIDTH, BOARD_HEIGHT,
+                  BOARD_SAND_CGB_PALETTE);
+    // Rosette palette over the 5 rosette squares.
+    for (i = 0; i < 5; i++) {
+        uint8_t x = rosette_tile_xy[i][0];
+        uint8_t y = rosette_tile_xy[i][1];
+        set_bkg_tiles(x, y,     2, 1, rosette_attr_row);
+        set_bkg_tiles(x, y + 1, 2, 1, rosette_attr_row);
+    }
+    VBK_REG = 0;
+}
+
 uint8_t is_valid_move(uint8_t player, uint8_t piece_idx, uint8_t roll) {
     if (roll == 0) return 0;
 

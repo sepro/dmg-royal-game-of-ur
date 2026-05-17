@@ -324,6 +324,7 @@ void init_title(void) {
 
     BGP_REG = 0xE4;
     OBP0_REG = 0xE0;
+    sync_sprite_palette_to_obp0();
 
     SHOW_BKG;
     SHOW_SPRITES;

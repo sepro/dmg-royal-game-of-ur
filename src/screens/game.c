@@ -1097,6 +1097,10 @@ void init_game(void) {
     // Draw the board tilemap at top of screen
     set_bkg_tiles(BOARD_X, BOARD_Y, BOARD_WIDTH, BOARD_HEIGHT, board_frame_map);
 
+    // CGB only: assign sand palette to the board, blue palette to rosettes.
+    // No-op on DMG.
+    apply_board_cgb_palettes();
+
     // Fill UI area with background color
     fill_ui_area();
 
@@ -1114,6 +1118,7 @@ void init_game(void) {
     // Set sprite palette OBP0: index 1=white, index 2=dark gray, index 3=black
     // Value: (3 << 6) | (2 << 4) | (0 << 2) | 0 = 0xE0
     OBP0_REG = 0xE0;
+    sync_sprite_palette_to_obp0();
 
     // Initialize game state based on coin flip
     human_color = selected_side;
@@ -1503,4 +1508,5 @@ void cleanup_game(void) {
     // Restore default sprite palette (0xFC = all indices black, index 0 white)
     // Game screen uses 0xE0 which makes index 1 white, breaking arrow sprite
     OBP0_REG = 0xFC;
+    sync_sprite_palette_to_obp0();
 }

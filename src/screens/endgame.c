@@ -154,6 +154,7 @@ void init_endgame(void) {
     // Without this, palette state from previous screens (e.g. game cleanup 0xFC)
     // can make endgame falling pieces render with incorrect shades.
     OBP0_REG = 0xE0;
+    sync_sprite_palette_to_obp0();
 
     if (show_falling_piece_anim) {
         falling_piece_anim_load_tiles();

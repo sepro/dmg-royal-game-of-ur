@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include "game_types.h"
 #include "screens/coinflip.h"
+#include "util/cgb.h"
 #include "util/font.h"
 #include "util/input.h"
 #include "util/transition.h"
@@ -18,11 +19,6 @@
 // External references to generated coin assets
 extern const uint8_t light_coin_tiles[];
 extern const uint8_t dark_coin_tiles[];
-
-// CGB BG palette indices for coin colorization. Palettes are installed at boot
-// in main.c. On DMG the attribute writes are no-ops.
-#define LIGHT_COIN_CGB_PALETTE 4
-#define DARK_COIN_CGB_PALETTE  5
 
 // External reference to border tiles and map (from border.c)
 extern const uint8_t border_tiles[];
@@ -99,67 +95,45 @@ static void clear_border(uint8_t idx) {
 }
 
 /**
- * Draw the animation coin with mixed light/dark tiles
- * Uses locked_tiles bitmask to determine which tiles show result.
- * On CGB, each tile's BG attribute byte is also updated so the palette
- * (light = warm yellow/orange, dark = warm blue/navy) flips with the tile.
+ * Draw the animation coin with mixed light/dark tiles.
+ * Uses locked_tiles bitmask to determine which tiles show the result.
+ * Each tile's BG attribute byte tracks the tile so the CGB coin palette
+ * (warm yellow/orange or cool blue/navy) flips with it.
  */
 static void draw_animation_coin(void) {
     uint8_t row_buf[COIN_WIDTH];
     uint8_t attr_buf[COIN_WIDTH];
-    uint8_t light_base = COINFLIP_LIGHT_TILE_START;
-    uint8_t dark_base = COINFLIP_DARK_TILE_START;
-    uint8_t is_cgb = (_cpu == CGB_TYPE);
 
     for (uint8_t row = 0; row < COIN_HEIGHT; row++) {
         for (uint8_t col = 0; col < COIN_WIDTH; col++) {
-            uint8_t tile_idx = row * COIN_WIDTH + col;
-            uint8_t tile_offset = tile_idx;
-            uint8_t pick_light;
-
-            if (is_tile_locked(tile_idx)) {
-                pick_light = (coin_result == SIDE_LIGHT);
-            } else {
-                pick_light = (get_random() & 1);
-            }
+            uint8_t tile_offset = row * COIN_WIDTH + col;
+            uint8_t pick_light = is_tile_locked(tile_offset)
+                ? (coin_result == SIDE_LIGHT)
+                : (get_random() & 1);
 
             if (pick_light) {
-                row_buf[col] = light_base + tile_offset;
-                attr_buf[col] = LIGHT_COIN_CGB_PALETTE;
+                row_buf[col]  = COINFLIP_LIGHT_TILE_START + tile_offset;
+                attr_buf[col] = CGB_PAL_COIN_LIGHT;
             } else {
-                row_buf[col] = dark_base + tile_offset;
-                attr_buf[col] = DARK_COIN_CGB_PALETTE;
+                row_buf[col]  = COINFLIP_DARK_TILE_START + tile_offset;
+                attr_buf[col] = CGB_PAL_COIN_DARK;
             }
         }
         set_bkg_tiles(COINFLIP_ANIM_X, COINFLIP_ANIM_Y + row, COIN_WIDTH, 1, row_buf);
-        if (is_cgb) {
-            VBK_REG = 1;
-            set_bkg_tiles(COINFLIP_ANIM_X, COINFLIP_ANIM_Y + row, COIN_WIDTH, 1, attr_buf);
-            VBK_REG = 0;
-        }
+        cgb_set_bg_attrs_row(COINFLIP_ANIM_X, COINFLIP_ANIM_Y + row, COIN_WIDTH, attr_buf);
     }
 }
 
 /**
- * CGB-only: paint a uniform 5x5 BG palette for a coin at (x, y). No-op on DMG.
- */
-static void set_coin_palette(uint8_t x, uint8_t y, uint8_t palette) {
-    if (_cpu != CGB_TYPE) return;
-    VBK_REG = 1;
-    fill_bkg_rect(x, y, COIN_WIDTH, COIN_HEIGHT, palette);
-    VBK_REG = 0;
-}
-
-/**
- * Draw the final animation coin showing result
+ * Draw the final animation coin showing the result.
  */
 static void draw_result_coin(void) {
     uint8_t tile_base = (coin_result == SIDE_LIGHT) ?
                         COINFLIP_LIGHT_TILE_START : COINFLIP_DARK_TILE_START;
     uint8_t palette = (coin_result == SIDE_LIGHT) ?
-                      LIGHT_COIN_CGB_PALETTE : DARK_COIN_CGB_PALETTE;
+                      CGB_PAL_COIN_LIGHT : CGB_PAL_COIN_DARK;
     draw_tile_rect(COINFLIP_ANIM_X, COINFLIP_ANIM_Y, COIN_WIDTH, COIN_HEIGHT, tile_base);
-    set_coin_palette(COINFLIP_ANIM_X, COINFLIP_ANIM_Y, palette);
+    cgb_set_bg_attr_rect(COINFLIP_ANIM_X, COINFLIP_ANIM_Y, COIN_WIDTH, COIN_HEIGHT, palette);
 }
 
 /**
@@ -341,10 +315,9 @@ void init_coinflip(void) {
     draw_tile_rect(COINFLIP_LIGHT_X, COINFLIP_LIGHT_Y, COIN_WIDTH, COIN_HEIGHT, COINFLIP_LIGHT_TILE_START);
     draw_tile_rect(COINFLIP_DARK_X, COINFLIP_DARK_Y, COIN_WIDTH, COIN_HEIGHT, COINFLIP_DARK_TILE_START);
 
-    // CGB only: assign the warm-yellow/orange palette to the light coin and the
-    // warm-blue/navy palette to the dark coin. No-op on DMG.
-    set_coin_palette(COINFLIP_LIGHT_X, COINFLIP_LIGHT_Y, LIGHT_COIN_CGB_PALETTE);
-    set_coin_palette(COINFLIP_DARK_X,  COINFLIP_DARK_Y,  DARK_COIN_CGB_PALETTE);
+    // CGB only: warm coin palette over the light coin, cool over the dark coin.
+    cgb_set_bg_attr_rect(COINFLIP_LIGHT_X, COINFLIP_LIGHT_Y, COIN_WIDTH, COIN_HEIGHT, CGB_PAL_COIN_LIGHT);
+    cgb_set_bg_attr_rect(COINFLIP_DARK_X,  COINFLIP_DARK_Y,  COIN_WIDTH, COIN_HEIGHT, CGB_PAL_COIN_DARK);
 
     // Draw labels
     draw_text_inverted(COINFLIP_LIGHT_LABEL_X, COINFLIP_LIGHT_LABEL_Y, "LIGHT");

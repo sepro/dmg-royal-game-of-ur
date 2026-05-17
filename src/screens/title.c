@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include "game_types.h"
 #include "screens/title.h"
+#include "util/cgb.h"
 #include "util/font.h"
 #include "util/input.h"
 #include "util/random.h"
@@ -323,8 +324,7 @@ void init_title(void) {
     input_reset();
 
     BGP_REG = 0xE4;
-    OBP0_REG = 0xE0;
-    sync_sprite_palette_to_obp0();
+    cgb_set_obp0(0xE0);
 
     SHOW_BKG;
     SHOW_SPRITES;

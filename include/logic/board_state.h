@@ -144,23 +144,11 @@ void get_reserve_screen_coords(uint8_t player, uint8_t *out_x, uint8_t *out_y);
  */
 void get_bearoff_screen_coords(uint8_t player, uint8_t *out_x, uint8_t *out_y);
 
-// ============================================================================
-// CGB color support
-// ============================================================================
-
-// CGB BG palette index used for rosette squares (white / light blue /
-// deep blue / black). Palette is installed at boot in main.c.
-#define ROSETTE_CGB_PALETTE 2
-
-// CGB BG palette index used for the rest of the board (white / light sand /
-// darker sand / black). Palette is installed at boot in main.c.
-#define BOARD_SAND_CGB_PALETTE 3
-
 /**
- * CGB-only: assign BG palettes for the in-game board. Fills the 20x10 board
- * area with the sand palette, then overwrites the 5 rosette squares with the
- * rosette palette. No-op on DMG. Call once per game-screen init after the
- * board frame map is in place.
+ * Paint CGB BG palettes for the in-game board: sand across the whole board
+ * area, with the 5 rosette squares overwritten with the rosette palette.
+ * Call once per game-screen init after the board frame map is in place.
+ * No-op on DMG.
  */
 void apply_board_cgb_palettes(void);
 

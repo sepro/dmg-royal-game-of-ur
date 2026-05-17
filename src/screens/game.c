@@ -11,6 +11,7 @@
 #include "screens/coinflip.h"
 #include "screens/difficulty_select.h"
 #include "util/opponent_data.h"
+#include "util/cgb.h"
 #include "util/font.h"
 #include "util/input.h"
 #include "logic/board_state.h"
@@ -1117,8 +1118,7 @@ void init_game(void) {
     BGP_REG = 0xE4;   // Standard background palette
     // Set sprite palette OBP0: index 1=white, index 2=dark gray, index 3=black
     // Value: (3 << 6) | (2 << 4) | (0 << 2) | 0 = 0xE0
-    OBP0_REG = 0xE0;
-    sync_sprite_palette_to_obp0();
+    cgb_set_obp0(0xE0);
 
     // Initialize game state based on coin flip
     human_color = selected_side;
@@ -1507,6 +1507,5 @@ void cleanup_game(void) {
 
     // Restore default sprite palette (0xFC = all indices black, index 0 white)
     // Game screen uses 0xE0 which makes index 1 white, breaking arrow sprite
-    OBP0_REG = 0xFC;
-    sync_sprite_palette_to_obp0();
+    cgb_set_obp0(0xFC);
 }

@@ -5,8 +5,8 @@
  */
 
 #include <gb/gb.h>
-#include <gb/cgb.h>
 #include <stdint.h>
+#include "util/cgb.h"
 #include "util/portrait.h"
 
 // External references to merged profile asset
@@ -87,17 +87,10 @@ void draw_portrait_expr(uint8_t char_idx, uint8_t expression,
             }
         }
         set_bkg_tiles(x, y + row, PORTRAIT_SUB_WIDTH, 1, row_buf);
-
-        if (_cpu == CGB_TYPE) {
-            static const uint8_t attr_row[PORTRAIT_SUB_WIDTH] = {
-                PORTRAIT_CGB_PALETTE, PORTRAIT_CGB_PALETTE, PORTRAIT_CGB_PALETTE,
-                PORTRAIT_CGB_PALETTE, PORTRAIT_CGB_PALETTE
-            };
-            VBK_REG = 1;
-            set_bkg_tiles(x, y + row, PORTRAIT_SUB_WIDTH, 1, attr_row);
-            VBK_REG = 0;
-        }
     }
+
+    // The whole 5x5 portrait uses the same palette, so paint attributes once.
+    cgb_set_bg_attr_rect(x, y, PORTRAIT_SUB_WIDTH, PORTRAIT_SUB_HEIGHT, CGB_PAL_PORTRAIT);
 }
 
 /**
@@ -130,17 +123,9 @@ void draw_portrait_expr_mirrored(uint8_t char_idx, uint8_t expression,
             }
         }
         set_bkg_tiles(x, y + row, PORTRAIT_SUB_WIDTH, 1, row_buf);
-
-        if (_cpu == CGB_TYPE) {
-            static const uint8_t attr_row[PORTRAIT_SUB_WIDTH] = {
-                PORTRAIT_CGB_PALETTE, PORTRAIT_CGB_PALETTE, PORTRAIT_CGB_PALETTE,
-                PORTRAIT_CGB_PALETTE, PORTRAIT_CGB_PALETTE
-            };
-            VBK_REG = 1;
-            set_bkg_tiles(x, y + row, PORTRAIT_SUB_WIDTH, 1, attr_row);
-            VBK_REG = 0;
-        }
     }
+
+    cgb_set_bg_attr_rect(x, y, PORTRAIT_SUB_WIDTH, PORTRAIT_SUB_HEIGHT, CGB_PAL_PORTRAIT);
 }
 
 uint8_t get_portrait_expr_tile(uint8_t char_idx, uint8_t expression,
@@ -157,28 +142,4 @@ uint8_t get_portrait_expr_tile(uint8_t char_idx, uint8_t expression,
     }
 
     return tile_base + tile_idx;
-}
-
-void clear_bg_attributes(void) {
-    if (_cpu != CGB_TYPE) return;
-    VBK_REG = 1;
-    fill_bkg_rect(0, 0, 32, 32, 0);
-    VBK_REG = 0;
-}
-
-void sync_sprite_palette_to_obp0(void) {
-    if (_cpu != CGB_TYPE) return;
-
-    // Grayscale ramp indexed by the 2-bit OBP "output shade" value.
-    static const palette_color_t shade_to_color[4] = {
-        RGB_WHITE, RGB_LIGHTGRAY, RGB_DARKGRAY, RGB_BLACK
-    };
-
-    palette_color_t pal[4];
-    uint8_t obp = OBP0_REG;
-    pal[0] = RGB_WHITE;                                  // sprite shade 0 is always transparent
-    pal[1] = shade_to_color[(obp >> 2) & 0x3];
-    pal[2] = shade_to_color[(obp >> 4) & 0x3];
-    pal[3] = shade_to_color[(obp >> 6) & 0x3];
-    set_sprite_palette(0, 1, pal);
 }

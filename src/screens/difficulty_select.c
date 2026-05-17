@@ -10,6 +10,7 @@
 #include "screens/difficulty_select.h"
 #include "screens/opponent_select.h"
 #include "util/opponent_data.h"
+#include "util/cgb.h"
 #include "util/font.h"
 #include "util/input.h"
 #include "util/transition.h"
@@ -138,8 +139,7 @@ void init_difficulty_select(void) {
 
     // Set palettes
     BGP_REG = 0xE4;   // Standard background palette
-    OBP0_REG = 0xFC;  // Sprite palette for white background with dark text
-    sync_sprite_palette_to_obp0();
+    cgb_set_obp0(0xFC);  // Sprite palette for white background with dark text
 
     SHOW_BKG;
     SHOW_SPRITES;

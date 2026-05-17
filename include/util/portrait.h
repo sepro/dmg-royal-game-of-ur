@@ -20,30 +20,6 @@
 #define PORTRAIT_SUB_HEIGHT 5   // Single portrait height
 #define PORTRAIT_TILE_COUNT 117 // Total unique tiles in merged tileset
 
-// CGB BG palette index used for portraits. Palette 0 is grayscale (everything
-// else). Palette 1 is white / light beige / dark brown / black, installed
-// once at boot in main.c.
-#define PORTRAIT_CGB_PALETTE 1
-
-/**
- * CGB-only: zero the entire 32x32 BG tile-attribute plane so every tile uses
- * palette 0 with no flip and no priority. No-op on DMG. Intended to be called
- * once per state transition before the next screen draws its tiles, so leftover
- * palette assignments from the previous screen don't bleed through.
- */
-void clear_bg_attributes(void);
-
-/**
- * CGB-only: derive a 4-color CGB sprite palette from the current OBP0_REG value
- * and install it as CGB sprite palette 0. On DMG the OBP0_REG byte remaps the
- * tile pixel shades 0-3 to output shades 0-3; on CGB in CGB mode the OBP
- * register is ignored and shade N indexes CGB sprite palette[N] directly. This
- * helper bridges that gap by translating the OBP0_REG byte into the equivalent
- * CGB palette so sprite shades render the same on CGB as on DMG. Call once
- * immediately after every `OBP0_REG = ...` assignment. No-op on DMG.
- */
-void sync_sprite_palette_to_obp0(void);
-
 /**
  * Load full merged tileset into VRAM at tile_base.
  * For screens with ample VRAM (opponent_select, difficulty_select, endgame, link_profile).

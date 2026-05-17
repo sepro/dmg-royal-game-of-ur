@@ -59,10 +59,24 @@ void main(void) {
             RGB8(160, 112,  56),
             RGB_BLACK
         };
+        static const palette_color_t light_coin_palette[4] = {
+            RGB_WHITE,
+            RGB8(248, 232, 144),
+            RGB8(216, 128,  56),
+            RGB8( 96,  48,  16)
+        };
+        static const palette_color_t dark_coin_palette[4] = {
+            RGB_WHITE,
+            RGB8(176, 208, 232),
+            RGB8( 88, 128, 200),
+            RGB8(  8,  24,  80)
+        };
         set_bkg_palette(0, 1, grayscale);
         set_bkg_palette(1, 1, portrait_palette);
         set_bkg_palette(2, 1, rosette_palette);
         set_bkg_palette(3, 1, board_sand_palette);
+        set_bkg_palette(4, 1, light_coin_palette);
+        set_bkg_palette(5, 1, dark_coin_palette);
         set_sprite_palette(0, 1, grayscale);
         set_sprite_palette(1, 1, grayscale);
         clear_bg_attributes();

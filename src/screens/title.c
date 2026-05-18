@@ -161,6 +161,8 @@ static void draw_showcase_portrait(void) {
 static void draw_portrait_box(void) {
     draw_border_frame(TITLE_PORTRAIT_BOX_X, TITLE_PORTRAIT_BOX_Y, 7, 7,
                       TITLE_BORDER_TILE_START, border_map);
+    cgb_set_bg_attr_frame(TITLE_PORTRAIT_BOX_X, TITLE_PORTRAIT_BOX_Y, 7, 7,
+                          CGB_PAL_BORDER);
 }
 
 static void update_showcase_animation(void) {

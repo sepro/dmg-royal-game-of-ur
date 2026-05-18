@@ -58,6 +58,8 @@ static void draw_border(void) {
     uint8_t y = ENDGAME_PORTRAIT_Y - 1;
     draw_border_frame(x, y, ENDGAME_BORDER_WIDTH, ENDGAME_BORDER_HEIGHT,
                       ENDGAME_BORDER_TILE_START, border_map);
+    cgb_set_bg_attr_frame(x, y, ENDGAME_BORDER_WIDTH, ENDGAME_BORDER_HEIGHT,
+                          CGB_PAL_BORDER);
 }
 
 void init_endgame(void) {
@@ -88,6 +90,9 @@ void init_endgame(void) {
         draw_border_frame(ENDGAME_LINK_LEFT_BRD_X, ENDGAME_LINK_LEFT_BRD_Y,
                           ENDGAME_BORDER_WIDTH, ENDGAME_BORDER_HEIGHT,
                           ENDGAME_BORDER_TILE_START, border_map);
+        cgb_set_bg_attr_frame(ENDGAME_LINK_LEFT_BRD_X, ENDGAME_LINK_LEFT_BRD_Y,
+                              ENDGAME_BORDER_WIDTH, ENDGAME_BORDER_HEIGHT,
+                              CGB_PAL_BORDER);
 
         draw_portrait_expr(selected_opponent, PORTRAIT_EXPR_NORMAL,
                            ENDGAME_PORTRAIT_TILE_START,
@@ -95,6 +100,9 @@ void init_endgame(void) {
         draw_border_frame(ENDGAME_LINK_RIGHT_BRD_X, ENDGAME_LINK_RIGHT_BRD_Y,
                           ENDGAME_BORDER_WIDTH, ENDGAME_BORDER_HEIGHT,
                           ENDGAME_BORDER_TILE_START, border_map);
+        cgb_set_bg_attr_frame(ENDGAME_LINK_RIGHT_BRD_X, ENDGAME_LINK_RIGHT_BRD_Y,
+                              ENDGAME_BORDER_WIDTH, ENDGAME_BORDER_HEIGHT,
+                              CGB_PAL_BORDER);
 
         // Labels under portraits
         draw_text_inverted(3, ENDGAME_LINK_NAME_Y, "YOU");

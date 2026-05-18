@@ -81,6 +81,8 @@ static void draw_border(uint8_t idx) {
     uint8_t y = coin_y[idx] - 1;
     draw_border_frame(x, y, COINFLIP_BORDER_WIDTH, COINFLIP_BORDER_HEIGHT,
                       COINFLIP_BORDER_TILE_START, border_map);
+    cgb_set_bg_attr_frame(x, y, COINFLIP_BORDER_WIDTH, COINFLIP_BORDER_HEIGHT,
+                          CGB_PAL_BORDER);
 }
 
 /**

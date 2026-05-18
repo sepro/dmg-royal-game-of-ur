@@ -17,6 +17,7 @@
 #include "util/screen_utils.h"
 #include "util/portrait.h"
 #include "util/sound.h"
+#include "util/cgb.h"
 
 // External reference to border tiles and map (from border.c)
 extern const uint8_t border_tiles[];
@@ -64,6 +65,7 @@ static void draw_border(uint8_t idx) {
     uint8_t x = portrait_x[idx] - 1;  // Border is 1 tile outside portrait
     uint8_t y = portrait_y[idx] - 1;
     draw_border_frame(x, y, BORDER_WIDTH, BORDER_HEIGHT, BORDER_TILE_START, border_map);
+    cgb_set_bg_attr_frame(x, y, BORDER_WIDTH, BORDER_HEIGHT, CGB_PAL_BORDER);
 }
 
 /**

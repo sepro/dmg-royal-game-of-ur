@@ -762,6 +762,22 @@ static void clear_pause_window(void) {
  */
 static void draw_pause_border(void) {
     draw_full_width_border(PAUSE_BORDER_TILE_START, 0, PAUSE_WIN_HEIGHT, 1);
+
+    // Paint CGB attributes for the entire pause window so the border tiles
+    // pick up CGB_PAL_BORDER (brown/navy). Font tiles drawn on top only use
+    // shades 0 and 3, so they render unchanged. Window tilemap lives in
+    // a different VRAM region than BG, so we use set_win_tiles with VBK=1.
+    if (_cpu == CGB_TYPE) {
+        uint8_t attr_row[PAUSE_WIN_WIDTH];
+        for (uint8_t i = 0; i < PAUSE_WIN_WIDTH; i++) {
+            attr_row[i] = CGB_PAL_BORDER;
+        }
+        VBK_REG = 1;
+        for (uint8_t y = 0; y < PAUSE_WIN_HEIGHT; y++) {
+            set_win_tiles(0, y, PAUSE_WIN_WIDTH, 1, attr_row);
+        }
+        VBK_REG = 0;
+    }
 }
 
 /**

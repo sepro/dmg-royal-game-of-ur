@@ -48,6 +48,7 @@ static const char *difficulty_labels[DIFFICULTY_COUNT] = {
  */
 static void draw_difficulty_box(void) {
     draw_full_width_border(DIFF_BORDER_TILE_START, 8, 10, 0);
+    cgb_set_bg_attr_frame(0, 8, 20, 10, CGB_PAL_BORDER);
 }
 
 /**

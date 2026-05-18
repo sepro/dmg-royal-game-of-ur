@@ -50,6 +50,16 @@ static const palette_color_t coin_dark_palette[4] = {
     RGB8(  8,  24,  80)   // deep navy (replaces black for cooler coin edge)
 };
 
+// Border frame palette: white and black stay, light gray becomes the same
+// deep brown used by the coin-light edge and dark gray becomes the deep navy
+// used by the coin-dark edge, so the decorative frame ties into the coin theme.
+static const palette_color_t border_palette[4] = {
+    RGB_WHITE,
+    RGB8( 96,  48,  16),  // deep brown (was light gray)
+    RGB8(  8,  24,  80),  // deep navy (was dark gray)
+    RGB_BLACK
+};
+
 void cgb_init_palettes(void) {
     if (_cpu != CGB_TYPE) return;
 
@@ -59,6 +69,7 @@ void cgb_init_palettes(void) {
     set_bkg_palette(CGB_PAL_BOARD_SAND, 1, board_sand_palette);
     set_bkg_palette(CGB_PAL_COIN_LIGHT, 1, coin_light_palette);
     set_bkg_palette(CGB_PAL_COIN_DARK,  1, coin_dark_palette);
+    set_bkg_palette(CGB_PAL_BORDER,     1, border_palette);
 
     // All sprites use palette 0; it gets rewritten by cgb_set_obp0() to
     // track the DMG OBP0_REG remap. Seed it with plain grayscale so anything
@@ -80,6 +91,19 @@ void cgb_set_bg_attr_rect(uint8_t x, uint8_t y,
     if (_cpu != CGB_TYPE) return;
     VBK_REG = 1;
     fill_bkg_rect(x, y, w, h, attr);
+    VBK_REG = 0;
+}
+
+void cgb_set_bg_attr_frame(uint8_t x, uint8_t y,
+                           uint8_t w, uint8_t h, uint8_t attr) {
+    if (_cpu != CGB_TYPE) return;
+    VBK_REG = 1;
+    fill_bkg_rect(x, y, w, 1, attr);                // top edge
+    if (h > 1) fill_bkg_rect(x, y + h - 1, w, 1, attr);  // bottom edge
+    if (h > 2) {
+        fill_bkg_rect(x, y + 1, 1, h - 2, attr);             // left edge
+        if (w > 1) fill_bkg_rect(x + w - 1, y + 1, 1, h - 2, attr);  // right edge
+    }
     VBK_REG = 0;
 }
 

@@ -40,7 +40,8 @@ typedef enum {
     CGB_PAL_ROSETTE    = 2,  // white / light blue / deep blue / black
     CGB_PAL_BOARD_SAND = 3,  // white / light sand / dark sand / black
     CGB_PAL_COIN_LIGHT = 4,  // warm yellow / orange / dark brown
-    CGB_PAL_COIN_DARK  = 5   // light blue / mid blue / deep navy
+    CGB_PAL_COIN_DARK  = 5,  // light blue / mid blue / deep navy
+    CGB_PAL_BORDER     = 6   // white / deep brown / navy / black
 } CgbBgPalette_t;
 
 /**
@@ -69,6 +70,16 @@ void cgb_clear_bg_attributes(void);
  */
 void cgb_set_bg_attr_rect(uint8_t x, uint8_t y,
                           uint8_t w, uint8_t h, uint8_t attr);
+
+/**
+ * Paint a 1-tile-thick rectangular ring (the perimeter of x,y,w,h) with a
+ * single palette, leaving the interior cells untouched. Useful for decorative
+ * frames where the inside contains content (portraits, coins) that has its
+ * own palette.
+ * No-op on DMG.
+ */
+void cgb_set_bg_attr_frame(uint8_t x, uint8_t y,
+                           uint8_t w, uint8_t h, uint8_t attr);
 
 /**
  * Write a row of per-tile attribute bytes to the BG attribute plane.

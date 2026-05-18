@@ -19,6 +19,7 @@
 #include "screens/coinflip.h"
 #include "screens/game.h"
 #include "util/sound.h"
+#include "util/cgb.h"
 
 // External reference to border tiles and map
 extern const uint8_t border_tiles[];
@@ -72,6 +73,8 @@ static void draw_border(uint8_t idx) {
     uint8_t y = portrait_y[idx] - 1;
     draw_border_frame(x, y, LPROFILE_BORDER_WIDTH, LPROFILE_BORDER_HEIGHT,
                       LPROFILE_BORDER_START, border_map);
+    cgb_set_bg_attr_frame(x, y, LPROFILE_BORDER_WIDTH, LPROFILE_BORDER_HEIGHT,
+                          CGB_PAL_BORDER);
 }
 
 /**
@@ -158,9 +161,15 @@ static void show_vs_reveal(void) {
     draw_border_frame(LPROFILE_VS_YOU_BRD_X, LPROFILE_VS_YOU_BRD_Y,
                       LPROFILE_BORDER_WIDTH, LPROFILE_BORDER_HEIGHT,
                       LPROFILE_VS_BORDER_START, border_map);
+    cgb_set_bg_attr_frame(LPROFILE_VS_YOU_BRD_X, LPROFILE_VS_YOU_BRD_Y,
+                          LPROFILE_BORDER_WIDTH, LPROFILE_BORDER_HEIGHT,
+                          CGB_PAL_BORDER);
     draw_border_frame(LPROFILE_VS_OTHER_BRD_X, LPROFILE_VS_OTHER_BRD_Y,
                       LPROFILE_BORDER_WIDTH, LPROFILE_BORDER_HEIGHT,
                       LPROFILE_VS_BORDER_START, border_map);
+    cgb_set_bg_attr_frame(LPROFILE_VS_OTHER_BRD_X, LPROFILE_VS_OTHER_BRD_Y,
+                          LPROFILE_BORDER_WIDTH, LPROFILE_BORDER_HEIGHT,
+                          CGB_PAL_BORDER);
 
     // Draw labels
     draw_text_inverted(LPROFILE_VS_YOU_BRD_X, LPROFILE_VS_YOU_BRD_Y - 1, "YOU");

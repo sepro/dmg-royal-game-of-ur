@@ -122,7 +122,7 @@ $(OBJDIR)/sound.o: $(INCDIR)/util/sound.h
 $(OBJDIR)/music.o: $(INCDIR)/util/music.h
 $(OBJDIR)/screen_utils.o: $(INCDIR)/util/screen_utils.h $(INCDIR)/util/font.h
 $(OBJDIR)/link.o: $(INCDIR)/link/link.h
-$(OBJDIR)/link_connect.o: $(INCDIR)/link/link_connect.h $(INCDIR)/link/link.h $(INCDIR)/game_types.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/screens/coinflip.h $(INCDIR)/util/screen_utils.h
+$(OBJDIR)/link_connect.o: $(INCDIR)/link/link_connect.h $(INCDIR)/link/link.h $(INCDIR)/game_types.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/screens/coinflip.h $(INCDIR)/util/screen_utils.h $(INCDIR)/util/cgb.h
 $(OBJDIR)/link_profile.o: $(INCDIR)/link/link_profile.h $(INCDIR)/game_types.h $(INCDIR)/link/link.h $(INCDIR)/util/opponent_data.h $(INCDIR)/util/font.h $(INCDIR)/util/input.h $(INCDIR)/util/transition.h $(INCDIR)/util/portrait.h $(INCDIR)/util/screen_utils.h $(INCDIR)/screens/coinflip.h $(INCDIR)/screens/game.h $(INCDIR)/util/sound.h $(INCDIR)/util/cgb.h
 
 $(OBJDIR)/falling_piece_anim.o: $(INCDIR)/util/falling_piece_anim.h $(INCDIR)/util/random.h $(INCDIR)/vram_layout.h

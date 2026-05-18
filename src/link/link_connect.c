@@ -15,6 +15,7 @@
 #include "util/transition.h"
 #include "screens/coinflip.h"
 #include "util/screen_utils.h"
+#include "util/cgb.h"
 
 // External references to generated coin assets (shared with coinflip)
 extern const uint8_t light_coin_tiles[];
@@ -48,9 +49,11 @@ static void show_side_reveal(void) {
     // Draw coin based on role (master=light, slave=dark)
     if (link_role == LINK_ROLE_MASTER) {
         draw_tile_rect(CONNECT_COIN_X, CONNECT_COIN_Y, COIN_WIDTH, COIN_HEIGHT, CONNECT_LIGHT_TILE_START);
+        cgb_set_bg_attr_rect(CONNECT_COIN_X, CONNECT_COIN_Y, COIN_WIDTH, COIN_HEIGHT, CGB_PAL_COIN_LIGHT);
         draw_text_inverted(CONNECT_SIDE_X, CONNECT_SIDE_Y, "YOU ARE LIGHT");
     } else {
         draw_tile_rect(CONNECT_COIN_X, CONNECT_COIN_Y, COIN_WIDTH, COIN_HEIGHT, CONNECT_DARK_TILE_START);
+        cgb_set_bg_attr_rect(CONNECT_COIN_X, CONNECT_COIN_Y, COIN_WIDTH, COIN_HEIGHT, CGB_PAL_COIN_DARK);
         draw_text_inverted(CONNECT_SIDE_X, CONNECT_SIDE_Y, "YOU ARE DARK");
     }
 }

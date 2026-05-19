@@ -13,7 +13,7 @@ INCDIR = include
 CFLAGS = -Wa-l -Wl-m -Wl-j -Wm-yc -I$(INCDIR)
 
 # ROM name
-TARGET = royal-ur.gb
+TARGET = royal-ur-dx.gb
 
 # Source files (organized by subfolder)
 SOURCES = src/main.c \

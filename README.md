@@ -20,6 +20,7 @@ The project includes:
 - Pause overlay showing turn count, elapsed time, and score progress
 - Endgame win/lose screen with portrait reactions
 - Link cable mode with synchronized board state and profile selection for both players
+- *NEW* Colorized tiles/sprites when running on GBC
 
 ## Screenshots
 
@@ -31,6 +32,12 @@ The project includes:
 
 ### Victory Screen
 ![Winning screen screenshot](docs/screenshots/player-win.png)
+
+### Colorized tiles/sprites on GBC
+
+![Title Screen](docs/screenshots/gbc_title.png)
+![Coin Screen](docs/screenshots/gbc_coins.png)
+![Board](docs/screenshots/gbc_board.png)
 
 ## Project Structure
 

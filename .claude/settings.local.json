@@ -30,7 +30,13 @@
       "mcp__ide__executeCode",
       "Bash(for asset in board_frame board_tiles_pieces border dark_coin light_coin dice_black dice_white dest_piece_black dest_piece_white piece_black piece_white profiles_merged arrow blink selection_border)",
       "Bash(do)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git commit *)",
+      "Bash(git checkout *)",
+      "Bash(git pull *)"
     ]
   }
 }

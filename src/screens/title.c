@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include "game_types.h"
 #include "screens/title.h"
+#include "util/cgb.h"
 #include "util/font.h"
 #include "util/input.h"
 #include "util/random.h"
@@ -120,10 +121,12 @@ static void draw_music_option(void) {
 
 static void draw_board_square_empty(uint8_t x, uint8_t y, uint8_t square_type) {
     uint8_t tile = title_square_empty_base[square_type];
+    uint8_t palette = (square_type == 0) ? CGB_PAL_ROSETTE : CGB_PAL_BOARD_SAND;
     set_bkg_tile_xy(x, y, TITLE_BOARD_TILE_START + tile);
     set_bkg_tile_xy((uint8_t)(x + 1), y, TITLE_BOARD_TILE_START + tile + 2);
     set_bkg_tile_xy(x, (uint8_t)(y + 1), TITLE_BOARD_TILE_START + tile + 1);
     set_bkg_tile_xy((uint8_t)(x + 1), (uint8_t)(y + 1), TITLE_BOARD_TILE_START + tile + 3);
+    cgb_set_bg_attr_rect(x, y, 2, 2, palette);
 }
 
 static void draw_title_board(void) {
@@ -160,6 +163,8 @@ static void draw_showcase_portrait(void) {
 static void draw_portrait_box(void) {
     draw_border_frame(TITLE_PORTRAIT_BOX_X, TITLE_PORTRAIT_BOX_Y, 7, 7,
                       TITLE_BORDER_TILE_START, border_map);
+    cgb_set_bg_attr_frame(TITLE_PORTRAIT_BOX_X, TITLE_PORTRAIT_BOX_Y, 7, 7,
+                          CGB_PAL_BORDER);
 }
 
 static void update_showcase_animation(void) {
@@ -323,7 +328,7 @@ void init_title(void) {
     input_reset();
 
     BGP_REG = 0xE4;
-    OBP0_REG = 0xE0;
+    cgb_set_obp0(0xE0);
 
     SHOW_BKG;
     SHOW_SPRITES;

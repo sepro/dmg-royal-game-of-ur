@@ -10,6 +10,7 @@
 #include "screens/coinflip.h"
 #include "vram_layout.h"
 #include "screens/game.h"
+#include "util/cgb.h"
 #include "util/random.h"
 
 // ============================================================================
@@ -264,6 +265,25 @@ void update_dirty_squares(void) {
 
 uint8_t is_rosette(uint8_t pos) {
     return (pos == 4 || pos == 8 || pos == 14);
+}
+
+// Top-left (x, y) BG tile coords of all 5 rosette squares on the game board,
+// each square being 2x2 BG tiles. Mirrors the rosette entries in p1_squares[]
+// / p2_private_squares[] above.
+static const uint8_t rosette_tile_xy[5][2] = {
+    { 2, 2}, {14, 2},
+    { 8, 4},
+    { 2, 6}, {14, 6}
+};
+
+void apply_board_cgb_palettes(void) {
+    // Sand palette across the entire 20x10 board area, then rosette palette
+    // over the 5 rosette squares (2x2 BG tiles each).
+    cgb_set_bg_attr_rect(BOARD_X, BOARD_Y, BOARD_WIDTH, BOARD_HEIGHT, CGB_PAL_BOARD_SAND);
+    for (uint8_t i = 0; i < 5; i++) {
+        cgb_set_bg_attr_rect(rosette_tile_xy[i][0], rosette_tile_xy[i][1],
+                             2, 2, CGB_PAL_ROSETTE);
+    }
 }
 
 uint8_t is_valid_move(uint8_t player, uint8_t piece_idx, uint8_t roll) {

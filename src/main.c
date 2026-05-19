@@ -14,6 +14,7 @@
 #include "screens/endgame.h"
 #include "link/link_connect.h"
 #include "link/link_profile.h"
+#include "util/cgb.h"
 #include "util/font.h"
 #include "util/sound.h"
 #include "util/music.h"
@@ -30,8 +31,13 @@ void main(void) {
     // (TGB Dual and other emulators may not guarantee safe VRAM access at boot)
     DISPLAY_OFF;
 
+    // CGB: install accent palettes and zero the BG attribute plane. No-op on DMG.
+    cgb_init_palettes();
+
     // Set background palette explicitly (boot ROM normally sets this to 0xFC,
-    // but some emulators like TGB Dual may not emulate the boot ROM correctly)
+    // but some emulators like TGB Dual may not emulate the boot ROM correctly).
+    // Ignored on CGB; the grayscale CGB palette installed above produces the
+    // same shades.
     BGP_REG = 0xE4;
 
     // Load font tiles once at boot (shared across all screens)
@@ -87,6 +93,14 @@ void main(void) {
 
             // Initialize next state
             current_state = next_state;
+
+            // Wipe leftover BG attributes from the previous screen before the
+            // next init runs. Done with the display off so the 1024 attribute
+            // writes don't race the LCD; each init_* turns the display back
+            // on once it has drawn.
+            DISPLAY_OFF;
+            cgb_clear_bg_attributes();
+
             switch (current_state) {
                 case STATE_TITLE:
                     init_title();

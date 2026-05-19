@@ -11,6 +11,7 @@
 #include "screens/coinflip.h"
 #include "screens/difficulty_select.h"
 #include "util/opponent_data.h"
+#include "util/cgb.h"
 #include "util/font.h"
 #include "util/input.h"
 #include "logic/board_state.h"
@@ -761,6 +762,22 @@ static void clear_pause_window(void) {
  */
 static void draw_pause_border(void) {
     draw_full_width_border(PAUSE_BORDER_TILE_START, 0, PAUSE_WIN_HEIGHT, 1);
+
+    // Paint CGB attributes for the entire pause window so the border tiles
+    // pick up CGB_PAL_BORDER (brown/navy). Font tiles drawn on top only use
+    // shades 0 and 3, so they render unchanged. Window tilemap lives in
+    // a different VRAM region than BG, so we use set_win_tiles with VBK=1.
+    if (_cpu == CGB_TYPE) {
+        uint8_t attr_row[PAUSE_WIN_WIDTH];
+        for (uint8_t i = 0; i < PAUSE_WIN_WIDTH; i++) {
+            attr_row[i] = CGB_PAL_BORDER;
+        }
+        VBK_REG = 1;
+        for (uint8_t y = 0; y < PAUSE_WIN_HEIGHT; y++) {
+            set_win_tiles(0, y, PAUSE_WIN_WIDTH, 1, attr_row);
+        }
+        VBK_REG = 0;
+    }
 }
 
 /**
@@ -1097,6 +1114,10 @@ void init_game(void) {
     // Draw the board tilemap at top of screen
     set_bkg_tiles(BOARD_X, BOARD_Y, BOARD_WIDTH, BOARD_HEIGHT, board_frame_map);
 
+    // CGB only: assign sand palette to the board, blue palette to rosettes.
+    // No-op on DMG.
+    apply_board_cgb_palettes();
+
     // Fill UI area with background color
     fill_ui_area();
 
@@ -1113,7 +1134,7 @@ void init_game(void) {
     BGP_REG = 0xE4;   // Standard background palette
     // Set sprite palette OBP0: index 1=white, index 2=dark gray, index 3=black
     // Value: (3 << 6) | (2 << 4) | (0 << 2) | 0 = 0xE0
-    OBP0_REG = 0xE0;
+    cgb_set_obp0(0xE0);
 
     // Initialize game state based on coin flip
     human_color = selected_side;
@@ -1502,5 +1523,5 @@ void cleanup_game(void) {
 
     // Restore default sprite palette (0xFC = all indices black, index 0 white)
     // Game screen uses 0xE0 which makes index 1 white, breaking arrow sprite
-    OBP0_REG = 0xFC;
+    cgb_set_obp0(0xFC);
 }

@@ -10,6 +10,7 @@
 #include "screens/difficulty_select.h"
 #include "screens/opponent_select.h"
 #include "util/opponent_data.h"
+#include "util/cgb.h"
 #include "util/font.h"
 #include "util/input.h"
 #include "util/transition.h"
@@ -47,6 +48,7 @@ static const char *difficulty_labels[DIFFICULTY_COUNT] = {
  */
 static void draw_difficulty_box(void) {
     draw_full_width_border(DIFF_BORDER_TILE_START, 8, 10, 0);
+    cgb_set_bg_attr_frame(0, 8, 20, 10, CGB_PAL_BORDER);
 }
 
 /**
@@ -138,7 +140,7 @@ void init_difficulty_select(void) {
 
     // Set palettes
     BGP_REG = 0xE4;   // Standard background palette
-    OBP0_REG = 0xFC;  // Sprite palette for white background with dark text
+    cgb_set_obp0(0xFC);  // Sprite palette for white background with dark text
 
     SHOW_BKG;
     SHOW_SPRITES;

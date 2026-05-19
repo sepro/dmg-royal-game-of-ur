@@ -6,6 +6,7 @@
 
 #include <gb/gb.h>
 #include <stdint.h>
+#include "util/cgb.h"
 #include "util/portrait.h"
 
 // External references to merged profile asset
@@ -87,6 +88,9 @@ void draw_portrait_expr(uint8_t char_idx, uint8_t expression,
         }
         set_bkg_tiles(x, y + row, PORTRAIT_SUB_WIDTH, 1, row_buf);
     }
+
+    // The whole 5x5 portrait uses the same palette, so paint attributes once.
+    cgb_set_bg_attr_rect(x, y, PORTRAIT_SUB_WIDTH, PORTRAIT_SUB_HEIGHT, CGB_PAL_PORTRAIT);
 }
 
 /**
@@ -120,6 +124,8 @@ void draw_portrait_expr_mirrored(uint8_t char_idx, uint8_t expression,
         }
         set_bkg_tiles(x, y + row, PORTRAIT_SUB_WIDTH, 1, row_buf);
     }
+
+    cgb_set_bg_attr_rect(x, y, PORTRAIT_SUB_WIDTH, PORTRAIT_SUB_HEIGHT, CGB_PAL_PORTRAIT);
 }
 
 uint8_t get_portrait_expr_tile(uint8_t char_idx, uint8_t expression,

@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include "game_types.h"
 #include "screens/coinflip.h"
+#include "util/cgb.h"
 #include "util/font.h"
 #include "util/input.h"
 #include "util/transition.h"
@@ -80,6 +81,8 @@ static void draw_border(uint8_t idx) {
     uint8_t y = coin_y[idx] - 1;
     draw_border_frame(x, y, COINFLIP_BORDER_WIDTH, COINFLIP_BORDER_HEIGHT,
                       COINFLIP_BORDER_TILE_START, border_map);
+    cgb_set_bg_attr_frame(x, y, COINFLIP_BORDER_WIDTH, COINFLIP_BORDER_HEIGHT,
+                          CGB_PAL_BORDER);
 }
 
 /**
@@ -94,46 +97,45 @@ static void clear_border(uint8_t idx) {
 }
 
 /**
- * Draw the animation coin with mixed light/dark tiles
- * Uses locked_tiles bitmask to determine which tiles show result
+ * Draw the animation coin with mixed light/dark tiles.
+ * Uses locked_tiles bitmask to determine which tiles show the result.
+ * Each tile's BG attribute byte tracks the tile so the CGB coin palette
+ * (warm yellow/orange or cool blue/navy) flips with it.
  */
 static void draw_animation_coin(void) {
     uint8_t row_buf[COIN_WIDTH];
-    uint8_t light_base = COINFLIP_LIGHT_TILE_START;
-    uint8_t dark_base = COINFLIP_DARK_TILE_START;
+    uint8_t attr_buf[COIN_WIDTH];
 
     for (uint8_t row = 0; row < COIN_HEIGHT; row++) {
         for (uint8_t col = 0; col < COIN_WIDTH; col++) {
-            uint8_t tile_idx = row * COIN_WIDTH + col;
-            uint8_t tile_offset = tile_idx;
+            uint8_t tile_offset = row * COIN_WIDTH + col;
+            uint8_t pick_light = is_tile_locked(tile_offset)
+                ? (coin_result == SIDE_LIGHT)
+                : (get_random() & 1);
 
-            if (is_tile_locked(tile_idx)) {
-                // Locked: show result side
-                if (coin_result == SIDE_LIGHT) {
-                    row_buf[col] = light_base + tile_offset;
-                } else {
-                    row_buf[col] = dark_base + tile_offset;
-                }
+            if (pick_light) {
+                row_buf[col]  = COINFLIP_LIGHT_TILE_START + tile_offset;
+                attr_buf[col] = CGB_PAL_COIN_LIGHT;
             } else {
-                // Not locked: randomize
-                if (get_random() & 1) {
-                    row_buf[col] = light_base + tile_offset;
-                } else {
-                    row_buf[col] = dark_base + tile_offset;
-                }
+                row_buf[col]  = COINFLIP_DARK_TILE_START + tile_offset;
+                attr_buf[col] = CGB_PAL_COIN_DARK;
             }
         }
         set_bkg_tiles(COINFLIP_ANIM_X, COINFLIP_ANIM_Y + row, COIN_WIDTH, 1, row_buf);
+        cgb_set_bg_attrs_row(COINFLIP_ANIM_X, COINFLIP_ANIM_Y + row, COIN_WIDTH, attr_buf);
     }
 }
 
 /**
- * Draw the final animation coin showing result
+ * Draw the final animation coin showing the result.
  */
 static void draw_result_coin(void) {
     uint8_t tile_base = (coin_result == SIDE_LIGHT) ?
                         COINFLIP_LIGHT_TILE_START : COINFLIP_DARK_TILE_START;
+    uint8_t palette = (coin_result == SIDE_LIGHT) ?
+                      CGB_PAL_COIN_LIGHT : CGB_PAL_COIN_DARK;
     draw_tile_rect(COINFLIP_ANIM_X, COINFLIP_ANIM_Y, COIN_WIDTH, COIN_HEIGHT, tile_base);
+    cgb_set_bg_attr_rect(COINFLIP_ANIM_X, COINFLIP_ANIM_Y, COIN_WIDTH, COIN_HEIGHT, palette);
 }
 
 /**
@@ -314,6 +316,10 @@ void init_coinflip(void) {
     // Draw both coins
     draw_tile_rect(COINFLIP_LIGHT_X, COINFLIP_LIGHT_Y, COIN_WIDTH, COIN_HEIGHT, COINFLIP_LIGHT_TILE_START);
     draw_tile_rect(COINFLIP_DARK_X, COINFLIP_DARK_Y, COIN_WIDTH, COIN_HEIGHT, COINFLIP_DARK_TILE_START);
+
+    // CGB only: warm coin palette over the light coin, cool over the dark coin.
+    cgb_set_bg_attr_rect(COINFLIP_LIGHT_X, COINFLIP_LIGHT_Y, COIN_WIDTH, COIN_HEIGHT, CGB_PAL_COIN_LIGHT);
+    cgb_set_bg_attr_rect(COINFLIP_DARK_X,  COINFLIP_DARK_Y,  COIN_WIDTH, COIN_HEIGHT, CGB_PAL_COIN_DARK);
 
     // Draw labels
     draw_text_inverted(COINFLIP_LIGHT_LABEL_X, COINFLIP_LIGHT_LABEL_Y, "LIGHT");

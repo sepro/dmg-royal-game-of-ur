@@ -144,4 +144,12 @@ void get_reserve_screen_coords(uint8_t player, uint8_t *out_x, uint8_t *out_y);
  */
 void get_bearoff_screen_coords(uint8_t player, uint8_t *out_x, uint8_t *out_y);
 
+/**
+ * Paint CGB BG palettes for the in-game board: sand across the whole board
+ * area, with the 5 rosette squares overwritten with the rosette palette.
+ * Call once per game-screen init after the board frame map is in place.
+ * No-op on DMG.
+ */
+void apply_board_cgb_palettes(void);
+
 #endif // BOARD_STATE_H

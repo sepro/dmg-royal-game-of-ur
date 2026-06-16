@@ -9,6 +9,8 @@ The project includes:
 - Three difficulty levels
 - Local two-player support over Game Boy link cable
 
+[ROM available on itch.io](https://sebastianproost.itch.io/the-royal-game-of-ur)
+
 ![Royal Game of Ur Boxart](docs/royal_game_of_ur_boxart.jpg)
 
 ## Features

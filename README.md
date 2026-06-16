@@ -9,6 +9,8 @@ The project includes:
 - Three difficulty levels
 - Local two-player support over Game Boy link cable
 
+![Royal Game of Ur Boxart](docs/royal_game_of_ur_boxart.jpg)
+
 ## Features
 
 - Classic Royal Game of Ur rules: 7 pieces per side, 4 binary dice, rosette bonus turns, captures, and exact bearing off
